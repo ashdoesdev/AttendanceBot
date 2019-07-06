@@ -1,0 +1,20 @@
+{
+  "name": "attendance-bot",
+  "version": "1.0.0",
+  "description": "Attendance bot",
+  "main": "bot.js",
+  "author": "ash",
+  "dependencies": {
+    "csv-parser": "^2.2.0",
+    "discord.js": "^11.4.2",
+    "inversify": "^5.0.1",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^6.4.0",
+    "string-similarity": "^3.0.0",
+    "typescript": "^3.4.3"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^11.13.4"
+  }
+}

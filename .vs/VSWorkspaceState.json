@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\dist",
+    "\\dist\\src",
+    "\\dist\\src\\Helpers",
+    "\\dist\\src\\Services",
+    "\\src",
+    "\\src\\Embeds",
+    "\\src\\Helpers",
+    "\\src\\Models",
+    "\\src\\Services"
+  ],
+  "SelectedNode": "\\src\\Models\\item-score.model.ts",
+  "PreviewInSolutionExplorer": false
+}
