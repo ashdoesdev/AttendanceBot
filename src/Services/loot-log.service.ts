@@ -149,6 +149,11 @@ export class LootLogService {
         return entries;
     }
 
+    public async getLootHistory(memberId: string, lootLogChannel: TextChannel): Promise<ItemScore[]> {
+        let lootLogMap = await this.createLootLogMap(lootLogChannel);
+        return lootLogMap.get(memberId);
+    }
+
     private convertStringPipesToArray(string: string): string[] {
         let array = string.split('|');
         let trimmedArray = array.map(s => s.trim());

@@ -12,6 +12,8 @@ const heading_embed_1 = require("./Embeds/heading.embed");
 const seniority_embed_1 = require("./Embeds/seniority.embed");
 const map_sort_helper_1 = require("./Helpers/map-sort.helper");
 const loot_log_service_1 = require("./Services/loot-log.service");
+const member_overview_embed_1 = require("./Embeds/member-overview.embed");
+const items_looted_embed_1 = require("./Embeds/items-looted.embed");
 var stringSimilarity = require('string-similarity');
 class LootScoreBot {
     constructor() {
@@ -261,7 +263,6 @@ class LootScoreBot {
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
                     this._lootLogService.getEligibleMembers(item, this._lootLogChannel, this._guildMembers).then((members) => {
-                        // don't duplicate
                         if (members.length > 0) {
                             this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                             this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
@@ -279,7 +280,7 @@ class LootScoreBot {
                             });
                         }
                         else {
-                            message.channel.send('No eligible members. Was this a mistake?');
+                            message.channel.send('No members need this item.');
                         }
                     });
                 });
@@ -289,7 +290,6 @@ class LootScoreBot {
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
                     this._lootLogService.getHasLooted(item, this._lootLogChannel, this._guildMembers).then((members) => {
-                        // don't duplicate
                         if (members.length > 0) {
                             this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                             this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
@@ -307,7 +307,7 @@ class LootScoreBot {
                             });
                         }
                         else {
-                            message.channel.send('No eligible members. Was this a mistake?');
+                            message.channel.send('No members have this item.');
                         }
                     });
                 });
@@ -317,7 +317,6 @@ class LootScoreBot {
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
                     this._lootLogService.getEligibleMembers(item, this._lootLogChannel, this.presentMembers).then((members) => {
-                        // don't duplicate
                         if (members.length > 0) {
                             this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                             this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
@@ -335,7 +334,7 @@ class LootScoreBot {
                             });
                         }
                         else {
-                            message.channel.send('No eligible members. Was this a mistake?');
+                            message.channel.send('No members need this item.');
                         }
                     });
                 });
@@ -345,7 +344,6 @@ class LootScoreBot {
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
                     this._lootLogService.getHasLooted(item, this._lootLogChannel, this.presentMembers).then((members) => {
-                        // don't duplicate
                         if (members.length > 0) {
                             this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                             this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
@@ -363,7 +361,33 @@ class LootScoreBot {
                             });
                         }
                         else {
-                            message.channel.send('No eligible members. Was this a mistake?');
+                            message.channel.send('No members have this item.');
+                        }
+                    });
+                });
+            }
+            if (message.content.startsWith('ls overview')) {
+                let member = message.mentions.members.array()[0];
+                this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                this._lootLogService.getLootHistory(member.id, this._lootLogChannel).then((items) => {
+                    this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                        const attendanceMapId = value;
+                        this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
+                        this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
+                        this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
+                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                        const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
+                        if (Array.from(filteredMap).length > 0) {
+                            message.channel.send(`Overview for **${member.displayName}**`);
+                            message.channel.send(new heading_embed_1.HeadingEmbed('LootScore', 'Attendance', 'Seniority'));
+                            for (let entry of filteredMap) {
+                                message.channel.send(new member_overview_embed_1.MemberOverviewEmbed(filteredMap, entry));
+                            }
+                            message.channel.send(new items_looted_embed_1.ItemsLootedEmbed(items));
+                        }
+                        else {
+                            message.channel.send(`No history found for **${member.displayName}**`);
                         }
                     });
                 });

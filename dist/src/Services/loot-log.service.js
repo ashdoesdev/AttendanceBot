@@ -139,6 +139,12 @@ class LootLogService {
             return entries;
         });
     }
+    getLootHistory(memberId, lootLogChannel) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let lootLogMap = yield this.createLootLogMap(lootLogChannel);
+            return lootLogMap.get(memberId);
+        });
+    }
     convertStringPipesToArray(string) {
         let array = string.split('|');
         let trimmedArray = array.map(s => s.trim());

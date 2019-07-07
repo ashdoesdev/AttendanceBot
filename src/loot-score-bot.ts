@@ -15,6 +15,8 @@ import { MapSortHelper } from './Helpers/map-sort.helper';
 import { LootLogService } from './Services/loot-log.service';
 import { getEditDistance } from './Helpers/levenshtein';
 import { ItemScore } from './Models/item-score.model';
+import { MemberOverviewEmbed } from './Embeds/member-overview.embed';
+import { ItemsLootedEmbed } from './Embeds/items-looted.embed';
 var stringSimilarity = require('string-similarity');
 
 export class LootScoreBot {
@@ -445,6 +447,40 @@ export class LootScoreBot {
                         } else {
                             message.channel.send('No members have this item.');
                         }
+                    });
+                });
+            }
+
+            if (message.content.startsWith('ls overview')) {
+                let member = message.mentions.members.array()[0];
+                this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+
+                this._lootLogService.getLootHistory(member.id, this._lootLogChannel).then((items) => {
+
+                    this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                        const attendanceMapId = value;
+                        this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
+                        this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
+                        this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
+                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+
+                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                        const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
+
+                        if (Array.from(filteredMap).length > 0) {
+                            message.channel.send(`Overview for **${member.displayName}**`);
+
+                            message.channel.send(new HeadingEmbed('LootScore', 'Attendance', 'Seniority'));
+
+                            for (let entry of filteredMap) {
+                                message.channel.send(new MemberOverviewEmbed(filteredMap, entry));
+                            }
+
+                            message.channel.send(new ItemsLootedEmbed(items));
+                        } else {
+                            message.channel.send(`No history found for **${member.displayName}**`);
+                        }
+                        
                     });
                 });
             }
