@@ -31,4 +31,10 @@ export class MapSortHelper {
         array.sort((a, b) => a[1] - b[1]);
         return new Map(array);
     }
+
+    public filterMembers(lootScoreMap: Map<GuildMember, MemberScore>, members: string[]): Map<GuildMember, MemberScore> {
+        const array = Array.from(lootScoreMap);
+        let filteredArray = array.filter((value) => members.includes(value[0].id));
+        return new Map(filteredArray);
+    }
 }

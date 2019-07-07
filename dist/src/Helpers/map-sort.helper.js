@@ -26,5 +26,10 @@ class MapSortHelper {
         array.sort((a, b) => a[1] - b[1]);
         return new Map(array);
     }
+    filterMembers(lootScoreMap, members) {
+        const array = Array.from(lootScoreMap);
+        let filteredArray = array.filter((value) => members.includes(value[0].id));
+        return new Map(filteredArray);
+    }
 }
 exports.MapSortHelper = MapSortHelper;

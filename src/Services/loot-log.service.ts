@@ -2,8 +2,11 @@ import { TextChannel, Message, GuildMember } from "discord.js";
 import { ItemScore } from "../Models/item-score.model";
 import { LootLogEmbed } from "../Embeds/loot-log.embed";
 import { LootScore } from "../Models/loot-score.model";
+import { MemberMatchHelper } from "../Helpers/member-match.helper";
 
 export class LootLogService {
+    private _memberMatcher: MemberMatchHelper = new MemberMatchHelper();
+
     public awardItem(message: Message, lootLogChannel: TextChannel, lootLogReadableChannel: TextChannel, item: ItemScore): void {
         let map = new Map<string, ItemScore>();
         map.set(message.mentions.members.array()[0].id, item);
@@ -26,11 +29,7 @@ export class LootLogService {
             let eligibleClasses = array[3];
 
             if (eligibleClasses) {
-                itemScore.eligibleClasses = eligibleClasses.split(',');
-            }
-
-            for (let eligibleClass of itemScore.eligibleClasses) {
-                eligibleClass.trim();
+                itemScore.eligibleClasses = eligibleClasses.split(',').map((x) => x.trim());
             }
 
             scores.push(itemScore);
@@ -63,29 +62,72 @@ export class LootLogService {
         let eligibleMembers = new Array<string>();
 
         lootLogMap.forEach((key, value) => {
-            if (key.displayName === item.displayName) {
-                memberLootHistory.push(value);
+            for (let looted of key) {
+                if (looted.displayName === item.displayName) {
+                    memberLootHistory.push(value);
+                }
             }
         });
 
-        presentMembers.forEach((value) => {
-            if (!memberLootHistory.find((member) => member === value.displayName)) {
-                if 
+        presentMembers.forEach((member) => {
+            if (!memberLootHistory.find((x) => x === member.id)) {
+                let roles = new Array<string>();
+
+                for (let role of member.roles.array()) {
+                    roles.push(role.name.toLowerCase());
+                }
+
+                if (item.eligibleClasses) {
+                    if (roles.filter((x) => item.eligibleClasses.includes(x)).length > 0) {
+                        eligibleMembers.push(member.id);
+                    }
+                }
+
             }
         });
 
+        return eligibleMembers;
+    }
+    
+    public async getHasLooted(item: ItemScore, lootLogChannel: TextChannel, presentMembers: GuildMember[]): Promise<string[]> {
+        let lootLogMap = await this.createLootLogMap(lootLogChannel);
+        let memberLootHistory = new Array<string>();
+        let hasLooted = new Array<string>();
+
+        lootLogMap.forEach((key, value) => {
+            for (let looted of key) {
+                if (looted.displayName === item.displayName) {
+                    memberLootHistory.push(value);
+                }
+            }
+        });
+
+        presentMembers.forEach((member) => {
+            if (memberLootHistory.find((x) => x === member.id)) {
+                hasLooted.push(member.id);
+            }
+        });
+
+        return hasLooted;
     }
 
-    public async createLootLogMap(lootLogChannel: TextChannel): Promise<Map<string, ItemScore>> {
-        let entries = await this.getLootLog(lootLogChannel);
+    public async createLootLogMap(lootLogChannel: TextChannel): Promise<Map<string, ItemScore[]>> {
+        let messageEntries = await this.getLootLog(lootLogChannel);
         let members = new Array<string>();
-        let lootLogMap = new Map<string, ItemScore>();
+        let lootLogMap = new Map<string, ItemScore[]>();
 
-        for (let entry of entries) {
+        for (let entry of messageEntries) {
             let cleanString = entry.content.replace(/`/g, '');
-            let lootLogEntry: [string, ItemScore] = JSON.parse(cleanString);
+            let lootLogEntry: Array<[string, ItemScore]> = JSON.parse(cleanString);
 
-            lootLogMap.set(lootLogEntry[0], lootLogEntry[1]);
+            let entries = lootLogMap.get(lootLogEntry[0][0]);
+            let value = lootLogEntry[0][1]; 
+
+            if (entries) {
+                lootLogMap.set(lootLogEntry[0][0], entries.concat(value));
+            } else {
+                lootLogMap.set(lootLogEntry[0][0], [value]);
+            }
         }
 
         return lootLogMap;

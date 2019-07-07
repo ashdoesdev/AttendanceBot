@@ -311,17 +311,142 @@ export class LootScoreBot {
                 }
             }
 
-            if (message.content.startsWith('ls --item')) {
-                let query = message.content.replace('ls --item ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+            if (message.content.startsWith('ls needs --all')) {
+                let query = message.content.replace('ls needs --all ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+
+                this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
+                    let item = array.find((x) => x.shorthand === query);
+
+                    this._lootLogService.getEligibleMembers(item, this._lootLogChannel, this._guildMembers).then((members) => {
+
+                        if (members.length > 0) {
+                            this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+
+                            this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                                const attendanceMapId = value;
+                                this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
+                                this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
+                                this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
+                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+
+                                const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                                const filteredMap = this._mapSort.filterMembers(sortedMap, members);
+
+                                message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+
+                                for (let entry of filteredMap) {
+                                    message.channel.send(new DetailedVisualizationEmbed(filteredMap, entry));
+                                }
+                            });
+                        } else {
+                            message.channel.send('No members need this item.');
+                        }
+                    });
+                });
+
+            }
+
+            if (message.content.startsWith('ls has --all')) {
+                let query = message.content.replace('ls has --all ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+
+                this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
+                    let item = array.find((x) => x.shorthand === query);
+
+                    this._lootLogService.getHasLooted(item, this._lootLogChannel, this._guildMembers).then((members) => {
+
+                        if (members.length > 0) {
+                            this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+
+                            this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                                const attendanceMapId = value;
+                                this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
+                                this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
+                                this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
+                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+
+                                const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                                const filteredMap = this._mapSort.filterMembers(sortedMap, members);
+
+                                message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+
+                                for (let entry of filteredMap) {
+                                    message.channel.send(new DetailedVisualizationEmbed(filteredMap, entry));
+                                }
+                            });
+                        } else {
+                            message.channel.send('No members have this item.');
+                        }
+                    });
+                });
+            }
+
+            if (message.content.startsWith('ls needs')) {
+                let query = message.content.replace('ls needs ', '').replace(/(@\S+)/, '').replace('<', '').trim();
 
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
 
                     this._lootLogService.getEligibleMembers(item, this._lootLogChannel, this.presentMembers).then((members) => {
 
+                        if (members.length > 0) {
+                            this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+
+                            this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                                const attendanceMapId = value;
+                                this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
+                                this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
+                                this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
+                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+
+                                const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                                const filteredMap = this._mapSort.filterMembers(sortedMap, members);
+
+                                message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+
+                                for (let entry of filteredMap) {
+                                    message.channel.send(new DetailedVisualizationEmbed(filteredMap, entry));
+                                }
+                            });
+                        } else {
+                            message.channel.send('No members need this item.');
+                        }
                     });
                 });
 
+            }
+
+            if (message.content.startsWith('ls has')) {
+                let query = message.content.replace('ls has ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+
+                this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
+                    let item = array.find((x) => x.shorthand === query);
+
+                    this._lootLogService.getHasLooted(item, this._lootLogChannel, this.presentMembers).then((members) => {
+
+                        if (members.length > 0) {
+                            this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+
+                            this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                                const attendanceMapId = value;
+                                this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
+                                this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
+                                this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
+                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+
+                                const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                                const filteredMap = this._mapSort.filterMembers(sortedMap, members);
+
+                                message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+
+                                for (let entry of filteredMap) {
+                                    message.channel.send(new DetailedVisualizationEmbed(filteredMap, entry));
+                                }
+                            });
+                        } else {
+                            message.channel.send('No members have this item.');
+                        }
+                    });
+                });
             }
 
             if (message.content.startsWith('ls getitemscores')) {

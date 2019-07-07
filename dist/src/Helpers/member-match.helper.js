@@ -13,5 +13,8 @@ class MemberMatchHelper {
         }
         return map;
     }
+    matchMemberFromId(members, memberId) {
+        return members.find((x) => x.id === memberId);
+    }
 }
 exports.MemberMatchHelper = MemberMatchHelper;

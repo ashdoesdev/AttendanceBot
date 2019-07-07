@@ -14,4 +14,8 @@ export class MemberMatchHelper {
 
         return map;
     }
+
+    public matchMemberFromId(members: GuildMember[], memberId: string): GuildMember {
+        return members.find((x) => x.id === memberId);
+    }
 }

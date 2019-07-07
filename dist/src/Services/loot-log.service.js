@@ -10,7 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const item_score_model_1 = require("../Models/item-score.model");
 const loot_log_embed_1 = require("../Embeds/loot-log.embed");
+const member_match_helper_1 = require("../Helpers/member-match.helper");
 class LootLogService {
+    constructor() {
+        this._memberMatcher = new member_match_helper_1.MemberMatchHelper();
+    }
     awardItem(message, lootLogChannel, lootLogReadableChannel, item) {
         let map = new Map();
         map.set(message.mentions.members.array()[0].id, item);
@@ -28,6 +32,10 @@ class LootLogService {
                 itemScore.displayName = array[0];
                 itemScore.shorthand = array[1];
                 itemScore.score = parseFloat(array[2]);
+                let eligibleClasses = array[3];
+                if (eligibleClasses) {
+                    itemScore.eligibleClasses = eligibleClasses.split(',').map((x) => x.trim());
+                }
                 scores.push(itemScore);
             }
             return scores;
@@ -42,6 +50,88 @@ class LootLogService {
                 const messages = yield itemScoresChannel.fetchMessages(options);
                 entries.push(...messages.array());
                 lastId = messages.last().id;
+                if (messages.size != 100) {
+                    break;
+                }
+            }
+            return entries;
+        });
+    }
+    getEligibleMembers(item, lootLogChannel, presentMembers) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let lootLogMap = yield this.createLootLogMap(lootLogChannel);
+            let memberLootHistory = new Array();
+            let eligibleMembers = new Array();
+            lootLogMap.forEach((key, value) => {
+                for (let looted of key) {
+                    if (looted.displayName === item.displayName) {
+                        memberLootHistory.push(value);
+                    }
+                }
+            });
+            presentMembers.forEach((member) => {
+                if (!memberLootHistory.find((x) => x === member.id)) {
+                    let roles = new Array();
+                    for (let role of member.roles.array()) {
+                        roles.push(role.name.toLowerCase());
+                    }
+                    if (item.eligibleClasses) {
+                        if (roles.filter((x) => item.eligibleClasses.includes(x)).length > 0) {
+                            eligibleMembers.push(member.id);
+                        }
+                    }
+                }
+            });
+            return eligibleMembers;
+        });
+    }
+    getHasLooted(item, lootLogChannel, presentMembers) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let lootLogMap = yield this.createLootLogMap(lootLogChannel);
+            let memberLootHistory = new Array();
+            let hasLooted = new Array();
+            lootLogMap.forEach((key, value) => {
+                for (let looted of key) {
+                    if (looted.displayName === item.displayName) {
+                        memberLootHistory.push(value);
+                    }
+                }
+            });
+            presentMembers.forEach((member) => {
+                if (memberLootHistory.find((x) => x === member.id)) {
+                    hasLooted.push(member.id);
+                }
+            });
+            return hasLooted;
+        });
+    }
+    createLootLogMap(lootLogChannel) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let messageEntries = yield this.getLootLog(lootLogChannel);
+            let members = new Array();
+            let lootLogMap = new Map();
+            for (let entry of messageEntries) {
+                let cleanString = entry.content.replace(/`/g, '');
+                let lootLogEntry = JSON.parse(cleanString);
+                let entries = lootLogMap.get(lootLogEntry[0][0]);
+                let value = lootLogEntry[0][1];
+                if (entries) {
+                    lootLogMap.set(lootLogEntry[0][0], entries.concat(value));
+                }
+                else {
+                    lootLogMap.set(lootLogEntry[0][0], [value]);
+                }
+            }
+            return lootLogMap;
+        });
+    }
+    getLootLog(lootLogChannel) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let entries = new Array();
+            while (true) {
+                const options = { limit: 100 };
+                const messages = yield lootLogChannel.fetchMessages(options);
+                entries.push(...messages.array());
                 if (messages.size != 100) {
                     break;
                 }
