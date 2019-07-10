@@ -263,7 +263,6 @@ export class LootScoreBot {
                                     .then((collected) => {
                                         if (collected.first().emoji.name === '✅') {
                                             this._lootLogService.awardItem(message, this._lootLogChannel, this._lootLogReadableChannel, item);
-
                                         } else {
                                             message.channel.send('Request to award item aborted.');
                                         }

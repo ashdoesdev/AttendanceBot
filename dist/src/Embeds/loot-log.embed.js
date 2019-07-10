@@ -3,13 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
 const timestamp_helper_1 = require("../Helpers/timestamp.helper");
 class LootLogEmbed extends discord_js_1.RichEmbed {
-    constructor(itemScore, name) {
+    constructor(itemScore, name, requester) {
         super();
         this.itemScore = itemScore;
         this.name = name;
+        this.requester = requester;
         this._timestampHelper = new timestamp_helper_1.TimestampHelper();
-        this.setDescription(`${name} | **${itemScore.displayName}** (${itemScore.score})`);
-        this.setFooter(`Looted ${this._timestampHelper.monthDayYearFormatted}`);
+        this.addField(name, `**${itemScore.displayName}** (${itemScore.score})`);
+        this.setFooter(`Awarded by ${requester} on ${this._timestampHelper.monthDayYearFormatted}`);
     }
 }
 exports.LootLogEmbed = LootLogEmbed;

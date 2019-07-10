@@ -17,9 +17,10 @@ class LootLogService {
     }
     awardItem(message, lootLogChannel, lootLogReadableChannel, item) {
         let map = new Map();
+        item.requester = message.member.id;
         map.set(message.mentions.members.array()[0].id, item);
         lootLogChannel.send(this.codeBlockify(JSON.stringify(Array.from(map.entries()))));
-        lootLogReadableChannel.send(new loot_log_embed_1.LootLogEmbed(item, message.mentions.members.array()[0].displayName));
+        lootLogReadableChannel.send(new loot_log_embed_1.LootLogEmbed(item, message.mentions.members.array()[0].displayName, message.member.displayName));
         message.channel.send(`Awarded ${message.mentions.members.array()[0].displayName} **${item.displayName}** (${item.score}).`);
     }
     getItemScores(itemScoresChannel) {

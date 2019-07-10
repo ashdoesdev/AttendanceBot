@@ -5,10 +5,10 @@ import { ItemScore } from "Models/item-score.model";
 export class LootLogEmbed extends RichEmbed {
     private _timestampHelper: TimestampHelper = new TimestampHelper();
 
-    constructor(public itemScore: ItemScore, public name: string) {
+    constructor(public itemScore: ItemScore, public name: string, public requester: string) {
         super();
 
-        this.setDescription(`${name} | **${itemScore.displayName}** (${itemScore.score})`);
-        this.setFooter(`Looted ${this._timestampHelper.monthDayYearFormatted}`);
+        this.addField(name, `**${itemScore.displayName}** (${itemScore.score})`)
+        this.setFooter(`Awarded by ${requester} on ${this._timestampHelper.monthDayYearFormatted}`);
     }
 }
