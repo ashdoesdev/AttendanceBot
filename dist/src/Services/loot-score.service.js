@@ -34,8 +34,8 @@ class LootScoreService {
             for (let entry of entries) {
                 let endIndex = entry.content.length - 4;
                 let cleanString = entry.content.replace(/`/g, '');
-                let array = JSON.parse(cleanString);
-                for (let x of array) {
+                let lootScoreData = JSON.parse(cleanString);
+                for (let x of lootScoreData.value) {
                     if (!allEntries.has(x[0])) {
                         let array = new Array();
                         array.push(x[1]);

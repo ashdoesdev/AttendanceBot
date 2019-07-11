@@ -2,9 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const rxjs_1 = require("rxjs");
 const minimal_visualization_embed_1 = require("../Embeds/minimal-visualization.embed");
+const loot_score_data_helper_1 = require("../Helpers/loot-score-data.helper");
 class AttendanceService {
     constructor() {
         this._tick = 0;
+        this._dataHelper = new loot_score_data_helper_1.LootScoreDataHelper();
         this.attendanceLog = new Map();
     }
     createAttendanceMap(attendanceLog) {
@@ -88,9 +90,10 @@ class AttendanceService {
             //const attendanceMap = this.createAttendanceMap(this.attendanceLog);
             const minifiedAttendanceMap = this.createMinifiedAttendanceMap(this.attendanceLog);
             const readableMinifiedAttendanceMap = this.createReadableMinifiedAttendanceMap(this.attendanceLog);
-            attendanceLogChannel.send(this.codeBlockify(JSON.stringify(Array.from(minifiedAttendanceMap.entries()))));
+            const minifiedAttendanceArray = Array.from(minifiedAttendanceMap.entries());
+            let lootScoreData = this._dataHelper.createLootScoreData(minifiedAttendanceArray, message);
+            attendanceLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
             attendanceLogReadableChannel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(readableMinifiedAttendanceMap));
-            //message.channel.send(new RaidEntryEmbed(attendanceMap));
         }
         this._tick = 0;
         this._timerSubscription.unsubscribe();

@@ -1,17 +1,24 @@
 import { TextChannel, Message, GuildMember } from "discord.js";
-import { ItemScore } from "../Models/item-score.model";
+import { ItemScore, AwardedItem } from "../Models/item-score.model";
 import { LootLogEmbed } from "../Embeds/loot-log.embed";
-import { LootScore } from "../Models/loot-score.model";
+import { LootScore, LootScoreData, Signature, MinimalMember } from "../Models/loot-score.model";
 import { MemberMatchHelper } from "../Helpers/member-match.helper";
+import { LootScoreDataHelper } from "../Helpers/loot-score-data.helper";
 
 export class LootLogService {
     private _memberMatcher: MemberMatchHelper = new MemberMatchHelper();
+    private _dataHelper: LootScoreDataHelper = new LootScoreDataHelper();
 
     public awardItem(message: Message, lootLogChannel: TextChannel, lootLogReadableChannel: TextChannel, item: ItemScore): void {
-        let map = new Map<string, ItemScore>();
-        item.requester = message.member.id;
-        map.set(message.mentions.members.array()[0].id, item);
-        lootLogChannel.send(this.codeBlockify(JSON.stringify(Array.from(map.entries()))));
+        let awardedItem = new AwardedItem();
+        awardedItem.member = new MinimalMember();
+        awardedItem.member.displayName = message.mentions.members.array()[0].displayName;
+        awardedItem.member.id = message.mentions.members.array()[0].id;
+        awardedItem.item = item;
+
+        let lootScoreData = this._dataHelper.createLootScoreData(awardedItem, message);
+
+        lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
         lootLogReadableChannel.send(new LootLogEmbed(item, message.mentions.members.array()[0].displayName, message.member.displayName));
         message.channel.send(`Awarded ${message.mentions.members.array()[0].displayName} **${item.displayName}** (${item.score}).`);
     }

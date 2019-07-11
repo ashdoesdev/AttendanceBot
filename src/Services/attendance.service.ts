@@ -2,10 +2,12 @@ import { GuildMember, Message, VoiceChannel, TextChannel } from "discord.js";
 import { Subscription, timer } from "rxjs";
 import { inspect } from "util";
 import { MinimalVisualizationEmbed } from "../Embeds/minimal-visualization.embed";
+import { LootScoreDataHelper } from "../Helpers/loot-score-data.helper";
 
 export class AttendanceService {
     private _tick = 0;
     private _timerSubscription: Subscription;
+    private _dataHelper: LootScoreDataHelper = new LootScoreDataHelper();
 
     public attendanceLog = new Map<number, GuildMember[]>();
     public loggingInProgress: boolean;
@@ -112,10 +114,11 @@ export class AttendanceService {
             const minifiedAttendanceMap = this.createMinifiedAttendanceMap(this.attendanceLog);
             const readableMinifiedAttendanceMap = this.createReadableMinifiedAttendanceMap(this.attendanceLog);
 
-            attendanceLogChannel.send(this.codeBlockify(JSON.stringify(Array.from(minifiedAttendanceMap.entries()))));
-            attendanceLogReadableChannel.send(new MinimalVisualizationEmbed(readableMinifiedAttendanceMap));
+            const minifiedAttendanceArray = Array.from(minifiedAttendanceMap.entries());
+            let lootScoreData = this._dataHelper.createLootScoreData(minifiedAttendanceArray, message);
 
-            //message.channel.send(new RaidEntryEmbed(attendanceMap));
+            attendanceLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
+            attendanceLogReadableChannel.send(new MinimalVisualizationEmbed(readableMinifiedAttendanceMap));
         }
 
         this._tick = 0;

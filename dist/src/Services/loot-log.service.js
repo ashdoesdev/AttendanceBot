@@ -10,16 +10,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const item_score_model_1 = require("../Models/item-score.model");
 const loot_log_embed_1 = require("../Embeds/loot-log.embed");
+const loot_score_model_1 = require("../Models/loot-score.model");
 const member_match_helper_1 = require("../Helpers/member-match.helper");
+const loot_score_data_helper_1 = require("../Helpers/loot-score-data.helper");
 class LootLogService {
     constructor() {
         this._memberMatcher = new member_match_helper_1.MemberMatchHelper();
+        this._dataHelper = new loot_score_data_helper_1.LootScoreDataHelper();
     }
     awardItem(message, lootLogChannel, lootLogReadableChannel, item) {
-        let map = new Map();
-        item.requester = message.member.id;
-        map.set(message.mentions.members.array()[0].id, item);
-        lootLogChannel.send(this.codeBlockify(JSON.stringify(Array.from(map.entries()))));
+        let awardedItem = new item_score_model_1.AwardedItem();
+        awardedItem.member = new loot_score_model_1.MinimalMember();
+        awardedItem.member.displayName = message.mentions.members.array()[0].displayName;
+        awardedItem.member.id = message.mentions.members.array()[0].id;
+        awardedItem.item = item;
+        let lootScoreData = this._dataHelper.createLootScoreData(awardedItem, message);
+        lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
         lootLogReadableChannel.send(new loot_log_embed_1.LootLogEmbed(item, message.mentions.members.array()[0].displayName, message.member.displayName));
         message.channel.send(`Awarded ${message.mentions.members.array()[0].displayName} **${item.displayName}** (${item.score}).`);
     }

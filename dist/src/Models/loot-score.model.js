@@ -9,3 +9,12 @@ class MemberScore {
     }
 }
 exports.MemberScore = MemberScore;
+class LootScoreData {
+}
+exports.LootScoreData = LootScoreData;
+class Signature {
+}
+exports.Signature = Signature;
+class MinimalMember {
+}
+exports.MinimalMember = MinimalMember;

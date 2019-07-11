@@ -1,5 +1,5 @@
 import { GuildMember, TextChannel, Message } from "discord.js";
-import { MemberScore } from "../Models/loot-score.model";
+import { MemberScore, LootScoreData } from "../Models/loot-score.model";
 
 export class LootScoreService {
     public totalRaids: number;
@@ -32,8 +32,8 @@ export class LootScoreService {
         for (let entry of entries) {
             let endIndex = entry.content.length - 4;
             let cleanString = entry.content.replace(/`/g, '');
-            let array: [] = JSON.parse(cleanString);
-            for (let x of array) {
+            let lootScoreData: LootScoreData<[string, number][]> = JSON.parse(cleanString);
+            for (let x of lootScoreData.value) {
                 if (!allEntries.has(x[0])) {
                     let array = new Array<number>();
                     array.push(x[1]);
