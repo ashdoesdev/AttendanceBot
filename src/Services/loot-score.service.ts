@@ -1,7 +1,12 @@
 import { GuildMember, TextChannel, Message } from "discord.js";
 import { MemberScore, LootScoreData } from "../Models/loot-score.model";
+import { ItemScore } from "../Models/item-score.model";
+import { MemberMatchHelper } from "../Helpers/member-match.helper";
+import { MapSortHelper } from "../Helpers/map-sort.helper";
 
 export class LootScoreService {
+    private _mapSort: MapSortHelper = new MapSortHelper();
+
     public totalRaids: number;
 
     public async getAttendanceEntries(attendanceLogChannel: TextChannel): Promise<Message[]> {
@@ -72,7 +77,7 @@ export class LootScoreService {
         return percentageMap;
     }
 
-    public createLootScoreMap(attendanceMap: Map<GuildMember, number>, seniorityMap: Map<GuildMember, number>): Map<GuildMember, MemberScore> {
+    public createLootScoreMap(attendanceMap: Map<GuildMember, number>, seniorityMap: Map<GuildMember, number>, lootLogMap: Map<GuildMember, ItemScore[]>): Map<GuildMember, MemberScore> {
         let lootScoreMap = new Map<GuildMember, MemberScore>();
 
         for (let entry of attendanceMap) {
@@ -85,6 +90,26 @@ export class LootScoreService {
             let memberScore = lootScoreMap.get(entry[0]);
             memberScore.seniorityPercentage = Math.ceil(entry[1] * 100);
             lootScoreMap.set(entry[0], memberScore);
+        }
+
+        for (let entry of lootLogMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+
+            let total = 0;
+
+            for (let item of entry[1]) {
+                total += item.score;
+            }
+
+            memberScore.itemScoreTotal = total;
+        }
+
+        let sortedMap = this._mapSort.sortByItemScoreTotal(lootScoreMap);
+        let highestItemScore = Array.from(sortedMap)[0][1].itemScoreTotal;
+
+        for (let entry of lootScoreMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+            memberScore.itemScorePercentage = (memberScore.itemScoreTotal / highestItemScore) * 100;
         }
 
         return lootScoreMap;

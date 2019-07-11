@@ -6,6 +6,11 @@ class MapSortHelper {
         array.sort((a, b) => b[1].attendancePercentage - a[1].attendancePercentage);
         return new Map(array);
     }
+    sortByItemScoreTotal(lootScoreMap) {
+        const array = Array.from(lootScoreMap);
+        array.sort((a, b) => b[1].itemScoreTotal - a[1].itemScoreTotal);
+        return new Map(array);
+    }
     sortByLootScore(lootScoreMap) {
         const array = Array.from(lootScoreMap);
         array.sort((a, b) => b[1].lootScore - a[1].lootScore);

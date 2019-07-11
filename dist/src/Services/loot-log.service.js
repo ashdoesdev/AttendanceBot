@@ -66,13 +66,13 @@ class LootLogService {
     }
     getEligibleMembers(item, lootLogChannel, presentMembers) {
         return __awaiter(this, void 0, void 0, function* () {
-            let lootLogMap = yield this.createLootLogMap(lootLogChannel);
+            let lootLogMap = yield this.createLootLogMap(lootLogChannel, presentMembers);
             let memberLootHistory = new Array();
             let eligibleMembers = new Array();
             lootLogMap.forEach((key, value) => {
                 for (let looted of key) {
                     if (looted.displayName === item.displayName) {
-                        memberLootHistory.push(value);
+                        memberLootHistory.push(value.id);
                     }
                 }
             });
@@ -94,13 +94,13 @@ class LootLogService {
     }
     getHasLooted(item, lootLogChannel, presentMembers) {
         return __awaiter(this, void 0, void 0, function* () {
-            let lootLogMap = yield this.createLootLogMap(lootLogChannel);
+            let lootLogMap = yield this.createLootLogMap(lootLogChannel, presentMembers);
             let memberLootHistory = new Array();
             let hasLooted = new Array();
             lootLogMap.forEach((key, value) => {
                 for (let looted of key) {
                     if (looted.displayName === item.displayName) {
-                        memberLootHistory.push(value);
+                        memberLootHistory.push(value.id);
                     }
                 }
             });
@@ -112,21 +112,22 @@ class LootLogService {
             return hasLooted;
         });
     }
-    createLootLogMap(lootLogChannel) {
+    createLootLogMap(lootLogChannel, members) {
         return __awaiter(this, void 0, void 0, function* () {
             let messageEntries = yield this.getLootLog(lootLogChannel);
-            let members = new Array();
             let lootLogMap = new Map();
             for (let entry of messageEntries) {
                 let cleanString = entry.content.replace(/`/g, '');
-                let lootLogEntry = JSON.parse(cleanString);
-                let entries = lootLogMap.get(lootLogEntry[0][0]);
+                let lootScoreData = JSON.parse(cleanString);
+                let lootLogEntry = lootScoreData.value;
+                let member = this._memberMatcher.matchMemberFromId(members, lootLogEntry.member.id);
+                let entries = lootLogMap.get(member);
                 let value = lootLogEntry[0][1];
                 if (entries) {
-                    lootLogMap.set(lootLogEntry[0][0], entries.concat(value));
+                    lootLogMap.set(member, entries.concat(value));
                 }
                 else {
-                    lootLogMap.set(lootLogEntry[0][0], [value]);
+                    lootLogMap.set(member, [value]);
                 }
             }
             return lootLogMap;
@@ -146,10 +147,10 @@ class LootLogService {
             return entries;
         });
     }
-    getLootHistory(memberId, lootLogChannel) {
+    getLootHistory(member, lootLogChannel, members) {
         return __awaiter(this, void 0, void 0, function* () {
-            let lootLogMap = yield this.createLootLogMap(lootLogChannel);
-            return lootLogMap.get(memberId);
+            let lootLogMap = yield this.createLootLogMap(lootLogChannel, members);
+            return lootLogMap.get(member);
         });
     }
     convertStringPipesToArray(string) {

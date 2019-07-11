@@ -7,9 +7,11 @@ export class LootScore {
 export class MemberScore {
     public attendancePercentage: number;
     public seniorityPercentage: number;
+    public itemScoreTotal: number;
+    public itemScorePercentage: number;
 
     public get lootScore(): number {
-        return this.attendancePercentage + this.seniorityPercentage;
+        return this.attendancePercentage + this.seniorityPercentage - (this.itemScorePercentage/4);
     }
 }
 

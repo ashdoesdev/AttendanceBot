@@ -5,12 +5,10 @@ import { MemberScore } from "../Models/loot-score.model";
 export class SeniorityEmbed extends RichEmbed {
     private _embedHelper: EmbedHelper = new EmbedHelper();
 
-    constructor(lootScoreMap: Map<GuildMember, MemberScore>) {
+    constructor(lootScoreMap: Map<GuildMember, MemberScore>, memberEntry: [GuildMember, MemberScore]) {
         super();
 
-        for (let member of lootScoreMap) {
-            this.addMember(member);
-        }
+        this.addMember(memberEntry);
     }
 
     private addMember(member: [GuildMember, MemberScore]): void {

@@ -5,7 +5,7 @@ class LootScore {
 exports.LootScore = LootScore;
 class MemberScore {
     get lootScore() {
-        return this.attendancePercentage + this.seniorityPercentage;
+        return this.attendancePercentage + this.seniorityPercentage - (this.itemScorePercentage / 4);
     }
 }
 exports.MemberScore = MemberScore;

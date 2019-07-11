@@ -9,7 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const loot_score_model_1 = require("../Models/loot-score.model");
+const map_sort_helper_1 = require("../Helpers/map-sort.helper");
 class LootScoreService {
+    constructor() {
+        this._mapSort = new map_sort_helper_1.MapSortHelper();
+    }
     getAttendanceEntries(attendanceLogChannel) {
         return __awaiter(this, void 0, void 0, function* () {
             let entries = new Array();
@@ -68,7 +72,7 @@ class LootScoreService {
         }
         return percentageMap;
     }
-    createLootScoreMap(attendanceMap, seniorityMap) {
+    createLootScoreMap(attendanceMap, seniorityMap, lootLogMap) {
         let lootScoreMap = new Map();
         for (let entry of attendanceMap) {
             const memberScore = new loot_score_model_1.MemberScore();
@@ -79,6 +83,20 @@ class LootScoreService {
             let memberScore = lootScoreMap.get(entry[0]);
             memberScore.seniorityPercentage = Math.ceil(entry[1] * 100);
             lootScoreMap.set(entry[0], memberScore);
+        }
+        for (let entry of lootLogMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+            let total = 0;
+            for (let item of entry[1]) {
+                total += item.score;
+            }
+            memberScore.itemScoreTotal = total;
+        }
+        let sortedMap = this._mapSort.sortByItemScoreTotal(lootScoreMap);
+        let highestItemScore = Array.from(sortedMap)[0][1].itemScoreTotal;
+        for (let entry of lootScoreMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+            memberScore.itemScorePercentage = (memberScore.itemScoreTotal / highestItemScore) * 100;
         }
         return lootScoreMap;
     }

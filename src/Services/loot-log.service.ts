@@ -65,14 +65,14 @@ export class LootLogService {
     }
 
     public async getEligibleMembers(item: ItemScore, lootLogChannel: TextChannel, presentMembers: GuildMember[]): Promise<string[]> {
-        let lootLogMap = await this.createLootLogMap(lootLogChannel);
+        let lootLogMap = await this.createLootLogMap(lootLogChannel, presentMembers);
         let memberLootHistory = new Array<string>();
         let eligibleMembers = new Array<string>();
 
         lootLogMap.forEach((key, value) => {
             for (let looted of key) {
                 if (looted.displayName === item.displayName) {
-                    memberLootHistory.push(value);
+                    memberLootHistory.push(value.id);
                 }
             }
         });
@@ -98,14 +98,14 @@ export class LootLogService {
     }
     
     public async getHasLooted(item: ItemScore, lootLogChannel: TextChannel, presentMembers: GuildMember[]): Promise<string[]> {
-        let lootLogMap = await this.createLootLogMap(lootLogChannel);
+        let lootLogMap = await this.createLootLogMap(lootLogChannel, presentMembers);
         let memberLootHistory = new Array<string>();
         let hasLooted = new Array<string>();
 
         lootLogMap.forEach((key, value) => {
             for (let looted of key) {
                 if (looted.displayName === item.displayName) {
-                    memberLootHistory.push(value);
+                    memberLootHistory.push(value.id);
                 }
             }
         });
@@ -119,22 +119,23 @@ export class LootLogService {
         return hasLooted;
     }
 
-    public async createLootLogMap(lootLogChannel: TextChannel): Promise<Map<string, ItemScore[]>> {
+    public async createLootLogMap(lootLogChannel: TextChannel, members: GuildMember[]): Promise<Map<GuildMember, ItemScore[]>> {
         let messageEntries = await this.getLootLog(lootLogChannel);
-        let members = new Array<string>();
-        let lootLogMap = new Map<string, ItemScore[]>();
+        let lootLogMap = new Map<GuildMember, ItemScore[]>();
 
         for (let entry of messageEntries) {
             let cleanString = entry.content.replace(/`/g, '');
-            let lootLogEntry: Array<[string, ItemScore]> = JSON.parse(cleanString);
+            let lootScoreData: LootScoreData<AwardedItem> = JSON.parse(cleanString);
+            let lootLogEntry: AwardedItem = lootScoreData.value;
 
-            let entries = lootLogMap.get(lootLogEntry[0][0]);
-            let value = lootLogEntry[0][1]; 
+            let member = this._memberMatcher.matchMemberFromId(members, lootLogEntry.member.id);
+            let entries = lootLogMap.get(member);
+            let value = lootLogEntry[0][1];
 
             if (entries) {
-                lootLogMap.set(lootLogEntry[0][0], entries.concat(value));
+                lootLogMap.set(member, entries.concat(value));
             } else {
-                lootLogMap.set(lootLogEntry[0][0], [value]);
+                lootLogMap.set(member, [value]);
             }
         }
 
@@ -157,9 +158,9 @@ export class LootLogService {
         return entries;
     }
 
-    public async getLootHistory(memberId: string, lootLogChannel: TextChannel): Promise<ItemScore[]> {
-        let lootLogMap = await this.createLootLogMap(lootLogChannel);
-        return lootLogMap.get(memberId);
+    public async getLootHistory(member: GuildMember, lootLogChannel: TextChannel, members: GuildMember[]): Promise<ItemScore[]> {
+        let lootLogMap = await this.createLootLogMap(lootLogChannel, members);
+        return lootLogMap.get(member);
     }
 
     private convertStringPipesToArray(string: string): string[] {

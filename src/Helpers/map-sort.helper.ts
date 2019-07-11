@@ -8,6 +8,12 @@ export class MapSortHelper {
         return new Map(array);
     }
 
+    public sortByItemScoreTotal(lootScoreMap: Map<GuildMember, MemberScore>): Map<GuildMember, MemberScore> {
+        const array = Array.from(lootScoreMap);
+        array.sort((a, b) => b[1].itemScoreTotal - a[1].itemScoreTotal);
+        return new Map(array);
+    }
+
     public sortByLootScore(lootScoreMap: Map<GuildMember, MemberScore>): Map<GuildMember, MemberScore> {
         const array = Array.from(lootScoreMap);
         array.sort((a, b) => b[1].lootScore - a[1].lootScore);

@@ -40,6 +40,7 @@ export class LootScoreBot {
     private _attendancePercentageMap: Map<GuildMember, number>;
     private _seniorityMap: Map<GuildMember, number>;
     private _lootScoreMap: Map<GuildMember, MemberScore>;
+    private _lootLogMap: Map<GuildMember, ItemScore[]>;
 
     private _guildMembers: GuildMember[];
 
@@ -168,15 +169,19 @@ export class LootScoreBot {
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
                     this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                        this._lootLogMap = value;
 
-                    const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
-                    message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
 
-                    for (let entry of sortedMap) {
-                        message.channel.send(new DetailedVisualizationEmbed(sortedMap, entry));
-                    }
+                        message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+
+                        for (let entry of sortedMap) {
+                            message.channel.send(new DetailedVisualizationEmbed(sortedMap, entry));
+                        }
+                    });
                 });
             }
             
@@ -188,15 +193,19 @@ export class LootScoreBot {
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
                     this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                        this._lootLogMap = value;
 
-                    const sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap);
+                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
-                    message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                        const sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap);
 
-                    for (let entry of sortedMap) {
-                        message.channel.send(new DetailedVisualizationEmbed(sortedMap, entry));
-                    }
+                        message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+
+                        for (let entry of sortedMap) {
+                            message.channel.send(new DetailedVisualizationEmbed(sortedMap, entry));
+                        }
+                    });
                 });
             }
                         
@@ -208,15 +217,19 @@ export class LootScoreBot {
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
                     this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                        this._lootLogMap = value;
 
-                    const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
+                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
-                    message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                        const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
 
-                    for (let entry of sortedMap) {
-                        message.channel.send(new DetailedVisualizationEmbed(sortedMap, entry));
-                    }
+                        message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+
+                        for (let entry of sortedMap) {
+                            message.channel.send(new DetailedVisualizationEmbed(sortedMap, entry));
+                        }
+                    });
                 });
             }
             
@@ -228,12 +241,19 @@ export class LootScoreBot {
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
                     this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                        this._lootLogMap = value;
 
-                    const sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap);
+                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
-                    message.channel.send(new HeadingEmbed('Member', 'Attendance', 'Seniority'));
-                    message.channel.send(new SeniorityEmbed(sortedMap));
+                        const sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap);
+
+                        message.channel.send(new HeadingEmbed('Member', 'Attendance', 'Seniority'));
+
+                        for (let entry of sortedMap) {
+                            message.channel.send(new SeniorityEmbed(sortedMap, entry));
+                        }
+                    });
                 });
             }
 
@@ -328,7 +348,7 @@ export class LootScoreBot {
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
                                 this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
                                 const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                                 const filteredMap = this._mapSort.filterMembers(sortedMap, members);
@@ -363,7 +383,7 @@ export class LootScoreBot {
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
                                 this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
                                 const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                                 const filteredMap = this._mapSort.filterMembers(sortedMap, members);
@@ -397,7 +417,7 @@ export class LootScoreBot {
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
                                 this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
                                 const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                                 const filteredMap = this._mapSort.filterMembers(sortedMap, members);
@@ -432,7 +452,7 @@ export class LootScoreBot {
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
                                 this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
                                 const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                                 const filteredMap = this._mapSort.filterMembers(sortedMap, members);
@@ -454,14 +474,14 @@ export class LootScoreBot {
                 let member = message.mentions.members.array()[0];
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
 
-                this._lootLogService.getLootHistory(member.id, this._lootLogChannel).then((items) => {
+                this._lootLogService.getLootHistory(member, this._lootLogChannel, this._guildMembers).then((items) => {
 
                     this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
                         const attendanceMapId = value;
                         this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                         this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
                         this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap);
+                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
                         const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                         const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
