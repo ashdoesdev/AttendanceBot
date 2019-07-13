@@ -174,7 +174,7 @@ export class LootScoreBot {
                 }
             }
 
-            if (message.content === 'ls --ls') {
+            if (message.content.startsWith('ls --ls')) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
 
                 this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
@@ -187,7 +187,13 @@ export class LootScoreBot {
 
                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
-                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                        let sortedMap = new Map<GuildMember, MemberScore>();
+
+                        if (message.content.includes('--asc')) {
+                            sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap, true);
+                        } else {
+                            sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                        }
 
                         message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
 
@@ -197,8 +203,8 @@ export class LootScoreBot {
                     });
                 });
             }
-            
-            if (message.content === 'ls --attendance') {
+
+            if (message.content.startsWith('ls --attendance')) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
 
                 this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
@@ -211,7 +217,13 @@ export class LootScoreBot {
 
                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
-                        const sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap);
+                        let sortedMap = new Map<GuildMember, MemberScore>();
+
+                        if (message.content.includes('--asc')) {
+                            sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap, true);
+                        } else {
+                            sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap);
+                        }
 
                         message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
 
@@ -221,8 +233,8 @@ export class LootScoreBot {
                     });
                 });
             }
-                        
-            if (message.content === 'ls --name') {
+
+            if (message.content.startsWith('ls --name')) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
 
                 this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
@@ -235,7 +247,13 @@ export class LootScoreBot {
 
                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
-                        const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
+                        let sortedMap = new Map<GuildMember, MemberScore>();
+
+                        if (message.content.includes('--asc')) {
+                            sortedMap = this._mapSort.sortByName(this._lootScoreMap, true);
+                        } else {
+                            sortedMap = this._mapSort.sortByName(this._lootScoreMap);
+                        }
 
                         message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
 
@@ -245,8 +263,8 @@ export class LootScoreBot {
                     });
                 });
             }
-            
-            if (message.content === 'ls --seniority') {
+
+            if (message.content.startsWith('ls --seniority')) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
 
                 this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
@@ -259,7 +277,13 @@ export class LootScoreBot {
 
                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
-                        const sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap);
+                        let sortedMap = new Map<GuildMember, MemberScore>();
+
+                        if (message.content.includes('--asc')) {
+                            sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap, true);
+                        } else {
+                            sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap);
+                        }
 
                         message.channel.send(new HeadingEmbed('Member', 'Attendance', 'Seniority'));
 

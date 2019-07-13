@@ -145,7 +145,7 @@ class LootScoreBot {
                     message.channel.send(`<@${message.member.user.id}> is up to something fishy...`);
                 }
             }
-            if (message.content === 'ls --ls') {
+            if (message.content.startsWith('ls --ls')) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                 this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
                     const attendanceMapId = value;
@@ -155,7 +155,13 @@ class LootScoreBot {
                     this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
                         this._lootLogMap = value;
                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                        let sortedMap = new Map();
+                        if (message.content.includes('--reverse')) {
+                            sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap, true);
+                        }
+                        else {
+                            sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                        }
                         message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
                         for (let entry of sortedMap) {
                             message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
@@ -163,7 +169,7 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content === 'ls --attendance') {
+            if (message.content.startsWith('ls --attendance')) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                 this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
                     const attendanceMapId = value;
@@ -173,7 +179,13 @@ class LootScoreBot {
                     this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
                         this._lootLogMap = value;
                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                        const sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap);
+                        let sortedMap = new Map();
+                        if (message.content.includes('--reverse')) {
+                            sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap, true);
+                        }
+                        else {
+                            sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap);
+                        }
                         message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
                         for (let entry of sortedMap) {
                             message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
@@ -181,7 +193,7 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content === 'ls --name') {
+            if (message.content.startsWith('ls --name')) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                 this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
                     const attendanceMapId = value;
@@ -191,7 +203,13 @@ class LootScoreBot {
                     this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
                         this._lootLogMap = value;
                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                        const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
+                        let sortedMap = new Map();
+                        if (message.content.includes('--reverse')) {
+                            sortedMap = this._mapSort.sortByName(this._lootScoreMap, true);
+                        }
+                        else {
+                            sortedMap = this._mapSort.sortByName(this._lootScoreMap);
+                        }
                         message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
                         for (let entry of sortedMap) {
                             message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
@@ -199,7 +217,7 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content === 'ls --seniority') {
+            if (message.content.startsWith('ls --seniority')) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                 this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
                     const attendanceMapId = value;
@@ -209,7 +227,13 @@ class LootScoreBot {
                     this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
                         this._lootLogMap = value;
                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                        const sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap);
+                        let sortedMap = new Map();
+                        if (message.content.includes('--reverse')) {
+                            sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap, true);
+                        }
+                        else {
+                            sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap);
+                        }
                         message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'Seniority'));
                         for (let entry of sortedMap) {
                             message.channel.send(new seniority_embed_1.SeniorityEmbed(sortedMap, entry));
