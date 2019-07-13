@@ -11,7 +11,13 @@ export class MemberScore {
     public itemScorePercentage: number;
 
     public get lootScore(): number {
-        return this.attendancePercentage + this.seniorityPercentage - (this.itemScorePercentage/4);
+        let lootScore = this.attendancePercentage + this.seniorityPercentage;
+
+        if (this.itemScorePercentage) {
+            lootScore -= this.itemScorePercentage / 4;
+        }
+
+        return lootScore;
     }
 }
 

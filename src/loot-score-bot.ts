@@ -29,6 +29,7 @@ export class LootScoreBot {
     private _itemScoresChannel: TextChannel;
     private _lootLogChannel: TextChannel;
     private _lootLogReadableChannel: TextChannel;
+    private _lootScoreDailyDumpChannel: TextChannel;
 
     private _lootScoreService: LootScoreService = new LootScoreService();
     private _lootLogService: LootLogService = new LootLogService();
@@ -56,6 +57,17 @@ export class LootScoreBot {
             this._lootLogChannel = this._client.channels.get('571795185399234630') as TextChannel;
             this._lootLogReadableChannel = this._client.channels.get('586983990976577557') as TextChannel;
             this._itemScoresChannel = this._client.channels.get('571794427958525962') as TextChannel;
+            this._lootScoreDailyDumpChannel = this._client.channels.get('599082030679982080') as TextChannel;
+
+            var CronJob = require('cron').CronJob;
+            var job = new CronJob({
+                cronTime: '10 1 * * * *',
+                onTick: function () {
+                    this.sendLootScoreDailyDump();
+                },
+                start: true,
+                timeZone: 'America/Los_Angeles'
+            });
         });
 
         this._client.on('message', message => {
@@ -531,6 +543,35 @@ export class LootScoreBot {
 
     private canUseCommands(message: Message): boolean {
         return message.member.roles.some((role) => role.name === 'LootScore Admin');
+    }
+
+    public sendLootScoreDailyDump(): void {
+
+        this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+
+        this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+            const attendanceMapId = value;
+            this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
+            this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
+            this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
+            this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                this._lootLogMap = value;
+
+                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+
+                const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
+
+                this._lootScoreDailyDumpChannel.fetchMessages({ limit: 100 })
+                    .then(messages => this._lootScoreDailyDumpChannel.bulkDelete(messages));
+
+                this._lootScoreDailyDumpChannel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+
+                for (let entry of sortedMap) {
+                    this._lootScoreDailyDumpChannel.send(new DetailedVisualizationEmbed(sortedMap, entry));
+                }
+            });
+        });
+
     }
 
 }

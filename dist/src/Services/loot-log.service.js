@@ -122,12 +122,11 @@ class LootLogService {
                 let lootLogEntry = lootScoreData.value;
                 let member = this._memberMatcher.matchMemberFromId(members, lootLogEntry.member.id);
                 let entries = lootLogMap.get(member);
-                let value = lootLogEntry[0][1];
                 if (entries) {
-                    lootLogMap.set(member, entries.concat(value));
+                    lootLogMap.set(member, entries.concat(lootLogEntry.item));
                 }
                 else {
-                    lootLogMap.set(member, [value]);
+                    lootLogMap.set(member, [lootLogEntry.item]);
                 }
             }
             return lootLogMap;
