@@ -9,18 +9,22 @@ export class ItemsLootedEmbed extends RichEmbed {
 
         let lootString = '';
 
-        if (itemsLooted.length > 0) {
-            for (let i = 0; i < itemsLooted.length; i++) {
-                if (i === itemsLooted.length - 1) {
-                    if (i === 0) {
-                        lootString += `**${itemsLooted[i].displayName}** (${itemsLooted[i].score})`;
+        if (itemsLooted) {
+            if (itemsLooted.length > 0) {
+                for (let i = 0; i < itemsLooted.length; i++) {
+                    if (i === itemsLooted.length - 1) {
+                        if (i === 0) {
+                            lootString += `**${itemsLooted[i].displayName}** (${itemsLooted[i].score})`;
+                        } else {
+                            lootString += `and **${itemsLooted[i].displayName}** (${itemsLooted[i].score})`;
+                        }
                     } else {
-                        lootString += `and **${itemsLooted[i].displayName}** (${itemsLooted[i].score})`;
+                        lootString += `**${itemsLooted[i].displayName}** (${itemsLooted[i].score}), `;
                     }
-                } else {
-                    lootString += `**${itemsLooted[i].displayName}** (${itemsLooted[i].score}), `;
                 }
             }
+        } else {
+            lootString = 'No items looted.';
         }
 
         this.addField('Items Looted', lootString);

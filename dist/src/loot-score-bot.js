@@ -30,6 +30,7 @@ class LootScoreBot {
             console.log('Ready!');
             this._raidChannel1 = this._client.channels.get('565701455420588032');
             this._raidChannel2 = this._client.channels.get('566702461629497365');
+            this._seniorityLogChannel = this._client.channels.get('599818971180695573');
             this._attendanceLogChannel = this._client.channels.get('571160933804539924');
             this._attendanceLogReadableChannel = this._client.channels.get('586983799582228482');
             this._lootLogChannel = this._client.channels.get('571795185399234630');
@@ -96,7 +97,7 @@ class LootScoreBot {
                             sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                                 .then((collected) => {
                                 if (collected.first().emoji.name === '✅') {
-                                    this._attendanceService.endLogging(message, this._attendanceLogChannel, this._attendanceLogReadableChannel);
+                                    this._attendanceService.endLogging(message, this._seniorityLogChannel, this._attendanceLogChannel, this._attendanceLogReadableChannel);
                                 }
                                 else {
                                     message.channel.send('Request to end logging aborted. Logging will continue.');
@@ -127,7 +128,7 @@ class LootScoreBot {
                                 .then((collected) => {
                                 if (collected.first().emoji.name === '✅') {
                                     message.channel.send('Logging successfully ended. No records saved from this session.');
-                                    this._attendanceService.endLogging(message, this._attendanceLogChannel, this._attendanceLogReadableChannel, false);
+                                    this._attendanceService.endLogging(message, this._seniorityLogChannel, this._attendanceLogChannel, this._attendanceLogReadableChannel, false);
                                 }
                                 else {
                                     message.channel.send('Request to end logging aborted. Logging will continue.');
@@ -152,21 +153,24 @@ class LootScoreBot {
                     const attendanceMapId = value;
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
-                        this._lootLogMap = value;
-                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                        let sortedMap = new Map();
-                        if (message.content.includes('--asc')) {
-                            sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap, true);
-                        }
-                        else {
-                            sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                        }
-                        message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                        for (let entry of sortedMap) {
-                            message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
-                        }
+                    this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                        const seniorityMapId = value;
+                        this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+                        this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                            this._lootLogMap = value;
+                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                            let sortedMap = new Map();
+                            if (message.content.includes('--asc')) {
+                                sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap, true);
+                            }
+                            else {
+                                sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                            }
+                            message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                            for (let entry of sortedMap) {
+                                message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
+                            }
+                        });
                     });
                 });
             }
@@ -176,21 +180,24 @@ class LootScoreBot {
                     const attendanceMapId = value;
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
-                        this._lootLogMap = value;
-                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                        let sortedMap = new Map();
-                        if (message.content.includes('--asc')) {
-                            sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap, true);
-                        }
-                        else {
-                            sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap);
-                        }
-                        message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                        for (let entry of sortedMap) {
-                            message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
-                        }
+                    this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                        const seniorityMapId = value;
+                        this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+                        this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                            this._lootLogMap = value;
+                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                            let sortedMap = new Map();
+                            if (message.content.includes('--asc')) {
+                                sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap, true);
+                            }
+                            else {
+                                sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap);
+                            }
+                            message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                            for (let entry of sortedMap) {
+                                message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
+                            }
+                        });
                     });
                 });
             }
@@ -200,21 +207,24 @@ class LootScoreBot {
                     const attendanceMapId = value;
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
-                        this._lootLogMap = value;
-                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                        let sortedMap = new Map();
-                        if (message.content.includes('--asc')) {
-                            sortedMap = this._mapSort.sortByName(this._lootScoreMap, true);
-                        }
-                        else {
-                            sortedMap = this._mapSort.sortByName(this._lootScoreMap);
-                        }
-                        message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                        for (let entry of sortedMap) {
-                            message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
-                        }
+                    this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                        const seniorityMapId = value;
+                        this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+                        this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                            this._lootLogMap = value;
+                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                            let sortedMap = new Map();
+                            if (message.content.includes('--asc')) {
+                                sortedMap = this._mapSort.sortByName(this._lootScoreMap, true);
+                            }
+                            else {
+                                sortedMap = this._mapSort.sortByName(this._lootScoreMap);
+                            }
+                            message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                            for (let entry of sortedMap) {
+                                message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
+                            }
+                        });
                     });
                 });
             }
@@ -224,21 +234,24 @@ class LootScoreBot {
                     const attendanceMapId = value;
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
-                        this._lootLogMap = value;
-                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                        let sortedMap = new Map();
-                        if (message.content.includes('--asc')) {
-                            sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap, true);
-                        }
-                        else {
-                            sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap);
-                        }
-                        message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'Seniority'));
-                        for (let entry of sortedMap) {
-                            message.channel.send(new seniority_embed_1.SeniorityEmbed(sortedMap, entry));
-                        }
+                    this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                        const seniorityMapId = value;
+                        this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+                        this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                            this._lootLogMap = value;
+                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                            let sortedMap = new Map();
+                            if (message.content.includes('--asc')) {
+                                sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap, true);
+                            }
+                            else {
+                                sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap);
+                            }
+                            message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'Seniority'));
+                            for (let entry of sortedMap) {
+                                message.channel.send(new seniority_embed_1.SeniorityEmbed(sortedMap, entry));
+                            }
+                        });
                     });
                 });
             }
@@ -324,16 +337,19 @@ class LootScoreBot {
                                 const attendanceMapId = value;
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                                this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
-                                    this._lootLogMap = value;
-                                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                                    const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                                    const filteredMap = this._mapSort.filterMembers(sortedMap, members);
-                                    message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                                    for (let entry of filteredMap) {
-                                        message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(filteredMap, entry));
-                                    }
+                                this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                                    const seniorityMapId = value;
+                                    this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+                                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                                        this._lootLogMap = value;
+                                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                                        const filteredMap = this._mapSort.filterMembers(sortedMap, members);
+                                        message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                                        for (let entry of filteredMap) {
+                                            message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(filteredMap, entry));
+                                        }
+                                    });
                                 });
                             });
                         }
@@ -354,16 +370,19 @@ class LootScoreBot {
                                 const attendanceMapId = value;
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                                this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
-                                    this._lootLogMap = value;
-                                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                                    const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                                    const filteredMap = this._mapSort.filterMembers(sortedMap, members);
-                                    message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                                    for (let entry of filteredMap) {
-                                        message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(filteredMap, entry));
-                                    }
+                                this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                                    const seniorityMapId = value;
+                                    this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+                                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                                        this._lootLogMap = value;
+                                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                                        const filteredMap = this._mapSort.filterMembers(sortedMap, members);
+                                        message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                                        for (let entry of filteredMap) {
+                                            message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(filteredMap, entry));
+                                        }
+                                    });
                                 });
                             });
                         }
@@ -384,16 +403,19 @@ class LootScoreBot {
                                 const attendanceMapId = value;
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                                this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
-                                    this._lootLogMap = value;
-                                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                                    const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                                    const filteredMap = this._mapSort.filterMembers(sortedMap, members);
-                                    message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                                    for (let entry of filteredMap) {
-                                        message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(filteredMap, entry));
-                                    }
+                                this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                                    const seniorityMapId = value;
+                                    this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+                                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                                        this._lootLogMap = value;
+                                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                                        const filteredMap = this._mapSort.filterMembers(sortedMap, members);
+                                        message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                                        for (let entry of filteredMap) {
+                                            message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(filteredMap, entry));
+                                        }
+                                    });
                                 });
                             });
                         }
@@ -414,16 +436,19 @@ class LootScoreBot {
                                 const attendanceMapId = value;
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                                this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
-                                    this._lootLogMap = value;
-                                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                                    const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                                    const filteredMap = this._mapSort.filterMembers(sortedMap, members);
-                                    message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                                    for (let entry of filteredMap) {
-                                        message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(filteredMap, entry));
-                                    }
+                                this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                                    const seniorityMapId = value;
+                                    this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+                                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                                        this._lootLogMap = value;
+                                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                                        const filteredMap = this._mapSort.filterMembers(sortedMap, members);
+                                        message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                                        for (let entry of filteredMap) {
+                                            message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(filteredMap, entry));
+                                        }
+                                    });
                                 });
                             });
                         }
@@ -442,23 +467,26 @@ class LootScoreBot {
                             const attendanceMapId = value;
                             this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                             this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                            this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-                            this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
-                                this._lootLogMap = value;
-                                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                                const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                                const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
-                                if (Array.from(filteredMap).length > 0) {
-                                    message.channel.send(`Overview for **${member.displayName}**`);
-                                    message.channel.send(new heading_embed_1.HeadingEmbed('LootScore', 'Attendance', 'Seniority'));
-                                    for (let entry of filteredMap) {
-                                        message.channel.send(new member_overview_embed_1.MemberOverviewEmbed(filteredMap, entry));
+                            this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
+                                const seniorityMapId = value;
+                                this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+                                this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                                    this._lootLogMap = value;
+                                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                                    const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                                    const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
+                                    if (Array.from(filteredMap).length > 0) {
+                                        message.channel.send(`Overview for **${member.displayName}**`);
+                                        message.channel.send(new heading_embed_1.HeadingEmbed('LootScore', 'Attendance', 'Seniority'));
+                                        for (let entry of filteredMap) {
+                                            message.channel.send(new member_overview_embed_1.MemberOverviewEmbed(filteredMap, entry));
+                                        }
+                                        message.channel.send(new items_looted_embed_1.ItemsLootedEmbed(items));
                                     }
-                                    message.channel.send(new items_looted_embed_1.ItemsLootedEmbed(items));
-                                }
-                                else {
-                                    message.channel.send(`No history found for **${member.displayName}**`);
-                                }
+                                    else {
+                                        message.channel.send(`No history found for **${member.displayName}**`);
+                                    }
+                                });
                             });
                         });
                     });
@@ -498,17 +526,20 @@ class LootScoreBot {
             const attendanceMapId = value;
             this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
             this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-            this._seniorityMap = this._lootScoreService.getSeniorityMap(this._attendanceMap);
-            this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
-                this._lootLogMap = value;
-                this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
-                this._lootScoreDailyDumpChannel.fetchMessages({ limit: 100 })
-                    .then(messages => this._lootScoreDailyDumpChannel.bulkDelete(messages));
-                this._lootScoreDailyDumpChannel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                for (let entry of sortedMap) {
-                    this._lootScoreDailyDumpChannel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
-                }
+            this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                const seniorityMapId = value;
+                this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+                this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                    this._lootLogMap = value;
+                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                    const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
+                    this._lootScoreDailyDumpChannel.fetchMessages({ limit: 100 })
+                        .then(messages => this._lootScoreDailyDumpChannel.bulkDelete(messages));
+                    this._lootScoreDailyDumpChannel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                    for (let entry of sortedMap) {
+                        this._lootScoreDailyDumpChannel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
+                    }
+                });
             });
         });
     }

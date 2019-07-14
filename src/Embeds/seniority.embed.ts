@@ -13,7 +13,7 @@ export class SeniorityEmbed extends RichEmbed {
 
     private addMember(member: [GuildMember, MemberScore]): void {
         this.addField(member[0].displayName, member[0].highestRole.name, true);
-        this.addField(`${member[1].attendancePercentage}%`, this._embedHelper.getBar(member[1].attendancePercentage), true);
-        this.addField(`${member[1].seniorityPercentage}%`, this._embedHelper.getBar(member[1].seniorityPercentage), true);
+        this.addField(`${member[1].attendancePercentage || 0}%`, this._embedHelper.getBar(member[1].attendancePercentage || 0), true);
+        this.addField(`${member[1].seniorityPercentage || 0}%`, this._embedHelper.getBar(member[1].seniorityPercentage || 0), true);
     }
 }
