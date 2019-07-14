@@ -97,7 +97,7 @@ class LootScoreService {
         for (let entry of lootScoreMap) {
             let memberScore = lootScoreMap.get(entry[0]);
             if (memberScore.itemScoreTotal) {
-                memberScore.itemScorePercentage = (memberScore.itemScoreTotal / highestItemScore) * 100;
+                memberScore.itemScorePercentage = Math.round((memberScore.itemScoreTotal / highestItemScore) * 100);
             }
             else {
                 memberScore.itemScorePercentage = 0;

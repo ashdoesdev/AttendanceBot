@@ -17,7 +17,7 @@ export class MemberScore {
             lootScore -= this.itemScorePercentage / 4;
         }
 
-        return lootScore;
+        return Math.round(lootScore);
     }
 }
 

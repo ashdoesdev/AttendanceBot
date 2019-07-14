@@ -9,7 +9,7 @@ class MemberScore {
         if (this.itemScorePercentage) {
             lootScore -= this.itemScorePercentage / 4;
         }
-        return lootScore;
+        return Math.round(lootScore);
     }
 }
 exports.MemberScore = MemberScore;

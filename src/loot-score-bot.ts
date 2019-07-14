@@ -64,6 +64,7 @@ export class LootScoreBot {
                 cronTime: '1/5 * * * *',
                 onTick: function () {
                     this.sendLootScoreDailyDump();
+                    this.backUpData();
                 }.bind(this),
                 timeZone: 'America/Los_Angeles'
             });
@@ -629,6 +630,13 @@ export class LootScoreBot {
             });
         });
 
+    }
+
+    public backUpValues(): void {
+        let lootLogMessages = this._lootLogChannel.messages.array();
+
+        fs.createWriteStream('C:/backups/test.json')
+            .write(JSON.stringify(lootLogMessages));
     }
 
 }

@@ -41,6 +41,7 @@ class LootScoreBot {
                 cronTime: '1/5 * * * *',
                 onTick: function () {
                     this.sendLootScoreDailyDump();
+                    this.backUpData();
                 }.bind(this),
                 timeZone: 'America/Los_Angeles'
             });
@@ -156,7 +157,7 @@ class LootScoreBot {
                         this._lootLogMap = value;
                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                         let sortedMap = new Map();
-                        if (message.content.includes('--reverse')) {
+                        if (message.content.includes('--asc')) {
                             sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap, true);
                         }
                         else {
@@ -180,7 +181,7 @@ class LootScoreBot {
                         this._lootLogMap = value;
                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                         let sortedMap = new Map();
-                        if (message.content.includes('--reverse')) {
+                        if (message.content.includes('--asc')) {
                             sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap, true);
                         }
                         else {
@@ -204,7 +205,7 @@ class LootScoreBot {
                         this._lootLogMap = value;
                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                         let sortedMap = new Map();
-                        if (message.content.includes('--reverse')) {
+                        if (message.content.includes('--asc')) {
                             sortedMap = this._mapSort.sortByName(this._lootScoreMap, true);
                         }
                         else {
@@ -228,7 +229,7 @@ class LootScoreBot {
                         this._lootLogMap = value;
                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                         let sortedMap = new Map();
-                        if (message.content.includes('--reverse')) {
+                        if (message.content.includes('--asc')) {
                             sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap, true);
                         }
                         else {
@@ -510,6 +511,11 @@ class LootScoreBot {
                 }
             });
         });
+    }
+    backUpValues() {
+        let lootLogMessages = this._lootLogChannel.messages.array();
+        fs.createWriteStream('C:/backups/test.json')
+            .write(JSON.stringify(lootLogMessages));
     }
 }
 exports.LootScoreBot = LootScoreBot;
