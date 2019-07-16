@@ -38,14 +38,10 @@ class LootScoreBot {
             this._itemScoresChannel = this._client.channels.get('571794427958525962');
             this._lootScoreDailyDumpChannel = this._client.channels.get('599082030679982080');
             var CronJob = require('cron').CronJob;
-            var job = new CronJob({
-                cronTime: '1/5 * * * *',
-                onTick: function () {
-                    this.sendLootScoreDailyDump();
-                    this.backUpData();
-                }.bind(this),
-                timeZone: 'America/Los_Angeles'
-            });
+            var job = new CronJob('1/5 * * * * *', function () {
+                this.sendLootScoreDailyDump();
+                this.backUpValues();
+            }.bind(this), null, true, 'America/Los_Angeles');
             job.start();
         });
         this._client.on('message', message => {
@@ -153,7 +149,7 @@ class LootScoreBot {
                     const attendanceMapId = value;
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                    this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
                         const seniorityMapId = value;
                         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                         this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
@@ -180,7 +176,7 @@ class LootScoreBot {
                     const attendanceMapId = value;
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                    this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
                         const seniorityMapId = value;
                         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                         this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
@@ -207,7 +203,7 @@ class LootScoreBot {
                     const attendanceMapId = value;
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                    this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
                         const seniorityMapId = value;
                         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                         this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
@@ -234,7 +230,7 @@ class LootScoreBot {
                     const attendanceMapId = value;
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                    this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
                         const seniorityMapId = value;
                         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                         this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
@@ -337,7 +333,7 @@ class LootScoreBot {
                                 const attendanceMapId = value;
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                                this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
                                     const seniorityMapId = value;
                                     this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                                     this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
@@ -370,7 +366,7 @@ class LootScoreBot {
                                 const attendanceMapId = value;
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                                this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
                                     const seniorityMapId = value;
                                     this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                                     this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
@@ -403,7 +399,7 @@ class LootScoreBot {
                                 const attendanceMapId = value;
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                                this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
                                     const seniorityMapId = value;
                                     this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                                     this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
@@ -436,7 +432,7 @@ class LootScoreBot {
                                 const attendanceMapId = value;
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+                                this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
                                     const seniorityMapId = value;
                                     this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                                     this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
@@ -526,7 +522,7 @@ class LootScoreBot {
             const attendanceMapId = value;
             this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
             this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-            this._lootScoreService.getSeniorityMap(this._attendanceLogReadableChannel).then(value => {
+            this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
                 const seniorityMapId = value;
                 this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                 this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
@@ -545,7 +541,11 @@ class LootScoreBot {
     }
     backUpValues() {
         let lootLogMessages = this._lootLogChannel.messages.array();
-        fs.createWriteStream('C:/backups/test.json')
+        let dir = 'C:/backups';
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
+        fs.createWriteStream(`${dir}/test.json`)
             .write(JSON.stringify(lootLogMessages));
     }
 }
