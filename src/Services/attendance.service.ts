@@ -14,7 +14,7 @@ export class AttendanceService {
     public attendanceLog = new Map<number, GuildMember[]>();
     public seniorityLog = new Map<GuildMember, number>();
     public loggingInProgress: boolean;
-    
+
     public createMinifiedAttendanceMap(attendanceLog: Map<number, GuildMember[]>): Map<string, number> {
         const attendanceMap = new Map<string, number>();
 

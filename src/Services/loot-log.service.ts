@@ -120,7 +120,7 @@ export class LootLogService {
     }
 
     public async createLootLogMap(lootLogChannel: TextChannel, members: GuildMember[]): Promise<Map<GuildMember, ItemScore[]>> {
-        let messageEntries = await this.getLootLog(lootLogChannel);
+        let messageEntries = await this.getMessages(lootLogChannel);
         let lootLogMap = new Map<GuildMember, ItemScore[]>();
 
         for (let entry of messageEntries) {
@@ -141,12 +141,12 @@ export class LootLogService {
         return lootLogMap;
     }
 
-    public async getLootLog(lootLogChannel: TextChannel): Promise<Message[]> {
+    public async getMessages(textChannel: TextChannel): Promise<Message[]> {
         let entries = new Array<Message>();
 
         while (true) {
             const options = { limit: 100 };
-            const messages = await lootLogChannel.fetchMessages(options);
+            const messages = await textChannel.fetchMessages(options);
             entries.push(...messages.array());
 
             if (messages.size != 100) {

@@ -114,7 +114,7 @@ class LootLogService {
     }
     createLootLogMap(lootLogChannel, members) {
         return __awaiter(this, void 0, void 0, function* () {
-            let messageEntries = yield this.getLootLog(lootLogChannel);
+            let messageEntries = yield this.getMessages(lootLogChannel);
             let lootLogMap = new Map();
             for (let entry of messageEntries) {
                 let cleanString = entry.content.replace(/`/g, '');
@@ -132,12 +132,12 @@ class LootLogService {
             return lootLogMap;
         });
     }
-    getLootLog(lootLogChannel) {
+    getMessages(textChannel) {
         return __awaiter(this, void 0, void 0, function* () {
             let entries = new Array();
             while (true) {
                 const options = { limit: 100 };
-                const messages = yield lootLogChannel.fetchMessages(options);
+                const messages = yield textChannel.fetchMessages(options);
                 entries.push(...messages.array());
                 if (messages.size != 100) {
                     break;

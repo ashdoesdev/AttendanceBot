@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
 const help_embed_1 = require("./Embeds/help.embed");
@@ -49,7 +57,7 @@ class LootScoreBot {
                 message.channel.send(new help_embed_1.HelpEmbed());
             }
             if (message.content === '!clear') {
-                message.channel.fetchMessages({ limit: 50 })
+                message.channel.fetchMessages({ limit: 100 })
                     .then(messages => message.channel.bulkDelete(messages));
             }
             if (message.content === 'ls s' || message.content === 'ls start') {
@@ -508,6 +516,39 @@ class LootScoreBot {
                     }
                 });
             }
+            if (message.content.startsWith('ls import --loot')) {
+                const path = message.content.replace('ls import --loot ', '');
+                fs.createReadStream(path)
+                    .on('data', (data) => {
+                    let messages = JSON.parse(data);
+                    for (let message of messages) {
+                        this._lootLogChannel.send(message);
+                    }
+                })
+                    .on('error', () => {
+                    message.channel.send('File not found.');
+                });
+            }
+            if (message.content.startsWith('ls import --seniority')) {
+                const path = message.content.replace('ls import --seniority ', '');
+                fs.createReadStream(path)
+                    .on('data', (data) => {
+                    let messages = JSON.parse(data);
+                    for (let message of messages) {
+                        this._seniorityLogChannel.send(message);
+                    }
+                });
+            }
+            if (message.content.startsWith('ls import --attendance')) {
+                const path = message.content.replace('ls import --attendance ', '');
+                fs.createReadStream(path)
+                    .on('data', (data) => {
+                    let messages = JSON.parse(data);
+                    for (let message of messages) {
+                        this._attendanceLogChannel.send(message);
+                    }
+                });
+            }
         });
     }
     get presentMembers() {
@@ -540,13 +581,33 @@ class LootScoreBot {
         });
     }
     backUpValues() {
-        let lootLogMessages = this._lootLogChannel.messages.array();
-        let dir = 'C:/backups';
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir);
-        }
-        fs.createWriteStream(`${dir}/test.json`)
-            .write(JSON.stringify(lootLogMessages));
+        return __awaiter(this, void 0, void 0, function* () {
+            let lootLog = yield this._lootLogService.getMessages(this._lootLogChannel);
+            let cleanLootLogMessages = new Array();
+            for (let message of lootLog) {
+                cleanLootLogMessages.push(message.content);
+            }
+            let seniorityLog = yield this._lootLogService.getMessages(this._seniorityLogChannel);
+            let cleanSeniorityLogMessages = new Array();
+            for (let message of seniorityLog) {
+                cleanSeniorityLogMessages.push(message.content);
+            }
+            let attendanceLog = yield this._lootLogService.getMessages(this._attendanceLogChannel);
+            let cleanAttendanceLogMessages = new Array();
+            for (let message of attendanceLog) {
+                cleanAttendanceLogMessages.push(message.content);
+            }
+            let dir = 'C:/LootScore/backups';
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir, { recursive: true });
+            }
+            fs.createWriteStream(`${dir}/loot.json`)
+                .write(JSON.stringify(cleanLootLogMessages));
+            fs.createWriteStream(`${dir}/seniority.json`)
+                .write(JSON.stringify(cleanSeniorityLogMessages));
+            fs.createWriteStream(`${dir}/attendance.json`)
+                .write(JSON.stringify(cleanAttendanceLogMessages));
+        });
     }
 }
 exports.LootScoreBot = LootScoreBot;
