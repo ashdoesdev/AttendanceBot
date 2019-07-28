@@ -8,11 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const item_score_model_1 = require("../Models/item-score.model");
 const loot_log_embed_1 = require("../Embeds/loot-log.embed");
-const loot_score_model_1 = require("../Models/loot-score.model");
-const member_match_helper_1 = require("../Helpers/member-match.helper");
 const loot_score_data_helper_1 = require("../Helpers/loot-score-data.helper");
+const member_match_helper_1 = require("../Helpers/member-match.helper");
+const item_score_model_1 = require("../Models/item-score.model");
+const loot_score_model_1 = require("../Models/loot-score.model");
 class LootLogService {
     constructor() {
         this._memberMatcher = new member_match_helper_1.MemberMatchHelper();

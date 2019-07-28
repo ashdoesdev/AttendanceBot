@@ -1,8 +1,7 @@
-import { GuildMember, TextChannel, Message } from "discord.js";
-import { MemberScore, LootScoreData } from "../Models/loot-score.model";
-import { ItemScore } from "../Models/item-score.model";
-import { MemberMatchHelper } from "../Helpers/member-match.helper";
+import { GuildMember, Message, TextChannel } from "discord.js";
 import { MapSortHelper } from "../Helpers/map-sort.helper";
+import { ItemScore } from "../Models/item-score.model";
+import { LootScoreData, MemberScore } from "../Models/loot-score.model";
 
 export class LootScoreService {
     private _mapSort: MapSortHelper = new MapSortHelper();

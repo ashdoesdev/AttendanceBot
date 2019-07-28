@@ -46,101 +46,87 @@ class LootScoreBot {
             this._itemScoresChannel = this._client.channels.get('571794427958525962');
             this._lootScoreDailyDumpChannel = this._client.channels.get('599082030679982080');
             this._adminChannel = this._client.channels.get('603778824487960685');
+            this._generalChannel = this._client.channels.get('603788690287886346');
             var CronJob = require('cron').CronJob;
             var job = new CronJob('1/5 * * * * *', () => this.manageDailyJobs.bind(this), null, true, 'America/Los_Angeles');
             job.start();
         });
         this._client.on('message', message => {
-            if (message.content === '/help') {
+            if (message.content === '/help' && this.canUseCommands(message)) {
                 message.author.send(new help_embed_1.HelpEmbed());
             }
             if (message.content === '!clear') {
                 message.channel.fetchMessages({ limit: 100 })
                     .then(messages => message.channel.bulkDelete(messages));
             }
-            if (message.content === '/start') {
-                if (this.canUseCommands(message)) {
-                    if (Array.from(this._raidChannel1.members.values()).length > 0 || Array.from(this._raidChannel2.members.values()).length > 0) {
-                        message.channel.send('Do you wish to start logging? Please confirm.').then((sentMessage) => {
-                            const filter = this.setReactionFilter(sentMessage, message);
-                            sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
-                                .then((collected) => {
-                                if (collected.first().emoji.name === '✅') {
-                                    this._attendanceService.startLogging(message, this._raidChannel1, this._raidChannel2);
-                                }
-                                else {
-                                    message.channel.send('Request to start logging aborted.');
-                                }
-                            })
-                                .catch(() => {
-                                message.channel.send('No reply received. Request to start logging aborted.');
-                            });
+            if (message.content === '/start' && this.canUseCommands(message)) {
+                if (Array.from(this._raidChannel1.members.values()).length > 0 || Array.from(this._raidChannel2.members.values()).length > 0) {
+                    message.channel.send('Do you wish to start logging? Please confirm.').then((sentMessage) => {
+                        const filter = this.setReactionFilter(sentMessage, message);
+                        sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
+                            .then((collected) => {
+                            if (collected.first().emoji.name === '✅') {
+                                this._attendanceService.startLogging(message, this._raidChannel1, this._raidChannel2);
+                            }
+                            else {
+                                message.channel.send('Request to start logging aborted.');
+                            }
+                        })
+                            .catch(() => {
+                            message.channel.send('No reply received. Request to start logging aborted.');
                         });
-                    }
-                    else {
-                        message.channel.send('No one is in the raid! Request to start logging aborted.');
-                    }
+                    });
                 }
                 else {
-                    message.channel.send(`<@${message.member.user.id}>, you don't have sufficient permissions do to that`);
+                    message.channel.send('No one is in the raid! Request to start logging aborted.');
                 }
             }
-            if (message.content === '/end') {
-                if (this.canUseCommands(message)) {
-                    if (this._attendanceService.loggingInProgress) {
-                        message.channel.send('Are you ready to end logging? This command will end logging and submit all values.').then((sentMessage) => {
-                            const filter = this.setReactionFilter(sentMessage, message);
-                            sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
-                                .then((collected) => {
-                                if (collected.first().emoji.name === '✅') {
-                                    this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel);
-                                }
-                                else {
-                                    message.channel.send('Request to end logging aborted. Logging will continue.');
-                                }
-                            })
-                                .catch(() => {
-                                message.channel.send('No reply received. Request to end logging aborted. Logging will continue.');
-                            });
+            if (message.content === '/end' && this.canUseCommands(message)) {
+                if (this._attendanceService.loggingInProgress) {
+                    message.channel.send('Are you ready to end logging? This command will end logging and submit all values.').then((sentMessage) => {
+                        const filter = this.setReactionFilter(sentMessage, message);
+                        sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
+                            .then((collected) => {
+                            if (collected.first().emoji.name === '✅') {
+                                this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel);
+                            }
+                            else {
+                                message.channel.send('Request to end logging aborted. Logging will continue.');
+                            }
+                        })
+                            .catch(() => {
+                            message.channel.send('No reply received. Request to end logging aborted. Logging will continue.');
                         });
-                    }
-                    else {
-                        message.channel.send(`Did you mean to start attendance first? (Hint: !ls s)`);
-                    }
+                    });
                 }
                 else {
-                    message.channel.send(`<@${message.member.user.id}> ur not my mom`);
+                    message.channel.send(`Did you mean to start attendance first? (Hint: !ls s)`);
                 }
             }
-            if (message.content === '/end --nolog') {
-                if (this.canUseCommands(message)) {
-                    if (this._attendanceService.loggingInProgress) {
-                        message.channel.send('Are you sure? This command will end the raid and not save any values.').then((sentMessage) => {
-                            const filter = this.setReactionFilter(sentMessage, message);
-                            sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
-                                .then((collected) => {
-                                if (collected.first().emoji.name === '✅') {
-                                    message.channel.send('Logging successfully ended. No records saved from this session.');
-                                    this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel, false);
-                                }
-                                else {
-                                    message.channel.send('Request to end logging aborted. Logging will continue.');
-                                }
-                            })
-                                .catch(() => {
-                                message.channel.send('No reply received. Request to end logging aborted. Logging will continue.');
-                            });
+            if (message.content === '/end --nolog' && this.canUseCommands(message)) {
+                if (this._attendanceService.loggingInProgress) {
+                    message.channel.send('Are you sure? This command will end the raid and not save any values.').then((sentMessage) => {
+                        const filter = this.setReactionFilter(sentMessage, message);
+                        sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
+                            .then((collected) => {
+                            if (collected.first().emoji.name === '✅') {
+                                message.channel.send('Logging successfully ended. No records saved from this session.');
+                                this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel, false);
+                            }
+                            else {
+                                message.channel.send('Request to end logging aborted. Logging will continue.');
+                            }
+                        })
+                            .catch(() => {
+                            message.channel.send('No reply received. Request to end logging aborted. Logging will continue.');
                         });
-                    }
-                    else {
-                        message.channel.send(`Did you mean to start attendance first? (Hint: !ls -s)`);
-                    }
+                    });
                 }
                 else {
-                    message.channel.send(`<@${message.member.user.id}> is up to something fishy...`);
+                    message.channel.send(`Did you mean to start attendance first? (Hint: !ls -s)`);
                 }
             }
-            if (message.content === '/ls' || message.content === '/ls --asc') {
+            if ((message.content === '/ls' || message.content === '/ls --asc') && this.canUseCommands(message)) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                 this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                     const attendanceMapId = value;
@@ -167,7 +153,7 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('/ls --attendance')) {
+            if (message.content.startsWith('/ls --attendance') && this.canUseCommands(message)) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                 this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                     const attendanceMapId = value;
@@ -194,7 +180,7 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('/ls --name')) {
+            if (message.content.startsWith('/ls --name') && this.canUseCommands(message)) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                 this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                     const attendanceMapId = value;
@@ -221,7 +207,7 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('/ls --seniority')) {
+            if (message.content.startsWith('/ls --seniority') && this.canUseCommands(message)) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                 this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                     const attendanceMapId = value;
@@ -248,70 +234,65 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('/give')) {
-                if (this.canUseCommands(message)) {
-                    let query = '';
-                    query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('<', '').trim();
-                    let member = message.mentions.members.array()[0];
-                    if (member) {
-                        this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
-                            let item = array.find((x) => x.shorthand === query);
-                            if (item) {
-                                message.channel.send(`Do you wish to award ${member.displayName} **${item.displayName}**? Please confirm.`).then((sentMessage) => {
-                                    const filter = this.setReactionFilter(sentMessage, message);
-                                    sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
-                                        .then((collected) => {
-                                        if (collected.first().emoji.name === '✅') {
-                                            this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item);
-                                        }
-                                        else {
-                                            message.channel.send('Request to award item aborted.');
-                                        }
-                                    })
-                                        .catch(() => {
-                                        message.channel.send('No reply received. Request to award item aborted.');
-                                    });
-                                });
-                            }
-                            else {
-                                message.channel.send('Item does not exist.');
-                                let relatedItems = new Array();
-                                array.forEach((item) => {
-                                    var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
-                                    var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
-                                    if (shorthandSimilarity > .5 || displayNameSimilarity > .25 || item.displayName.includes(query) || item.shorthand.includes(query)) {
-                                        relatedItems.push(item);
+            if (message.content.startsWith('/give') && this.canUseCommands(message)) {
+                let query = '';
+                query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+                let member = message.mentions.members.array()[0];
+                if (member) {
+                    this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
+                        let item = array.find((x) => x.shorthand === query);
+                        if (item) {
+                            message.channel.send(`Do you wish to award ${member.displayName} **${item.displayName}**? Please confirm.`).then((sentMessage) => {
+                                const filter = this.setReactionFilter(sentMessage, message);
+                                sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
+                                    .then((collected) => {
+                                    if (collected.first().emoji.name === '✅') {
+                                        this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item);
                                     }
-                                });
-                                let relatedString = '';
-                                if (relatedItems.length > 0) {
-                                    for (let i = 0; i < relatedItems.length; i++) {
-                                        if (i === relatedItems.length - 1) {
-                                            if (i === 0) {
-                                                relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                            }
-                                            else {
-                                                relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                            }
-                                        }
-                                        else {
-                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
-                                        }
+                                    else {
+                                        message.channel.send('Request to award item aborted.');
                                     }
-                                    message.channel.send(`Did you mean ${relatedString}?`);
+                                })
+                                    .catch(() => {
+                                    message.channel.send('No reply received. Request to award item aborted.');
+                                });
+                            });
+                        }
+                        else {
+                            message.channel.send('Item does not exist.');
+                            let relatedItems = new Array();
+                            array.forEach((item) => {
+                                var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
+                                var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
+                                if (shorthandSimilarity > .5 || displayNameSimilarity > .25 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                                    relatedItems.push(item);
                                 }
+                            });
+                            let relatedString = '';
+                            if (relatedItems.length > 0) {
+                                for (let i = 0; i < relatedItems.length; i++) {
+                                    if (i === relatedItems.length - 1) {
+                                        if (i === 0) {
+                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                        }
+                                        else {
+                                            relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                        }
+                                    }
+                                    else {
+                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
+                                    }
+                                }
+                                message.channel.send(`Did you mean ${relatedString}?`);
                             }
-                        });
-                    }
-                    else {
-                        message.channel.send('Could not find member. Be sure to @mention a full member name.');
-                    }
+                        }
+                    });
                 }
                 else {
-                    message.channel.send(`<@${message.member.user.id}>, you don't have sufficient permissions do to that`);
+                    message.channel.send('Could not find member. Be sure to @mention a full member name.');
                 }
             }
-            if (message.content.startsWith('/needs --all')) {
+            if (message.content.startsWith('/needs --all') && this.canUseCommands(message)) {
                 let query = message.content.replace('/needs --all ', '').replace(/(@\S+)/, '').replace('<', '').trim();
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
@@ -344,7 +325,7 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('/has --all')) {
+            if (message.content.startsWith('/has --all') && this.canUseCommands(message)) {
                 let query = message.content.replace('/has --all ', '').replace(/(@\S+)/, '').replace('<', '').trim();
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
@@ -377,7 +358,7 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('/needs')) {
+            if (message.content.startsWith('/needs') && this.canUseCommands(message)) {
                 let query = message.content.replace('/needs ', '').replace(/(@\S+)/, '').replace('<', '').trim();
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
@@ -410,7 +391,7 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('/has')) {
+            if (message.content.startsWith('/has') && this.canUseCommands(message)) {
                 let query = message.content.replace('/has ', '').replace(/(@\S+)/, '').replace('<', '').trim();
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
@@ -443,7 +424,7 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('/overview')) {
+            if (message.content.startsWith('/overview') && this.canUseCommands(message)) {
                 let member = message.mentions.members.array()[0];
                 if (member) {
                     this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
@@ -480,7 +461,7 @@ class LootScoreBot {
                     message.channel.send('Could not find member. Be sure to @mention a full member name.');
                 }
             }
-            if (message.content.startsWith('/getitemscores')) {
+            if (message.content.startsWith('/getitemscores') && this.canUseCommands(message)) {
                 const path = message.content.replace('ls getitemscores ', '');
                 const results = [];
                 fs.createReadStream(path)
@@ -500,7 +481,7 @@ class LootScoreBot {
                     }
                 });
             }
-            if (message.content.startsWith('/import --loot')) {
+            if (message.content.startsWith('/import --loot') && this.canUseCommands(message)) {
                 const path = message.content.replace('ls import --loot ', '');
                 fs.createReadStream(path)
                     .on('data', (data) => {
@@ -513,7 +494,7 @@ class LootScoreBot {
                     message.channel.send('File not found.');
                 });
             }
-            if (message.content.startsWith('/import --seniority')) {
+            if (message.content.startsWith('/import --seniority') && this.canUseCommands(message)) {
                 const path = message.content.replace('ls import --seniority ', '');
                 fs.createReadStream(path)
                     .on('data', (data) => {
@@ -526,7 +507,7 @@ class LootScoreBot {
                     message.channel.send('File not found.');
                 });
             }
-            if (message.content.startsWith('/import --attendance')) {
+            if (message.content.startsWith('/import --attendance') && this.canUseCommands(message)) {
                 const path = message.content.replace('ls import --attendance ', '');
                 fs.createReadStream(path)
                     .on('data', (data) => {
@@ -545,7 +526,7 @@ class LootScoreBot {
         return Array.from(this._raidChannel1.members.values()).concat(Array.from(this._raidChannel2.members.values()));
     }
     canUseCommands(message) {
-        return message.member.roles.some((role) => role.name === 'LootScore Admin');
+        return message.channel.id === this._adminChannel.id && message.member.roles.some((role) => role.name === 'LootScore Admin' || role.name === 'Leadership');
     }
     manageDailyJobs() {
         this.sendLootScoreDailyDump();

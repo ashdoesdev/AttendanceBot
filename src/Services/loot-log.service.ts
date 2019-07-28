@@ -1,9 +1,9 @@
-import { TextChannel, Message, GuildMember } from "discord.js";
-import { ItemScore, AwardedItem } from "../Models/item-score.model";
+import { GuildMember, Message, TextChannel } from "discord.js";
 import { LootLogEmbed } from "../Embeds/loot-log.embed";
-import { LootScore, LootScoreData, Signature, MinimalMember } from "../Models/loot-score.model";
-import { MemberMatchHelper } from "../Helpers/member-match.helper";
 import { LootScoreDataHelper } from "../Helpers/loot-score-data.helper";
+import { MemberMatchHelper } from "../Helpers/member-match.helper";
+import { AwardedItem, ItemScore } from "../Models/item-score.model";
+import { LootScoreData, MinimalMember } from "../Models/loot-score.model";
 
 export class LootLogService {
     private _memberMatcher: MemberMatchHelper = new MemberMatchHelper();

@@ -8,8 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const loot_score_model_1 = require("../Models/loot-score.model");
 const map_sort_helper_1 = require("../Helpers/map-sort.helper");
+const loot_score_model_1 = require("../Models/loot-score.model");
 class LootScoreService {
     constructor() {
         this._mapSort = new map_sort_helper_1.MapSortHelper();
