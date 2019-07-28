@@ -55,8 +55,10 @@ export class LootLogService {
 
         lootLogMap.forEach((key, value) => {
             for (let looted of key) {
-                if (looted.displayName === item.displayName) {
-                    memberLootHistory.push(value.id);
+                if (item) {
+                    if (looted.displayName === item.displayName) {
+                        memberLootHistory.push(value.id);
+                    }
                 }
             }
         });
@@ -69,12 +71,13 @@ export class LootLogService {
                     roles.push(role.name.toLowerCase());
                 }
 
-                if (item.eligibleClasses) {
-                    if (roles.filter((x) => item.eligibleClasses.includes(x)).length > 0) {
-                        eligibleMembers.push(member.id);
+                if (item) {
+                    if (item.eligibleClasses) {
+                        if (roles.filter((x) => item.eligibleClasses.includes(x)).length > 0) {
+                            eligibleMembers.push(member.id);
+                        }
                     }
                 }
-
             }
         });
 
@@ -88,8 +91,10 @@ export class LootLogService {
 
         lootLogMap.forEach((key, value) => {
             for (let looted of key) {
-                if (looted.displayName === item.displayName) {
-                    memberLootHistory.push(value.id);
+                if (item) {
+                    if (looted.displayName === item.displayName) {
+                        memberLootHistory.push(value.id);
+                    }
                 }
             }
         });
@@ -111,9 +116,12 @@ export class LootLogService {
             let cleanString = entry.content.replace(/`/g, '');
             let lootScoreData: LootScoreData<AwardedItem> = JSON.parse(cleanString);
             let lootLogEntry: AwardedItem = lootScoreData.value;
-
-            let member = this._memberMatcher.matchMemberFromId(members, lootLogEntry.member.id);
-            let entries = lootLogMap.get(member);
+            let member;
+            let entries;
+            if (lootLogEntry.member.id) {
+                member = this._memberMatcher.matchMemberFromId(members, lootLogEntry.member.id);
+                entries = lootLogMap.get(member);
+            }
 
             if (entries) {
                 lootLogMap.set(member, entries.concat(lootLogEntry.item));
