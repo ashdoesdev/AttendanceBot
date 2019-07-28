@@ -1,6 +1,4 @@
-import { RichEmbed, GuildMember } from "discord.js";
-import { EmbedHelper } from '../Helpers/embed.helper';
-import { MemberScore } from "../Models/loot-score.model";
+import { RichEmbed } from "discord.js";
 import { ItemScore } from "../Models/item-score.model";
 
 export class ItemsLootedEmbed extends RichEmbed {

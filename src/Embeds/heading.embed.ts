@@ -1,6 +1,4 @@
-import { RichEmbed, GuildMember } from "discord.js";
-import { EmbedHelper } from '../Helpers/embed.helper';
-import { MemberScore } from "../Models/loot-score.model";
+import { RichEmbed } from "discord.js";
 
 export class HeadingEmbed extends RichEmbed {
     constructor(field1: string, field2: string, field3: string) {

@@ -73,13 +73,18 @@ export class LootScoreService {
         return percentageMap;
     }
 
-    public createLootScoreMap(attendanceMap: Map<GuildMember, number>, seniorityMap: Map<GuildMember, number>, lootLogMap: Map<GuildMember, ItemScore[]>): Map<GuildMember, MemberScore> {
+    public createLootScoreMap(attendanceMap: Map<GuildMember, number[]>, attendancePercentageMap: Map<GuildMember, number>, seniorityMap: Map<GuildMember, number>, lootLogMap: Map<GuildMember, ItemScore[]>): Map<GuildMember, MemberScore> {
         let lootScoreMap = new Map<GuildMember, MemberScore>();
 
-        for (let entry of attendanceMap) {
+        for (let entry of attendancePercentageMap) {
             const memberScore = new MemberScore();
             memberScore.attendancePercentage = Math.ceil(entry[1]);
             lootScoreMap.set(entry[0], memberScore);
+        }
+
+        for (let entry of attendanceMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+            memberScore.attendanceTotal = entry[1].length;
         }
 
         let highestValue = 1;

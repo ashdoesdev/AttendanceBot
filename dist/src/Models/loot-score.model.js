@@ -5,9 +5,12 @@ class LootScore {
 exports.LootScore = LootScore;
 class MemberScore {
     get lootScore() {
-        let lootScore = this.attendancePercentage + this.seniorityPercentage;
-        if (this.itemScorePercentage > 0) {
-            lootScore -= this.itemScorePercentage / 4;
+        let lootScore = this.attendanceTotal;
+        if (this.itemScoreTotal) {
+            lootScore -= this.itemScoreTotal;
+        }
+        if (this.attendanceTotal > 48) {
+            lootScore += lootScore * .1;
         }
         return Math.round(lootScore);
     }

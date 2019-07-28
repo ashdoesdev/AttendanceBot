@@ -7,14 +7,19 @@ export class LootScore {
 export class MemberScore {
     public attendancePercentage: number;
     public seniorityPercentage: number;
+    public attendanceTotal: number;
     public itemScoreTotal: number;
     public itemScorePercentage: number;
 
     public get lootScore(): number {
-        let lootScore = this.attendancePercentage + this.seniorityPercentage;
+        let lootScore = this.attendanceTotal;
 
-        if (this.itemScorePercentage > 0) {
-            lootScore -= this.itemScorePercentage / 4;
+        if (this.itemScoreTotal) {
+            lootScore -= this.itemScoreTotal;
+        }
+
+        if (this.attendanceTotal > 48) {
+            lootScore += lootScore * .1;
         }
 
         return Math.round(lootScore);

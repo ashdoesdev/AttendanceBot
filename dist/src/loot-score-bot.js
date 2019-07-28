@@ -48,12 +48,11 @@ class LootScoreBot {
             this._itemScoresChannel = this._client.channels.get('571794427958525962');
             this._lootScoreDailyDumpChannel = this._client.channels.get('599082030679982080');
             this._adminChannel = this._client.channels.get('603778824487960685');
-            this._generalChannel = this._client.channels.get('603788690287886346');
             var CronJob = require('cron').CronJob;
-            var job = new CronJob('1/5 * * * * *', function () {
+            var job = new CronJob('0 */10 * * * *', () => {
                 this.sendLootScoreDailyDump();
                 this.backUpValues();
-            }.bind(this), null, true, 'America/Los_Angeles');
+            }, null, true, 'America/Los_Angeles');
             job.start();
         });
         this._client.on('message', message => {
@@ -142,7 +141,7 @@ class LootScoreBot {
                         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                         this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                             this._lootLogMap = value;
-                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                             let sortedMap = new Map();
                             if (message.content.includes('--asc')) {
                                 sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap, true);
@@ -168,7 +167,7 @@ class LootScoreBot {
                         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                         this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                             this._lootLogMap = value;
-                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                             let sortedMap = new Map();
                             if (message.content.includes('--asc')) {
                                 sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap, true);
@@ -194,7 +193,7 @@ class LootScoreBot {
                         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                         this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                             this._lootLogMap = value;
-                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                             let sortedMap = new Map();
                             if (message.content.includes('--asc')) {
                                 sortedMap = this._mapSort.sortByName(this._lootScoreMap, true);
@@ -220,7 +219,7 @@ class LootScoreBot {
                         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                         this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                             this._lootLogMap = value;
-                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                             let sortedMap = new Map();
                             if (message.content.includes('--asc')) {
                                 sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap, true);
@@ -309,7 +308,7 @@ class LootScoreBot {
                                     this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                                     this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                                         this._lootLogMap = value;
-                                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                                         const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                                         const filteredMap = this._mapSort.filterMembers(sortedMap, members);
                                         let title = `Members who are eligible for **${item.displayName}**`;
@@ -340,7 +339,7 @@ class LootScoreBot {
                                     this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                                     this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                                         this._lootLogMap = value;
-                                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                                         const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                                         const filteredMap = this._mapSort.filterMembers(sortedMap, members);
                                         let title = `Members who have **${item.displayName}**`;
@@ -369,7 +368,7 @@ class LootScoreBot {
                                 this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                                 this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                                     this._lootLogMap = value;
-                                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                                     const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                                     const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
                                     if (Array.from(filteredMap).length > 0) {
@@ -474,7 +473,7 @@ class LootScoreBot {
                 this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                 this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                     this._lootLogMap = value;
-                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                     const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
                     this._lootScoreDailyDumpChannel.fetchMessages({ limit: 100 })
                         .then(messages => this._lootScoreDailyDumpChannel.bulkDelete(messages));

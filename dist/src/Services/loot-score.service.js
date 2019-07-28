@@ -70,12 +70,16 @@ class LootScoreService {
         }
         return percentageMap;
     }
-    createLootScoreMap(attendanceMap, seniorityMap, lootLogMap) {
+    createLootScoreMap(attendanceMap, attendancePercentageMap, seniorityMap, lootLogMap) {
         let lootScoreMap = new Map();
-        for (let entry of attendanceMap) {
+        for (let entry of attendancePercentageMap) {
             const memberScore = new loot_score_model_1.MemberScore();
             memberScore.attendancePercentage = Math.ceil(entry[1]);
             lootScoreMap.set(entry[0], memberScore);
+        }
+        for (let entry of attendanceMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+            memberScore.attendanceTotal = entry[1].length;
         }
         let highestValue = 1;
         for (let entry of seniorityMap) {
