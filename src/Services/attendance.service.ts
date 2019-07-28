@@ -1,7 +1,7 @@
 import { GuildMember, Message, VoiceChannel, TextChannel } from "discord.js";
 import { Subscription, timer } from "rxjs";
 import { inspect } from "util";
-import { MinimalVisualizationEmbed } from "../Embeds/minimal-visualization.embed";
+import { AttendanceEmbed } from "../Embeds/attendance.embed";
 import { LootScoreDataHelper } from "../Helpers/loot-score-data.helper";
 import { LootScoreService } from "./loot-score.service";
 
@@ -117,7 +117,7 @@ export class AttendanceService {
 
             seniorityLogChannel.send(this.codeBlockify(JSON.stringify(seniorityLootScoreData)));
             attendanceLogChannel.send(this.codeBlockify(JSON.stringify(attendanceLootScoreData)));
-            attendanceLogReadableChannel.send(new MinimalVisualizationEmbed(readableMinifiedAttendanceMap));
+            attendanceLogReadableChannel.send(new AttendanceEmbed(readableMinifiedAttendanceMap));
         }
 
         this._tick = 0;

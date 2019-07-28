@@ -11,19 +11,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const csv = require("csv-parser");
 const discord_js_1 = require("discord.js");
 const fs = require("fs");
-const detailed_visualization_embed_1 = require("./Embeds/detailed-visualization.embed");
+const stringSimilarity = require("string-similarity");
 const heading_embed_1 = require("./Embeds/heading.embed");
 const help_embed_1 = require("./Embeds/help.embed");
 const items_looted_embed_1 = require("./Embeds/items-looted.embed");
 const member_overview_embed_1 = require("./Embeds/member-overview.embed");
+const minimal_visualization_embed_1 = require("./Embeds/minimal-visualization.embed");
 const seniority_embed_1 = require("./Embeds/seniority.embed");
 const map_sort_helper_1 = require("./Helpers/map-sort.helper");
 const member_match_helper_1 = require("./Helpers/member-match.helper");
+const messages_helper_1 = require("./Helpers/messages.helper");
 const attendance_service_1 = require("./Services/attendance.service");
 const loot_log_service_1 = require("./Services/loot-log.service");
 const loot_score_service_1 = require("./Services/loot-score.service");
-const stringSimilarity = require("string-similarity");
-const messages_helper_1 = require("./Helpers/messages.helper");
 class LootScoreBot {
     constructor() {
         this._client = new discord_js_1.Client();
@@ -150,10 +150,9 @@ class LootScoreBot {
                             else {
                                 sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                             }
-                            message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                            for (let entry of sortedMap) {
-                                message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
-                            }
+                            let title = 'Overview ordered by **LootScore**';
+                            message.content.includes('--asc') ? title += ' (asc)' : title += ' (desc)';
+                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(sortedMap, title));
                         });
                     });
                 });
@@ -177,10 +176,9 @@ class LootScoreBot {
                             else {
                                 sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap);
                             }
-                            message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                            for (let entry of sortedMap) {
-                                message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
-                            }
+                            let title = 'Overview ordered by **attendance**';
+                            message.content.includes('--asc') ? title += ' (asc)' : title += ' (desc)';
+                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(sortedMap, title));
                         });
                     });
                 });
@@ -204,10 +202,9 @@ class LootScoreBot {
                             else {
                                 sortedMap = this._mapSort.sortByName(this._lootScoreMap);
                             }
-                            message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                            for (let entry of sortedMap) {
-                                message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
-                            }
+                            let title = 'Overview ordered by **name**';
+                            message.content.includes('--asc') ? title += ' (asc)' : title += ' (desc)';
+                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(sortedMap, title));
                         });
                     });
                 });
@@ -231,10 +228,9 @@ class LootScoreBot {
                             else {
                                 sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap);
                             }
-                            message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'Seniority'));
-                            for (let entry of sortedMap) {
-                                message.channel.send(new seniority_embed_1.SeniorityEmbed(sortedMap, entry));
-                            }
+                            let title = 'Overview ordered by **seniority**';
+                            message.content.includes('--asc') ? title += ' (asc)' : title += ' (desc)';
+                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(sortedMap, title));
                         });
                     });
                 });
@@ -316,10 +312,8 @@ class LootScoreBot {
                                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                                         const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                                         const filteredMap = this._mapSort.filterMembers(sortedMap, members);
-                                        message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                                        for (let entry of filteredMap) {
-                                            message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(filteredMap, entry));
-                                        }
+                                        let title = `Members who are eligible for **${item.displayName}**`;
+                                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
                                     });
                                 });
                             });
@@ -349,10 +343,8 @@ class LootScoreBot {
                                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                                         const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                                         const filteredMap = this._mapSort.filterMembers(sortedMap, members);
-                                        message.channel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
-                                        for (let entry of filteredMap) {
-                                            message.channel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(filteredMap, entry));
-                                        }
+                                        let title = `Members who have **${item.displayName}**`;
+                                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
                                     });
                                 });
                             });

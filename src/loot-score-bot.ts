@@ -1,21 +1,21 @@
 ﻿import * as csv from 'csv-parser';
 import { Client, GuildMember, Message, TextChannel, VoiceChannel } from 'discord.js';
 import * as fs from 'fs';
-import { DetailedVisualizationEmbed } from './Embeds/detailed-visualization.embed';
+import * as stringSimilarity from 'string-similarity';
 import { HeadingEmbed } from './Embeds/heading.embed';
 import { HelpEmbed } from './Embeds/help.embed';
 import { ItemsLootedEmbed } from './Embeds/items-looted.embed';
 import { MemberOverviewEmbed } from './Embeds/member-overview.embed';
+import { MinimalVisualizationEmbed } from './Embeds/minimal-visualization.embed';
 import { SeniorityEmbed } from './Embeds/seniority.embed';
 import { MapSortHelper } from './Helpers/map-sort.helper';
 import { MemberMatchHelper } from './Helpers/member-match.helper';
+import { MessagesHelper } from './Helpers/messages.helper';
 import { ItemScore } from './Models/item-score.model';
 import { MemberScore } from './Models/loot-score.model';
 import { AttendanceService } from './Services/attendance.service';
 import { LootLogService } from './Services/loot-log.service';
 import { LootScoreService } from './Services/loot-score.service';
-import * as stringSimilarity from 'string-similarity';
-import { MessagesHelper } from './Helpers/messages.helper';
 
 export class LootScoreBot {
     private _client = new Client();
@@ -175,11 +175,10 @@ export class LootScoreBot {
                                 sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                             }
 
-                            message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                            let title = 'Overview ordered by **LootScore**';
+                            message.content.includes('--asc') ? title += ' (asc)' : title += ' (desc)';
 
-                            for (let entry of sortedMap) {
-                                message.channel.send(new DetailedVisualizationEmbed(sortedMap, entry));
-                            }
+                            message.channel.send(new MinimalVisualizationEmbed(sortedMap, title));
                         });
                     });
                 });
@@ -209,11 +208,10 @@ export class LootScoreBot {
                                 sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap);
                             }
 
-                            message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                            let title = 'Overview ordered by **attendance**';
+                            message.content.includes('--asc') ? title += ' (asc)' : title += ' (desc)';
 
-                            for (let entry of sortedMap) {
-                                message.channel.send(new DetailedVisualizationEmbed(sortedMap, entry));
-                            }
+                            message.channel.send(new MinimalVisualizationEmbed(sortedMap, title));
                         });
                     });
                 });
@@ -243,11 +241,10 @@ export class LootScoreBot {
                                 sortedMap = this._mapSort.sortByName(this._lootScoreMap);
                             }
 
-                            message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                            let title = 'Overview ordered by **name**';
+                            message.content.includes('--asc') ? title += ' (asc)' : title += ' (desc)';
 
-                            for (let entry of sortedMap) {
-                                message.channel.send(new DetailedVisualizationEmbed(sortedMap, entry));
-                            }
+                            message.channel.send(new MinimalVisualizationEmbed(sortedMap, title));
                         });
                     }); 
                 });
@@ -277,11 +274,10 @@ export class LootScoreBot {
                                 sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap);
                             }
 
-                            message.channel.send(new HeadingEmbed('Member', 'Attendance', 'Seniority'));
+                            let title = 'Overview ordered by **seniority**';
+                            message.content.includes('--asc') ? title += ' (asc)' : title += ' (desc)';
 
-                            for (let entry of sortedMap) {
-                                message.channel.send(new SeniorityEmbed(sortedMap, entry));
-                            }
+                            message.channel.send(new MinimalVisualizationEmbed(sortedMap, title));
                         });
                     });
                 });
@@ -379,11 +375,9 @@ export class LootScoreBot {
                                         const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                                         const filteredMap = this._mapSort.filterMembers(sortedMap, members);
 
-                                        message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                                        let title = `Members who are eligible for **${item.displayName}**`;
 
-                                        for (let entry of filteredMap) {
-                                            message.channel.send(new DetailedVisualizationEmbed(filteredMap, entry));
-                                        }
+                                        message.channel.send(new MinimalVisualizationEmbed(filteredMap, title));
                                     });
                                 });
                             });
@@ -421,11 +415,9 @@ export class LootScoreBot {
                                         const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
                                         const filteredMap = this._mapSort.filterMembers(sortedMap, members);
 
-                                        message.channel.send(new HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                                        let title = `Members who have **${item.displayName}**`;
 
-                                        for (let entry of filteredMap) {
-                                            message.channel.send(new DetailedVisualizationEmbed(filteredMap, entry));
-                                        }
+                                        message.channel.send(new MinimalVisualizationEmbed(filteredMap, title));
                                     });   
                                 });
                             });

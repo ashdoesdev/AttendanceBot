@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const rxjs_1 = require("rxjs");
-const minimal_visualization_embed_1 = require("../Embeds/minimal-visualization.embed");
+const attendance_embed_1 = require("../Embeds/attendance.embed");
 const loot_score_data_helper_1 = require("../Helpers/loot-score-data.helper");
 const loot_score_service_1 = require("./loot-score.service");
 class AttendanceService {
@@ -105,7 +105,7 @@ class AttendanceService {
                 let seniorityLootScoreData = this._dataHelper.createLootScoreData(minifiedSeniorityArray, message);
                 seniorityLogChannel.send(this.codeBlockify(JSON.stringify(seniorityLootScoreData)));
                 attendanceLogChannel.send(this.codeBlockify(JSON.stringify(attendanceLootScoreData)));
-                attendanceLogReadableChannel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(readableMinifiedAttendanceMap));
+                attendanceLogReadableChannel.send(new attendance_embed_1.AttendanceEmbed(readableMinifiedAttendanceMap));
             }
             this._tick = 0;
             this._timerSubscription.unsubscribe();
