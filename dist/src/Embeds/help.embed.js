@@ -6,11 +6,11 @@ class HelpEmbed extends discord_js_1.RichEmbed {
         super();
         this.setColor('#f4c65a');
         this.setTitle('LootScore Commands');
-        this.setDescription('All commands must be made in the <#603778824487960685> channel');
+        this.setDescription('All commands must be made in the <#603778824487960685> channel. Item shorthands are the second value in the <#571794427958525962> channel.');
         this.addBlankField();
         this.addField('Start attendance', '```\n/start```');
         this.addField('End attendance', '```\n/end```');
-        this.addField('End attendance without logging', '```\n/end --nolog```');
+        this.addField('End attendance without logging (in case of accidental start)', '```\n/end --nolog```');
         this.addBlankField();
         this.addField('Award item', '```\n/give @name shorthand```');
         this.addField('Show who needs item in current raid', '```\n/needs shorthand```');

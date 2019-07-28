@@ -2,34 +2,17 @@ import { GuildMember, Message, TextChannel } from "discord.js";
 import { MapSortHelper } from "../Helpers/map-sort.helper";
 import { ItemScore } from "../Models/item-score.model";
 import { LootScoreData, MemberScore } from "../Models/loot-score.model";
+import { MessagesHelper } from "../Helpers/messages.helper";
 
 export class LootScoreService {
     private _mapSort: MapSortHelper = new MapSortHelper();
+    private _messages: MessagesHelper = new MessagesHelper();
 
     public totalRaids: number;
 
-    public async getAttendanceEntries(attendanceLogChannel: TextChannel): Promise<Message[]> {
-        let entries = new Array<Message>();
-        let lastId;
-
-        while (true) {
-            const options = { limit: 100 };
-            const messages = await attendanceLogChannel.fetchMessages(options);
-            entries.push(...messages.array());
-            lastId = messages.last().id;
-
-            if (messages.size != 100) {
-                break;
-            }
-        }
-
-        this.totalRaids = entries.length;
-
-        return entries;
-    }
-
     public async getAttendanceMap(attendanceLogChannel: TextChannel): Promise<Map<string, number[]>> {
-        let entries = await this.getAttendanceEntries(attendanceLogChannel);
+        let entries = await this._messages.getMessages(attendanceLogChannel);
+        this.totalRaids = entries.length;
 
         let allEntries = new Map<string, number[]>();
 
@@ -57,29 +40,8 @@ export class LootScoreService {
         return allEntries;
     }
 
-    public async getSeniorityEntries(seniorityLogChannel: TextChannel): Promise<Message[]> {
-        let entries = new Array<Message>();
-        let lastId;
-
-        while (true) {
-            const options = { limit: 100 };
-            const messages = await seniorityLogChannel.fetchMessages(options);
-            entries.push(...messages.array());
-
-            if (messages.last()) {
-                lastId = messages.last().id;
-            }
-
-            if (messages.size != 100) {
-                break;
-            }
-        }
-
-        return entries;
-    }
-
     public async getSeniorityMap(seniorityLogChannel: TextChannel): Promise<Map<string, number>> {
-        let entries = await this.getSeniorityEntries(seniorityLogChannel);
+        let entries = await this._messages.getMessages(seniorityLogChannel);
         let lastEntry = entries[0];
 
         let seniorityMap = new Map<string, number>();
@@ -147,7 +109,12 @@ export class LootScoreService {
         }
 
         let sortedMap = this._mapSort.sortByItemScoreTotal(lootScoreMap);
-        let highestItemScore = Array.from(sortedMap)[0][1].itemScoreTotal;
+
+        let highestItemScore;
+
+        if (Array.from(sortedMap)[0]) {
+            highestItemScore = Array.from(sortedMap)[0][1].itemScoreTotal;
+        }
 
         for (let entry of lootScoreMap) {
             let memberScore = lootScoreMap.get(entry[0]);

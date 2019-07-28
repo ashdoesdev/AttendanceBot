@@ -8,15 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const loot_log_embed_1 = require("../Embeds/loot-log.embed");
-const loot_score_data_helper_1 = require("../Helpers/loot-score-data.helper");
-const member_match_helper_1 = require("../Helpers/member-match.helper");
 const item_score_model_1 = require("../Models/item-score.model");
+const loot_log_embed_1 = require("../Embeds/loot-log.embed");
 const loot_score_model_1 = require("../Models/loot-score.model");
+const member_match_helper_1 = require("../Helpers/member-match.helper");
+const loot_score_data_helper_1 = require("../Helpers/loot-score-data.helper");
+const messages_helper_1 = require("../Helpers/messages.helper");
 class LootLogService {
     constructor() {
         this._memberMatcher = new member_match_helper_1.MemberMatchHelper();
         this._dataHelper = new loot_score_data_helper_1.LootScoreDataHelper();
+        this._messages = new messages_helper_1.MessagesHelper();
     }
     awardItem(message, lootLogChannel, lootLogReadableChannel, item) {
         let awardedItem = new item_score_model_1.AwardedItem();
@@ -31,7 +33,7 @@ class LootLogService {
     }
     getItemScores(itemScoresChannel) {
         return __awaiter(this, void 0, void 0, function* () {
-            let entries = yield this.getItemScoreEntries(itemScoresChannel);
+            let entries = yield this._messages.getMessages(itemScoresChannel);
             let scores = new Array();
             for (let entry of entries) {
                 let array = this.convertStringPipesToArray(entry.content);
@@ -46,22 +48,6 @@ class LootLogService {
                 scores.push(itemScore);
             }
             return scores;
-        });
-    }
-    getItemScoreEntries(itemScoresChannel) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let entries = new Array();
-            let lastId;
-            while (true) {
-                const options = { limit: 100 };
-                const messages = yield itemScoresChannel.fetchMessages(options);
-                entries.push(...messages.array());
-                lastId = messages.last().id;
-                if (messages.size != 100) {
-                    break;
-                }
-            }
-            return entries;
         });
     }
     getEligibleMembers(item, lootLogChannel, presentMembers) {
@@ -114,7 +100,7 @@ class LootLogService {
     }
     createLootLogMap(lootLogChannel, members) {
         return __awaiter(this, void 0, void 0, function* () {
-            let messageEntries = yield this.getMessages(lootLogChannel);
+            let messageEntries = yield this._messages.getMessages(lootLogChannel);
             let lootLogMap = new Map();
             for (let entry of messageEntries) {
                 let cleanString = entry.content.replace(/`/g, '');
@@ -130,20 +116,6 @@ class LootLogService {
                 }
             }
             return lootLogMap;
-        });
-    }
-    getMessages(textChannel) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let entries = new Array();
-            while (true) {
-                const options = { limit: 100 };
-                const messages = yield textChannel.fetchMessages(options);
-                entries.push(...messages.array());
-                if (messages.size != 100) {
-                    break;
-                }
-            }
-            return entries;
         });
     }
     getLootHistory(member, lootLogChannel, members) {

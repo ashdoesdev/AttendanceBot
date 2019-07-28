@@ -15,6 +15,7 @@ import { AttendanceService } from './Services/attendance.service';
 import { LootLogService } from './Services/loot-log.service';
 import { LootScoreService } from './Services/loot-score.service';
 import * as stringSimilarity from 'string-similarity';
+import { MessagesHelper } from './Helpers/messages.helper';
 
 export class LootScoreBot {
     private _client = new Client();
@@ -36,6 +37,7 @@ export class LootScoreBot {
     private _attendanceService: AttendanceService = new AttendanceService();
     private _memberMatcher: MemberMatchHelper = new MemberMatchHelper();
     private _mapSort: MapSortHelper = new MapSortHelper();
+    private _messages: MessagesHelper = new MessagesHelper();
 
     private _seniorityMap: Map<GuildMember, number>;
     private _attendanceMap: Map<GuildMember, number[]>;
@@ -684,21 +686,21 @@ export class LootScoreBot {
     }
 
     public async backUpValues(): Promise<void> {
-        let lootLog: Message[] = await this._lootLogService.getMessages(this._lootLogDataChannel);
+        let lootLog: Message[] = await this._messages.getMessages(this._lootLogDataChannel);
         let cleanLootLogMessages = new Array<string>();
 
         for (let message of lootLog) {
             cleanLootLogMessages.push(message.content);
         }
 
-        let seniorityLog: Message[] = await this._lootLogService.getMessages(this._seniorityLogDataChannel);
+        let seniorityLog: Message[] = await this._messages.getMessages(this._seniorityLogDataChannel);
         let cleanSeniorityLogMessages = new Array<string>();
 
         for (let message of seniorityLog) {
             cleanSeniorityLogMessages.push(message.content);
         }
 
-        let attendanceLog: Message[] = await this._lootLogService.getMessages(this._attendanceLogDataChannel);
+        let attendanceLog: Message[] = await this._messages.getMessages(this._attendanceLogDataChannel);
         let cleanAttendanceLogMessages = new Array<string>();
 
         for (let message of attendanceLog) {

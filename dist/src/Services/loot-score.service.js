@@ -10,30 +10,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const map_sort_helper_1 = require("../Helpers/map-sort.helper");
 const loot_score_model_1 = require("../Models/loot-score.model");
+const messages_helper_1 = require("../Helpers/messages.helper");
 class LootScoreService {
     constructor() {
         this._mapSort = new map_sort_helper_1.MapSortHelper();
-    }
-    getAttendanceEntries(attendanceLogChannel) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let entries = new Array();
-            let lastId;
-            while (true) {
-                const options = { limit: 100 };
-                const messages = yield attendanceLogChannel.fetchMessages(options);
-                entries.push(...messages.array());
-                lastId = messages.last().id;
-                if (messages.size != 100) {
-                    break;
-                }
-            }
-            this.totalRaids = entries.length;
-            return entries;
-        });
+        this._messages = new messages_helper_1.MessagesHelper();
     }
     getAttendanceMap(attendanceLogChannel) {
         return __awaiter(this, void 0, void 0, function* () {
-            let entries = yield this.getAttendanceEntries(attendanceLogChannel);
+            let entries = yield this._messages.getMessages(attendanceLogChannel);
+            this.totalRaids = entries.length;
             let allEntries = new Map();
             for (let entry of entries) {
                 let endIndex = entry.content.length - 4;
@@ -57,27 +43,9 @@ class LootScoreService {
             return allEntries;
         });
     }
-    getSeniorityEntries(seniorityLogChannel) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let entries = new Array();
-            let lastId;
-            while (true) {
-                const options = { limit: 100 };
-                const messages = yield seniorityLogChannel.fetchMessages(options);
-                entries.push(...messages.array());
-                if (messages.last()) {
-                    lastId = messages.last().id;
-                }
-                if (messages.size != 100) {
-                    break;
-                }
-            }
-            return entries;
-        });
-    }
     getSeniorityMap(seniorityLogChannel) {
         return __awaiter(this, void 0, void 0, function* () {
-            let entries = yield this.getSeniorityEntries(seniorityLogChannel);
+            let entries = yield this._messages.getMessages(seniorityLogChannel);
             let lastEntry = entries[0];
             let seniorityMap = new Map();
             if (lastEntry) {
@@ -129,7 +97,10 @@ class LootScoreService {
             memberScore.itemScoreTotal = total;
         }
         let sortedMap = this._mapSort.sortByItemScoreTotal(lootScoreMap);
-        let highestItemScore = Array.from(sortedMap)[0][1].itemScoreTotal;
+        let highestItemScore;
+        if (Array.from(sortedMap)[0]) {
+            highestItemScore = Array.from(sortedMap)[0][1].itemScoreTotal;
+        }
         for (let entry of lootScoreMap) {
             let memberScore = lootScoreMap.get(entry[0]);
             if (memberScore.itemScoreTotal) {

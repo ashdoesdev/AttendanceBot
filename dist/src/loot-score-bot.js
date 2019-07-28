@@ -23,6 +23,7 @@ const attendance_service_1 = require("./Services/attendance.service");
 const loot_log_service_1 = require("./Services/loot-log.service");
 const loot_score_service_1 = require("./Services/loot-score.service");
 const stringSimilarity = require("string-similarity");
+const messages_helper_1 = require("./Helpers/messages.helper");
 class LootScoreBot {
     constructor() {
         this._client = new discord_js_1.Client();
@@ -31,6 +32,7 @@ class LootScoreBot {
         this._attendanceService = new attendance_service_1.AttendanceService();
         this._memberMatcher = new member_match_helper_1.MemberMatchHelper();
         this._mapSort = new map_sort_helper_1.MapSortHelper();
+        this._messages = new messages_helper_1.MessagesHelper();
     }
     start(token) {
         this._client.login(token);
@@ -557,17 +559,17 @@ class LootScoreBot {
     }
     backUpValues() {
         return __awaiter(this, void 0, void 0, function* () {
-            let lootLog = yield this._lootLogService.getMessages(this._lootLogDataChannel);
+            let lootLog = yield this._messages.getMessages(this._lootLogDataChannel);
             let cleanLootLogMessages = new Array();
             for (let message of lootLog) {
                 cleanLootLogMessages.push(message.content);
             }
-            let seniorityLog = yield this._lootLogService.getMessages(this._seniorityLogDataChannel);
+            let seniorityLog = yield this._messages.getMessages(this._seniorityLogDataChannel);
             let cleanSeniorityLogMessages = new Array();
             for (let message of seniorityLog) {
                 cleanSeniorityLogMessages.push(message.content);
             }
-            let attendanceLog = yield this._lootLogService.getMessages(this._attendanceLogDataChannel);
+            let attendanceLog = yield this._messages.getMessages(this._attendanceLogDataChannel);
             let cleanAttendanceLogMessages = new Array();
             for (let message of attendanceLog) {
                 cleanAttendanceLogMessages.push(message.content);

@@ -1,13 +1,15 @@
-import { GuildMember, Message, TextChannel } from "discord.js";
+import { TextChannel, Message, GuildMember } from "discord.js";
+import { ItemScore, AwardedItem } from "../Models/item-score.model";
 import { LootLogEmbed } from "../Embeds/loot-log.embed";
-import { LootScoreDataHelper } from "../Helpers/loot-score-data.helper";
+import { LootScore, LootScoreData, Signature, MinimalMember } from "../Models/loot-score.model";
 import { MemberMatchHelper } from "../Helpers/member-match.helper";
-import { AwardedItem, ItemScore } from "../Models/item-score.model";
-import { LootScoreData, MinimalMember } from "../Models/loot-score.model";
+import { LootScoreDataHelper } from "../Helpers/loot-score-data.helper";
+import { MessagesHelper } from "../Helpers/messages.helper";
 
 export class LootLogService {
     private _memberMatcher: MemberMatchHelper = new MemberMatchHelper();
     private _dataHelper: LootScoreDataHelper = new LootScoreDataHelper();
+    private _messages: MessagesHelper = new MessagesHelper();
 
     public awardItem(message: Message, lootLogChannel: TextChannel, lootLogReadableChannel: TextChannel, item: ItemScore): void {
         let awardedItem = new AwardedItem();
@@ -24,7 +26,7 @@ export class LootLogService {
     }
 
     public async getItemScores(itemScoresChannel: TextChannel): Promise<ItemScore[]> {
-        let entries = await this.getItemScoreEntries(itemScoresChannel);
+        let entries = await this._messages.getMessages(itemScoresChannel);
         let scores = new Array<ItemScore>();
 
         for (let entry of entries) {
@@ -44,24 +46,6 @@ export class LootLogService {
         }
 
         return scores;
-    }
-
-    public async getItemScoreEntries(itemScoresChannel: TextChannel): Promise<Message[]> {
-        let entries = new Array<Message>();
-        let lastId;
-
-        while (true) {
-            const options = { limit: 100 };
-            const messages = await itemScoresChannel.fetchMessages(options);
-            entries.push(...messages.array());
-            lastId = messages.last().id;
-
-            if (messages.size != 100) {
-                break;
-            }
-        }
-
-        return entries;
     }
 
     public async getEligibleMembers(item: ItemScore, lootLogChannel: TextChannel, presentMembers: GuildMember[]): Promise<string[]> {
@@ -120,7 +104,7 @@ export class LootLogService {
     }
 
     public async createLootLogMap(lootLogChannel: TextChannel, members: GuildMember[]): Promise<Map<GuildMember, ItemScore[]>> {
-        let messageEntries = await this.getMessages(lootLogChannel);
+        let messageEntries = await this._messages.getMessages(lootLogChannel);
         let lootLogMap = new Map<GuildMember, ItemScore[]>();
 
         for (let entry of messageEntries) {
@@ -139,22 +123,6 @@ export class LootLogService {
         }
 
         return lootLogMap;
-    }
-
-    public async getMessages(textChannel: TextChannel): Promise<Message[]> {
-        let entries = new Array<Message>();
-
-        while (true) {
-            const options = { limit: 100 };
-            const messages = await textChannel.fetchMessages(options);
-            entries.push(...messages.array());
-
-            if (messages.size != 100) {
-                break;
-            }
-        }
-
-        return entries;
     }
 
     public async getLootHistory(member: GuildMember, lootLogChannel: TextChannel, members: GuildMember[]): Promise<ItemScore[]> {
