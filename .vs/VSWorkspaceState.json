@@ -11,6 +11,6 @@
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\dist\\src\\loot-score-bot.js",
+  "SelectedNode": "\\src\\loot-score-bot.ts",
   "PreviewInSolutionExplorer": false
 }

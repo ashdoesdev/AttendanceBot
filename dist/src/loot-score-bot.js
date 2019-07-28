@@ -8,21 +8,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const discord_js_1 = require("discord.js");
-const help_embed_1 = require("./Embeds/help.embed");
-const fs = require("fs");
 const csv = require("csv-parser");
-const loot_score_service_1 = require("./Services/loot-score.service");
-const attendance_service_1 = require("./Services/attendance.service");
-const member_match_helper_1 = require("./Helpers/member-match.helper");
+const discord_js_1 = require("discord.js");
+const fs = require("fs");
 const detailed_visualization_embed_1 = require("./Embeds/detailed-visualization.embed");
 const heading_embed_1 = require("./Embeds/heading.embed");
+const help_embed_1 = require("./Embeds/help.embed");
+const items_looted_embed_1 = require("./Embeds/items-looted.embed");
+const member_overview_embed_1 = require("./Embeds/member-overview.embed");
 const seniority_embed_1 = require("./Embeds/seniority.embed");
 const map_sort_helper_1 = require("./Helpers/map-sort.helper");
+const member_match_helper_1 = require("./Helpers/member-match.helper");
+const attendance_service_1 = require("./Services/attendance.service");
 const loot_log_service_1 = require("./Services/loot-log.service");
-const member_overview_embed_1 = require("./Embeds/member-overview.embed");
-const items_looted_embed_1 = require("./Embeds/items-looted.embed");
-var stringSimilarity = require('string-similarity');
+const loot_score_service_1 = require("./Services/loot-score.service");
+const stringSimilarity = require("string-similarity");
 class LootScoreBot {
     constructor() {
         this._client = new discord_js_1.Client();
@@ -38,36 +38,31 @@ class LootScoreBot {
             console.log('Ready!');
             this._raidChannel1 = this._client.channels.get('565701455420588032');
             this._raidChannel2 = this._client.channels.get('566702461629497365');
-            this._seniorityLogChannel = this._client.channels.get('599818971180695573');
-            this._attendanceLogChannel = this._client.channels.get('571160933804539924');
-            this._attendanceLogReadableChannel = this._client.channels.get('586983799582228482');
-            this._lootLogChannel = this._client.channels.get('571795185399234630');
-            this._lootLogReadableChannel = this._client.channels.get('586983990976577557');
+            this._seniorityLogDataChannel = this._client.channels.get('599818971180695573');
+            this._attendanceLogDataChannel = this._client.channels.get('571160933804539924');
+            this._attendanceLogChannel = this._client.channels.get('586983799582228482');
+            this._lootLogDataChannel = this._client.channels.get('571795185399234630');
+            this._lootLogChannel = this._client.channels.get('586983990976577557');
             this._itemScoresChannel = this._client.channels.get('571794427958525962');
             this._lootScoreDailyDumpChannel = this._client.channels.get('599082030679982080');
+            this._adminChannel = this._client.channels.get('603778824487960685');
             var CronJob = require('cron').CronJob;
-            var job = new CronJob('1/5 * * * * *', function () {
-                this.sendLootScoreDailyDump();
-                this.backUpValues();
-            }.bind(this), null, true, 'America/Los_Angeles');
+            var job = new CronJob('1/5 * * * * *', () => this.manageDailyJobs.bind(this), null, true, 'America/Los_Angeles');
             job.start();
         });
         this._client.on('message', message => {
-            if (message.content === 'ls h' || message.content === 'ls help') {
-                message.channel.send(new help_embed_1.HelpEmbed());
+            if (message.content === '/help') {
+                message.author.send(new help_embed_1.HelpEmbed());
             }
             if (message.content === '!clear') {
                 message.channel.fetchMessages({ limit: 100 })
                     .then(messages => message.channel.bulkDelete(messages));
             }
-            if (message.content === 'ls s' || message.content === 'ls start') {
+            if (message.content === '/start') {
                 if (this.canUseCommands(message)) {
                     if (Array.from(this._raidChannel1.members.values()).length > 0 || Array.from(this._raidChannel2.members.values()).length > 0) {
                         message.channel.send('Do you wish to start logging? Please confirm.').then((sentMessage) => {
-                            sentMessage.react('✅').then(() => sentMessage.react('❌'));
-                            const filter = (reaction, user) => {
-                                return (reaction.emoji.name === '✅' || reaction.emoji.name === '❌') && user.id === message.author.id;
-                            };
+                            const filter = this.setReactionFilter(sentMessage, message);
                             sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                                 .then((collected) => {
                                 if (collected.first().emoji.name === '✅') {
@@ -90,18 +85,15 @@ class LootScoreBot {
                     message.channel.send(`<@${message.member.user.id}>, you don't have sufficient permissions do to that`);
                 }
             }
-            if (message.content === 'ls e' || message.content === 'ls end') {
+            if (message.content === '/end') {
                 if (this.canUseCommands(message)) {
                     if (this._attendanceService.loggingInProgress) {
                         message.channel.send('Are you ready to end logging? This command will end logging and submit all values.').then((sentMessage) => {
-                            sentMessage.react('✅').then(() => sentMessage.react('❌'));
-                            const filter = (reaction, user) => {
-                                return (reaction.emoji.name === '✅' || reaction.emoji.name === '❌') && user.id === message.author.id;
-                            };
+                            const filter = this.setReactionFilter(sentMessage, message);
                             sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                                 .then((collected) => {
                                 if (collected.first().emoji.name === '✅') {
-                                    this._attendanceService.endLogging(message, this._seniorityLogChannel, this._attendanceLogChannel, this._attendanceLogReadableChannel);
+                                    this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel);
                                 }
                                 else {
                                     message.channel.send('Request to end logging aborted. Logging will continue.');
@@ -120,19 +112,16 @@ class LootScoreBot {
                     message.channel.send(`<@${message.member.user.id}> ur not my mom`);
                 }
             }
-            if (message.content === 'ls e --nolog' || message.content === 'ls end --nolog') {
+            if (message.content === '/end --nolog') {
                 if (this.canUseCommands(message)) {
                     if (this._attendanceService.loggingInProgress) {
                         message.channel.send('Are you sure? This command will end the raid and not save any values.').then((sentMessage) => {
-                            sentMessage.react('✅').then(() => sentMessage.react('❌'));
-                            const filter = (reaction, user) => {
-                                return (reaction.emoji.name === '✅' || reaction.emoji.name === '❌') && user.id === message.author.id;
-                            };
+                            const filter = this.setReactionFilter(sentMessage, message);
                             sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                                 .then((collected) => {
                                 if (collected.first().emoji.name === '✅') {
                                     message.channel.send('Logging successfully ended. No records saved from this session.');
-                                    this._attendanceService.endLogging(message, this._seniorityLogChannel, this._attendanceLogChannel, this._attendanceLogReadableChannel, false);
+                                    this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel, false);
                                 }
                                 else {
                                     message.channel.send('Request to end logging aborted. Logging will continue.');
@@ -151,16 +140,16 @@ class LootScoreBot {
                     message.channel.send(`<@${message.member.user.id}> is up to something fishy...`);
                 }
             }
-            if (message.content.startsWith('ls --ls')) {
+            if (message.content === '/ls' || message.content === '/ls --asc') {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
-                this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                     const attendanceMapId = value;
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
+                    this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
                         const seniorityMapId = value;
                         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                        this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                        this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                             this._lootLogMap = value;
                             this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                             let sortedMap = new Map();
@@ -178,16 +167,16 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('ls --attendance')) {
+            if (message.content.startsWith('/ls --attendance')) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
-                this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                     const attendanceMapId = value;
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
+                    this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
                         const seniorityMapId = value;
                         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                        this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                        this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                             this._lootLogMap = value;
                             this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                             let sortedMap = new Map();
@@ -205,16 +194,16 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('ls --name')) {
+            if (message.content.startsWith('/ls --name')) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
-                this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                     const attendanceMapId = value;
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
+                    this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
                         const seniorityMapId = value;
                         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                        this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                        this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                             this._lootLogMap = value;
                             this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                             let sortedMap = new Map();
@@ -232,16 +221,16 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('ls --seniority')) {
+            if (message.content.startsWith('/ls --seniority')) {
                 this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
-                this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                     const attendanceMapId = value;
                     this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                     this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
+                    this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
                         const seniorityMapId = value;
                         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                        this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                        this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                             this._lootLogMap = value;
                             this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                             let sortedMap = new Map();
@@ -259,29 +248,21 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('ls g ') || message.content.startsWith('ls give ')) {
+            if (message.content.startsWith('/give')) {
                 if (this.canUseCommands(message)) {
                     let query = '';
-                    if (message.content.includes('give')) {
-                        query = message.content.replace('ls give ', '').replace(/(@\S+)/, '').replace('<', '').trim();
-                    }
-                    else {
-                        query = message.content.replace('ls g ', '').replace(/(@\S+)/, '').replace('<', '').trim();
-                    }
+                    query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('<', '').trim();
                     let member = message.mentions.members.array()[0];
                     if (member) {
                         this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                             let item = array.find((x) => x.shorthand === query);
                             if (item) {
                                 message.channel.send(`Do you wish to award ${member.displayName} **${item.displayName}**? Please confirm.`).then((sentMessage) => {
-                                    sentMessage.react('✅').then(() => sentMessage.react('❌'));
-                                    const filter = (reaction, user) => {
-                                        return (reaction.emoji.name === '✅' || reaction.emoji.name === '❌') && user.id === message.author.id;
-                                    };
+                                    const filter = this.setReactionFilter(sentMessage, message);
                                     sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                                         .then((collected) => {
                                         if (collected.first().emoji.name === '✅') {
-                                            this._lootLogService.awardItem(message, this._lootLogChannel, this._lootLogReadableChannel, item);
+                                            this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item);
                                         }
                                         else {
                                             message.channel.send('Request to award item aborted.');
@@ -330,21 +311,21 @@ class LootScoreBot {
                     message.channel.send(`<@${message.member.user.id}>, you don't have sufficient permissions do to that`);
                 }
             }
-            if (message.content.startsWith('ls needs --all')) {
-                let query = message.content.replace('ls needs --all ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+            if (message.content.startsWith('/needs --all')) {
+                let query = message.content.replace('/needs --all ', '').replace(/(@\S+)/, '').replace('<', '').trim();
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
-                    this._lootLogService.getEligibleMembers(item, this._lootLogChannel, this._guildMembers).then((members) => {
+                    this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers).then((members) => {
                         if (members.length > 0) {
                             this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
-                            this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                            this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                                 const attendanceMapId = value;
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
+                                this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
                                     const seniorityMapId = value;
                                     this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                                    this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                                         this._lootLogMap = value;
                                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                                         const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
@@ -363,21 +344,21 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('ls has --all')) {
-                let query = message.content.replace('ls has --all ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+            if (message.content.startsWith('/has --all')) {
+                let query = message.content.replace('/has --all ', '').replace(/(@\S+)/, '').replace('<', '').trim();
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
-                    this._lootLogService.getHasLooted(item, this._lootLogChannel, this._guildMembers).then((members) => {
+                    this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers).then((members) => {
                         if (members.length > 0) {
                             this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
-                            this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                            this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                                 const attendanceMapId = value;
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
+                                this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
                                     const seniorityMapId = value;
                                     this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                                    this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                                         this._lootLogMap = value;
                                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                                         const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
@@ -396,21 +377,21 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('ls needs')) {
-                let query = message.content.replace('ls needs ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+            if (message.content.startsWith('/needs')) {
+                let query = message.content.replace('/needs ', '').replace(/(@\S+)/, '').replace('<', '').trim();
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
-                    this._lootLogService.getEligibleMembers(item, this._lootLogChannel, this.presentMembers).then((members) => {
+                    this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this.presentMembers).then((members) => {
                         if (members.length > 0) {
                             this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
-                            this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                            this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                                 const attendanceMapId = value;
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
+                                this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
                                     const seniorityMapId = value;
                                     this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                                    this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                                         this._lootLogMap = value;
                                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                                         const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
@@ -429,21 +410,21 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('ls has')) {
-                let query = message.content.replace('ls has ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+            if (message.content.startsWith('/has')) {
+                let query = message.content.replace('/has ', '').replace(/(@\S+)/, '').replace('<', '').trim();
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand === query);
-                    this._lootLogService.getHasLooted(item, this._lootLogChannel, this.presentMembers).then((members) => {
+                    this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this.presentMembers).then((members) => {
                         if (members.length > 0) {
                             this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
-                            this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                            this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                                 const attendanceMapId = value;
                                 this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                                 this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
+                                this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
                                     const seniorityMapId = value;
                                     this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                                    this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                                    this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                                         this._lootLogMap = value;
                                         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                                         const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
@@ -462,19 +443,19 @@ class LootScoreBot {
                     });
                 });
             }
-            if (message.content.startsWith('ls overview')) {
+            if (message.content.startsWith('/overview')) {
                 let member = message.mentions.members.array()[0];
                 if (member) {
                     this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
-                    this._lootLogService.getLootHistory(member, this._lootLogChannel, this._guildMembers).then((items) => {
-                        this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+                    this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers).then((items) => {
+                        this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                             const attendanceMapId = value;
                             this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
                             this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                            this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
+                            this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
                                 const seniorityMapId = value;
                                 this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                                this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                                this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                                     this._lootLogMap = value;
                                     this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                                     const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
@@ -499,12 +480,15 @@ class LootScoreBot {
                     message.channel.send('Could not find member. Be sure to @mention a full member name.');
                 }
             }
-            if (message.content.startsWith('ls getitemscores')) {
+            if (message.content.startsWith('/getitemscores')) {
                 const path = message.content.replace('ls getitemscores ', '');
                 const results = [];
                 fs.createReadStream(path)
                     .pipe(csv({ headers: false }))
                     .on('data', (data) => results.push(data))
+                    .on('error', () => {
+                    message.channel.send('File not found.');
+                })
                     .on('end', () => {
                     for (let result of results) {
                         if (result[3]) {
@@ -516,37 +500,43 @@ class LootScoreBot {
                     }
                 });
             }
-            if (message.content.startsWith('ls import --loot')) {
+            if (message.content.startsWith('/import --loot')) {
                 const path = message.content.replace('ls import --loot ', '');
                 fs.createReadStream(path)
                     .on('data', (data) => {
                     let messages = JSON.parse(data);
                     for (let message of messages) {
-                        this._lootLogChannel.send(message);
+                        this._lootLogDataChannel.send(message);
                     }
                 })
                     .on('error', () => {
                     message.channel.send('File not found.');
                 });
             }
-            if (message.content.startsWith('ls import --seniority')) {
+            if (message.content.startsWith('/import --seniority')) {
                 const path = message.content.replace('ls import --seniority ', '');
                 fs.createReadStream(path)
                     .on('data', (data) => {
                     let messages = JSON.parse(data);
                     for (let message of messages) {
-                        this._seniorityLogChannel.send(message);
+                        this._seniorityLogDataChannel.send(message);
                     }
+                })
+                    .on('error', () => {
+                    message.channel.send('File not found.');
                 });
             }
-            if (message.content.startsWith('ls import --attendance')) {
+            if (message.content.startsWith('/import --attendance')) {
                 const path = message.content.replace('ls import --attendance ', '');
                 fs.createReadStream(path)
                     .on('data', (data) => {
                     let messages = JSON.parse(data);
                     for (let message of messages) {
-                        this._attendanceLogChannel.send(message);
+                        this._attendanceLogDataChannel.send(message);
                     }
+                })
+                    .on('error', () => {
+                    message.channel.send('File not found.');
                 });
             }
         });
@@ -557,24 +547,28 @@ class LootScoreBot {
     canUseCommands(message) {
         return message.member.roles.some((role) => role.name === 'LootScore Admin');
     }
+    manageDailyJobs() {
+        this.sendLootScoreDailyDump();
+        this.backUpValues();
+    }
     sendLootScoreDailyDump() {
         this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
-        this._lootScoreService.getAttendanceMap(this._attendanceLogChannel).then((value) => {
+        this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
             const attendanceMapId = value;
             this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
             this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-            this._lootScoreService.getSeniorityMap(this._seniorityLogChannel).then(value => {
+            this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
                 const seniorityMapId = value;
                 this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                this._lootLogService.createLootLogMap(this._lootLogChannel, this._guildMembers).then((value) => {
+                this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                     this._lootLogMap = value;
                     this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
                     const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
                     this._lootScoreDailyDumpChannel.fetchMessages({ limit: 100 })
                         .then(messages => this._lootScoreDailyDumpChannel.bulkDelete(messages));
-                    this._lootScoreDailyDumpChannel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'LootScore'));
+                    this._lootScoreDailyDumpChannel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'Seniority'));
                     for (let entry of sortedMap) {
-                        this._lootScoreDailyDumpChannel.send(new detailed_visualization_embed_1.DetailedVisualizationEmbed(sortedMap, entry));
+                        this._lootScoreDailyDumpChannel.send(new seniority_embed_1.SeniorityEmbed(sortedMap, entry));
                     }
                 });
             });
@@ -582,17 +576,17 @@ class LootScoreBot {
     }
     backUpValues() {
         return __awaiter(this, void 0, void 0, function* () {
-            let lootLog = yield this._lootLogService.getMessages(this._lootLogChannel);
+            let lootLog = yield this._lootLogService.getMessages(this._lootLogDataChannel);
             let cleanLootLogMessages = new Array();
             for (let message of lootLog) {
                 cleanLootLogMessages.push(message.content);
             }
-            let seniorityLog = yield this._lootLogService.getMessages(this._seniorityLogChannel);
+            let seniorityLog = yield this._lootLogService.getMessages(this._seniorityLogDataChannel);
             let cleanSeniorityLogMessages = new Array();
             for (let message of seniorityLog) {
                 cleanSeniorityLogMessages.push(message.content);
             }
-            let attendanceLog = yield this._lootLogService.getMessages(this._attendanceLogChannel);
+            let attendanceLog = yield this._lootLogService.getMessages(this._attendanceLogDataChannel);
             let cleanAttendanceLogMessages = new Array();
             for (let message of attendanceLog) {
                 cleanAttendanceLogMessages.push(message.content);
@@ -608,6 +602,12 @@ class LootScoreBot {
             fs.createWriteStream(`${dir}/attendance.json`)
                 .write(JSON.stringify(cleanAttendanceLogMessages));
         });
+    }
+    setReactionFilter(sentMessage, message) {
+        sentMessage.react('✅').then(() => sentMessage.react('❌'));
+        return (reaction, user) => {
+            return (reaction.emoji.name === '✅' || reaction.emoji.name === '❌') && user.id === message.author.id;
+        };
     }
 }
 exports.LootScoreBot = LootScoreBot;
