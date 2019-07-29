@@ -593,7 +593,7 @@ export class LootScoreBot {
                     this._lootScoreDailyDumpChannel.send(new HeadingEmbed('Member', 'Attendance', 'Seniority'));
 
                     for (let entry of sortedMap) {
-                        this._lootScoreDailyDumpChannel.send(new SeniorityEmbed(sortedMap, entry));
+                        this._lootScoreDailyDumpChannel.send(new SenirityEmbed(sortedMap, entry));
                     }
                 });
             });
