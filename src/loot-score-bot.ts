@@ -305,7 +305,7 @@ export class LootScoreBot {
                                                 message.channel.send('Request to award item aborted.');
                                             }
                                         })
-                                        .catch((err) => {
+                                        .catch(() => {
                                             message.channel.send('No reply received. Request to award item aborted.');
                                         });
                                 });

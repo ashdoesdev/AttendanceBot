@@ -3,14 +3,14 @@
     "",
     "\\dist",
     "\\dist\\src",
-    "\\dist\\src\\Helpers",
-    "\\dist\\src\\Services",
+    "\\dist\\src\\Embeds",
+    "\\dist\\src\\Models",
     "\\src",
     "\\src\\Embeds",
     "\\src\\Helpers",
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\src\\loot-score-bot.ts",
+  "SelectedNode": "\\src\\Services\\loot-log.service.ts",
   "PreviewInSolutionExplorer": false
 }

@@ -12,9 +12,9 @@ export class HelpEmbed extends RichEmbed {
         this.addField('End attendance', '```\n/end```');
         this.addField('End attendance without logging (in case of accidental start)', '```\n/end --nolog```');
         this.addBlankField();
-        this.addField('Award item', '```\n/give "name" shorthand```');
-        this.addField('Show who needs item', '```\n/needs shorthand```');
-        this.addField('Show who has item', '```\n/has shorthand```');
+        this.addField('Award item', '```\n/give "name" shorthand (or full item name)```');
+        this.addField('Show who needs item', '```\n/needs shorthand (or full item name)```');
+        this.addField('Show who has item', '```\n/has shorthand (or full item name)```');
         this.addBlankField();
         this.addField('Show LootScore ordered by LootScore', '```\n/ls (add --asc to reverse)```');
         this.addField('Show LootScore ordered by name', '```\n/ls name (add --asc to reverse)```');
