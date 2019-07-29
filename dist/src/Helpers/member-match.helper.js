@@ -16,5 +16,8 @@ class MemberMatchHelper {
     matchMemberFromId(members, memberId) {
         return members.find((x) => x.id === memberId);
     }
+    matchMemberFromName(members, displayName) {
+        return members.find((x) => x.displayName.toLowerCase() === displayName.toLowerCase());
+    }
 }
 exports.MemberMatchHelper = MemberMatchHelper;

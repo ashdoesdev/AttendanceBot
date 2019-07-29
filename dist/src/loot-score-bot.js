@@ -237,7 +237,9 @@ class LootScoreBot {
             if (message.content.startsWith('/give') && this.canUseCommands(message)) {
                 let query = '';
                 query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('<', '').trim();
-                let member = message.mentions.members.array()[0];
+                this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                let memberName = message.content.replace('/give ', '').replace(query, '').trim();
+                let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
                 if (member) {
                     this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                         let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
@@ -289,7 +291,7 @@ class LootScoreBot {
                     });
                 }
                 else {
-                    message.channel.send('Could not find member. Be sure to @mention a full member name.');
+                    message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
                 }
             }
             if (message.content.startsWith('/needs') && this.canUseCommands(message)) {
@@ -355,9 +357,10 @@ class LootScoreBot {
                 });
             }
             if (message.content.startsWith('/overview') && this.canUseCommands(message)) {
-                let member = message.mentions.members.array()[0];
+                this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                let memberName = message.content.replace('/overview ', '');
+                let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
                 if (member) {
-                    this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
                     this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers).then((items) => {
                         this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                             const attendanceMapId = value;
@@ -388,7 +391,7 @@ class LootScoreBot {
                     });
                 }
                 else {
-                    message.channel.send('Could not find member. Be sure to @mention a full member name.');
+                    message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
                 }
             }
             if (message.content.startsWith('/getitemscores') && this.canUseCommands(message)) {

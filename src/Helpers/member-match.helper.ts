@@ -18,4 +18,8 @@ export class MemberMatchHelper {
     public matchMemberFromId(members: GuildMember[], memberId: string): GuildMember {
         return members.find((x) => x.id === memberId);
     }
+
+    public matchMemberFromName(members: GuildMember[], displayName: string): GuildMember {
+        return members.find((x) => x.displayName.toLowerCase() === displayName.toLowerCase());
+    }
 }
