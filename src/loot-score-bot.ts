@@ -63,7 +63,7 @@ export class LootScoreBot {
             this._adminChannel = this._client.channels.get('603778824487960685') as TextChannel;
 
             var CronJob = require('cron').CronJob;
-            var job = new CronJob('0 */10 * * * *', () => {
+            var job = new CronJob('00 00 00 * * *', () => {
                 this.sendLootScoreDailyDump();
                 this.backUpValues();
             }, null, true, 'America/Los_Angeles');
@@ -112,6 +112,7 @@ export class LootScoreBot {
                             .then((collected) => {
                                 if (collected.first().emoji.name === '✅') {
                                     this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel);
+                                    this.sendLootScoreDailyDump();
                                 } else {
                                     message.channel.send('Request to end logging aborted. Logging will continue.');
                                 }
@@ -593,7 +594,7 @@ export class LootScoreBot {
                     this._lootScoreDailyDumpChannel.send(new HeadingEmbed('Member', 'Attendance', 'Seniority'));
 
                     for (let entry of sortedMap) {
-                        this._lootScoreDailyDumpChannel.send(new SenirityEmbed(sortedMap, entry));
+                        this._lootScoreDailyDumpChannel.send(new SeniorityEmbed(sortedMap, entry));
                     }
                 });
             });
