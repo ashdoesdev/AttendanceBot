@@ -11,18 +11,18 @@ export class LootLogService {
     private _dataHelper: LootScoreDataHelper = new LootScoreDataHelper();
     private _messages: MessagesHelper = new MessagesHelper();
 
-    public awardItem(message: Message, lootLogChannel: TextChannel, lootLogReadableChannel: TextChannel, item: ItemScore): void {
+    public awardItem(message: Message, lootLogChannel: TextChannel, lootLogReadableChannel: TextChannel, item: ItemScore, member: GuildMember): void {
         let awardedItem = new AwardedItem();
         awardedItem.member = new MinimalMember();
-        awardedItem.member.displayName = message.mentions.members.array()[0].displayName;
-        awardedItem.member.id = message.mentions.members.array()[0].id;
+        awardedItem.member.displayName = member.displayName;
+        awardedItem.member.id = member.id;
         awardedItem.item = item;
 
         let lootScoreData = this._dataHelper.createLootScoreData(awardedItem, message);
 
         lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
-        lootLogReadableChannel.send(new LootLogEmbed(item, message.mentions.members.array()[0].displayName, message.member.displayName));
-        message.channel.send(`Awarded ${message.mentions.members.array()[0].displayName} **${item.displayName}** (${item.score}).`);
+        lootLogReadableChannel.send(new LootLogEmbed(item, member.displayName, message.member.displayName));
+        message.channel.send(`Awarded ${member.displayName} **${item.displayName}** (${item.score}).`);
     }
 
     public async getItemScores(itemScoresChannel: TextChannel): Promise<ItemScore[]> {

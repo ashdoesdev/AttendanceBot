@@ -92,8 +92,7 @@ class LootScoreBot {
                         sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                             .then((collected) => {
                             if (collected.first().emoji.name === '✅') {
-                                this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel);
-                                this.sendLootScoreDailyDump();
+                                this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel, true, this.sendLootScoreDailyDump.bind(this));
                             }
                             else {
                                 message.channel.send('Request to end logging aborted. Logging will continue.');
@@ -250,13 +249,13 @@ class LootScoreBot {
                                     sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                                         .then((collected) => {
                                         if (collected.first().emoji.name === '✅') {
-                                            this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item);
+                                            this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member);
                                         }
                                         else {
                                             message.channel.send('Request to award item aborted.');
                                         }
                                     })
-                                        .catch(() => {
+                                        .catch((err) => {
                                         message.channel.send('No reply received. Request to award item aborted.');
                                     });
                                 });

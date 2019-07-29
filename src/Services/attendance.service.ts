@@ -98,7 +98,7 @@ export class AttendanceService {
         });
     }
 
-    public async endLogging(message: Message, seniorityLogChannel: TextChannel, attendanceLogChannel: TextChannel, attendanceLogReadableChannel: TextChannel, saveValues: boolean = true): Promise<void> {
+    public async endLogging(message: Message, seniorityLogChannel: TextChannel, attendanceLogChannel: TextChannel, attendanceLogReadableChannel: TextChannel, saveValues: boolean, updateDump?): Promise<void> {
         if (saveValues) {
             if (this._tick === 1) {
                 message.channel.send(`Ended attendance log. Total duration: ${this._tick} minute`);
@@ -118,6 +118,10 @@ export class AttendanceService {
             seniorityLogChannel.send(this.codeBlockify(JSON.stringify(seniorityLootScoreData)));
             attendanceLogChannel.send(this.codeBlockify(JSON.stringify(attendanceLootScoreData)));
             attendanceLogReadableChannel.send(new AttendanceEmbed(readableMinifiedAttendanceMap));
+
+            if (updateDump) {
+                updateDump();
+            }
         }
 
         this._tick = 0;

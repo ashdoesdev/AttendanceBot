@@ -87,7 +87,7 @@ class AttendanceService {
             }
         });
     }
-    endLogging(message, seniorityLogChannel, attendanceLogChannel, attendanceLogReadableChannel, saveValues = true) {
+    endLogging(message, seniorityLogChannel, attendanceLogChannel, attendanceLogReadableChannel, saveValues, updateDump) {
         return __awaiter(this, void 0, void 0, function* () {
             if (saveValues) {
                 if (this._tick === 1) {
@@ -106,6 +106,9 @@ class AttendanceService {
                 seniorityLogChannel.send(this.codeBlockify(JSON.stringify(seniorityLootScoreData)));
                 attendanceLogChannel.send(this.codeBlockify(JSON.stringify(attendanceLootScoreData)));
                 attendanceLogReadableChannel.send(new attendance_embed_1.AttendanceEmbed(readableMinifiedAttendanceMap));
+                if (updateDump) {
+                    updateDump();
+                }
             }
             this._tick = 0;
             this._timerSubscription.unsubscribe();
