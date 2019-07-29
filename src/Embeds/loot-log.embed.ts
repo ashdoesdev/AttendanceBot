@@ -8,6 +8,7 @@ export class LootLogEmbed extends RichEmbed {
     constructor(public itemScore: ItemScore, public name: string, public requester: string) {
         super();
 
+        this.setColor('#60b5bc');
         this.addField(name, `**${itemScore.displayName}** (${itemScore.score})`)
         this.setFooter(`Awarded by ${requester} on ${this._timestampHelper.monthDayYearFormatted}`);
     }

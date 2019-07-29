@@ -25,6 +25,7 @@ export class ItemsLootedEmbed extends RichEmbed {
             lootString = 'No items looted.';
         }
 
+        this.setColor('#60b5bc');
         this.addField('Items Looted', lootString);
     }
 }

@@ -24,6 +24,7 @@ export class DetailedVisualizationEmbed extends RichEmbed {
             name = member[0].displayName;
         }
 
+        this.setColor('#60b5bc');
         this.addField(name, role, true);
         this.addField(`${member[1].attendancePercentage}%`, this._embedHelper.getBar(member[1].attendancePercentage), true);
         this.addField(`${member[1].lootScore}`, this._embedHelper.getBar(this.lootScorePercentage(member[1].lootScore)), true);

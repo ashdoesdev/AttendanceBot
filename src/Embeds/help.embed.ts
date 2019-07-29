@@ -4,7 +4,7 @@ export class HelpEmbed extends RichEmbed {
     constructor() {
         super();
 
-        this.setColor('#f4c65a');
+        this.setColor('#60b5bc');
         this.setTitle('LootScore Commands');
         this.setDescription('All commands must be made in the <#603778824487960685> channel. Item shorthands are the second value in the <#571794427958525962> channel.');
         this.addBlankField();

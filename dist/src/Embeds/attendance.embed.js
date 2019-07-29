@@ -11,6 +11,7 @@ class AttendanceEmbed extends discord_js_1.RichEmbed {
         for (let member of attendanceMap) {
             attendanceLines += `**${member[0]}**: ${member[1]}% \n`;
         }
+        this.setColor('#60b5bc');
         this.setDescription(attendanceLines);
         this.setFooter(`Attendance Log | ${this._timestampHelper.monthDayYearFormatted}`);
     }

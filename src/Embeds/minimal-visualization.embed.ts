@@ -14,6 +14,7 @@ export class MinimalVisualizationEmbed extends RichEmbed {
             memberLines += `**${member[0].displayName}**: ${member[1].attendancePercentage}% / ${member[1].seniorityPercentage}% / ${member[1].lootScore} \n`;
         }
 
+        this.setColor('#60b5bc');
         this.setTitle(title);
         this.addField('**Name**: Attendance / Seniority / LootScore', memberLines);
     }

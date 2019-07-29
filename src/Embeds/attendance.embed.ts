@@ -13,6 +13,7 @@ export class AttendanceEmbed extends RichEmbed {
             attendanceLines += `**${member[0]}**: ${member[1]}% \n`;
         }
 
+        this.setColor('#60b5bc');
         this.setDescription(attendanceLines);
         this.setFooter(`Attendance Log | ${this._timestampHelper.monthDayYearFormatted}`);
     }

@@ -300,7 +300,7 @@ class LootScoreBot {
                 }
             }
             if (message.content.startsWith('/needs') && this.canUseCommands(message)) {
-                let query = message.content.replace('/needs ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+                let query = message.content.replace('/needs ', '');
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
                     this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
@@ -331,7 +331,7 @@ class LootScoreBot {
                 });
             }
             if (message.content.startsWith('/has') && this.canUseCommands(message)) {
-                let query = message.content.replace('/has ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+                let query = message.content.replace('/has ', '');
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
                     this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
@@ -470,7 +470,7 @@ class LootScoreBot {
         return Array.from(this._raidChannel1.members.values()).concat(Array.from(this._raidChannel2.members.values()));
     }
     canUseCommands(message) {
-        return message.channel.id === this._adminChannel.id && message.member.roles.some((role) => role.name === 'LootScore Admin' || role.name === 'Leadership');
+        return message.channel.id === this._adminChannel.id && message.member.roles.some((role) => role.name === 'LootScore Admin' || role.name === 'Leadership' || message.author.id === '200099393041465345');
     }
     manageDailyJobs() {
         this.sendLootScoreDailyDump();

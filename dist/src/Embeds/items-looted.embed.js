@@ -25,6 +25,7 @@ class ItemsLootedEmbed extends discord_js_1.RichEmbed {
         else {
             lootString = 'No items looted.';
         }
+        this.setColor('#60b5bc');
         this.addField('Items Looted', lootString);
     }
 }
