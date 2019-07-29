@@ -12,7 +12,7 @@ class HelpEmbed extends discord_js_1.RichEmbed {
         this.addField('End attendance', '```\n/end```');
         this.addField('End attendance without logging (in case of accidental start)', '```\n/end --nolog```');
         this.addBlankField();
-        this.addField('Award item', '```\n/give @name shorthand```');
+        this.addField('Award item', '```\n/give "name" shorthand```');
         this.addField('Show who needs item', '```\n/needs shorthand```');
         this.addField('Show who has item', '```\n/has shorthand```');
         this.addBlankField();
@@ -21,7 +21,7 @@ class HelpEmbed extends discord_js_1.RichEmbed {
         this.addField('Show LootScore ordered by attendance', '```\n/ls attendance (add --asc to reverse)```');
         this.addField('Show LootScore ordered by seniority', '```\n/ls seniority (add --asc to reverse)```');
         this.addBlankField();
-        this.addField('Show full overview for member', '```\n/overview @name```');
+        this.addField('Show full overview for member', '```\n/overview "name"```');
     }
 }
 exports.HelpEmbed = HelpEmbed;

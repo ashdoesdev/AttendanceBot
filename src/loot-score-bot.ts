@@ -282,70 +282,73 @@ export class LootScoreBot {
             }
 
             if (message.content.startsWith('/give') && this.canUseCommands(message)) {
-                let query = '';
-                query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+                if (message.content.includes('"')) {
+                    let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
 
-                this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
-                let memberName = message.content.replace('/give ', '').replace(query, '').trim();
-                let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
+                    this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                    let query = message.content.replace('/give ', '').replace(memberName, '').replace(/"/g, '').trim();
+                    let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
 
-                if (member) {
-                    this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
-                        let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
+                    if (member) {
+                        this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
+                            let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
 
-                        if (item) {
-                            message.channel.send(`Do you wish to award ${member.displayName} **${item.displayName}**? Please confirm.`).then((sentMessage) => {
-                                const filter = this.setReactionFilter(sentMessage as Message, message);
+                            if (item) {
+                                message.channel.send(`Do you wish to award ${member.displayName} **${item.displayName}**? Please confirm.`).then((sentMessage) => {
+                                    const filter = this.setReactionFilter(sentMessage as Message, message);
 
-                                (sentMessage as Message).awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
-                                    .then((collected) => {
-                                        if (collected.first().emoji.name === '✅') {
-                                            this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item);
-                                        } else {
-                                            message.channel.send('Request to award item aborted.');
-                                        }
-                                    })
-                                    .catch(() => {
-                                        message.channel.send('No reply received. Request to award item aborted.');
-                                    });
-                            });
+                                    (sentMessage as Message).awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
+                                        .then((collected) => {
+                                            if (collected.first().emoji.name === '✅') {
+                                                this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item);
+                                            } else {
+                                                message.channel.send('Request to award item aborted.');
+                                            }
+                                        })
+                                        .catch(() => {
+                                            message.channel.send('No reply received. Request to award item aborted.');
+                                        });
+                                });
 
-                        } else {
-                            message.channel.send('Item does not exist.');
+                            } else {
+                                message.channel.send('Item does not exist.');
 
-                            let relatedItems = new Array<ItemScore>();
+                                let relatedItems = new Array<ItemScore>();
 
-                            array.forEach((item) => {
-                                var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
-                                var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
+                                array.forEach((item) => {
+                                    var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
+                                    var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
 
-                                if (shorthandSimilarity > .5 || displayNameSimilarity > .25 || item.displayName.includes(query) || item.shorthand.includes(query)) {
-                                    relatedItems.push(item);
-                                }
-                            });
-
-                            let relatedString = '';
-
-                            if (relatedItems.length > 0) {
-                                for (let i = 0; i < relatedItems.length; i++) {
-                                    if (i === relatedItems.length - 1) {
-                                        if (i === 0) {
-                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                        } else {
-                                            relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                        }
-                                    } else {
-                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
+                                    if (shorthandSimilarity > .5 || displayNameSimilarity > .25 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                                        relatedItems.push(item);
                                     }
+                                });
+
+                                let relatedString = '';
+
+                                if (relatedItems.length > 0) {
+                                    for (let i = 0; i < relatedItems.length; i++) {
+                                        if (i === relatedItems.length - 1) {
+                                            if (i === 0) {
+                                                relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                            } else {
+                                                relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                            }
+                                        } else {
+                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
+                                        }
+                                    }
+
+                                    message.channel.send(`Did you mean ${relatedString}?`);
                                 }
 
-                                message.channel.send(`Did you mean ${relatedString}?`);
                             }
-
-                        }
-                    });
+                        });
+                    } else {
+                        message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
+                    }
                 } else {
-                    message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
+                    message.channel.send('Could not handle request. Make sure the member name is in quotes.');
                 }
             }
 
@@ -429,51 +432,56 @@ export class LootScoreBot {
             }
 
             if (message.content.startsWith('/overview') && this.canUseCommands(message)) {
-                this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
-                let memberName = message.content.replace('/overview ', '');
-                let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
+                if (message.content.includes('"')) {
+                    let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
 
-                if (member) {
-                    this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers).then((items) => {
+                    this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                    let query = message.content.replace('/overview ', '').replace(memberName, '').replace(/"/g, '').trim();
+                    let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
 
-                        this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
-                            const attendanceMapId = value;
-                            this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-                            this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                            this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
-                                const seniorityMapId = value;
-                                this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+                    if (member) {
+                        this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers).then((items) => {
 
-                                this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
-                                    this._lootLogMap = value;
+                            this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
+                                const attendanceMapId = value;
+                                this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
+                                this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
+                                this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
+                                    const seniorityMapId = value;
+                                    this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
 
-                                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                                    this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
+                                        this._lootLogMap = value;
 
-                                    const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                                    const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
+                                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
 
-                                    if (Array.from(filteredMap).length > 0) {
-                                        message.channel.send(`Overview for **${member.displayName}**`);
+                                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                                        const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
 
-                                        message.channel.send(new HeadingEmbed('LootScore', 'Attendance', 'Seniority'));
+                                        if (Array.from(filteredMap).length > 0) {
+                                            message.channel.send(`Overview for **${member.displayName}**`);
 
-                                        for (let entry of filteredMap) {
-                                            message.channel.send(new MemberOverviewEmbed(filteredMap, entry));
+                                            message.channel.send(new HeadingEmbed('LootScore', 'Attendance', 'Seniority'));
+
+                                            for (let entry of filteredMap) {
+                                                message.channel.send(new MemberOverviewEmbed(filteredMap, entry));
+                                            }
+
+                                            message.channel.send(new ItemsLootedEmbed(items));
+                                        } else {
+                                            message.channel.send(`No history found for **${member.displayName}**`);
                                         }
 
-                                        message.channel.send(new ItemsLootedEmbed(items));
-                                    } else {
-                                        message.channel.send(`No history found for **${member.displayName}**`);
-                                    }
-
+                                    });
                                 });
                             });
                         });
-                    });
+                    } else {
+                        message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
+                    }
                 } else {
-                    message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
+                    message.channel.send('Could not handle request. Make sure the member name is in quotes.');
                 }
-                
             }
 
             if (message.content.startsWith('/getitemscores') && this.canUseCommands(message)) {

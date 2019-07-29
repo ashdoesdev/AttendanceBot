@@ -72,12 +72,19 @@ class LootScoreService {
     }
     createLootScoreMap(attendanceMap, attendancePercentageMap, seniorityMap, lootLogMap) {
         let lootScoreMap = new Map();
-        let memberScore = new loot_score_model_1.MemberScore();
         for (let entry of attendancePercentageMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+            if (!memberScore) {
+                memberScore = new loot_score_model_1.MemberScore();
+            }
             memberScore.attendancePercentage = Math.ceil(entry[1]);
             lootScoreMap.set(entry[0], memberScore);
         }
         for (let entry of attendanceMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+            if (!memberScore) {
+                memberScore = new loot_score_model_1.MemberScore();
+            }
             memberScore.attendanceTotal = entry[1].length;
             lootScoreMap.set(entry[0], memberScore);
         }
@@ -88,6 +95,10 @@ class LootScoreService {
             }
         }
         for (let entry of seniorityMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+            if (!memberScore) {
+                memberScore = new loot_score_model_1.MemberScore();
+            }
             memberScore.seniorityPercentage = Math.round((entry[1] / highestValue) * 100);
             lootScoreMap.set(entry[0], memberScore);
         }
@@ -95,6 +106,10 @@ class LootScoreService {
             let total = 0;
             for (let item of entry[1]) {
                 total += item.score;
+            }
+            let memberScore = lootScoreMap.get(entry[0]);
+            if (!memberScore) {
+                memberScore = new loot_score_model_1.MemberScore();
             }
             memberScore.itemScoreTotal = total;
             lootScoreMap.set(entry[0], memberScore);
@@ -105,6 +120,10 @@ class LootScoreService {
             highestItemScore = Array.from(sortedMap)[0][1].itemScoreTotal;
         }
         for (let entry of lootScoreMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+            if (!memberScore) {
+                memberScore = new loot_score_model_1.MemberScore();
+            }
             if (memberScore.itemScoreTotal) {
                 memberScore.itemScorePercentage = Math.round((memberScore.itemScoreTotal / highestItemScore) * 100);
             }

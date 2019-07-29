@@ -75,14 +75,25 @@ export class LootScoreService {
 
     public createLootScoreMap(attendanceMap: Map<GuildMember, number[]>, attendancePercentageMap: Map<GuildMember, number>, seniorityMap: Map<GuildMember, number>, lootLogMap: Map<GuildMember, ItemScore[]>): Map<GuildMember, MemberScore> {
         let lootScoreMap = new Map<GuildMember, MemberScore>();
-        let memberScore = new MemberScore();
 
         for (let entry of attendancePercentageMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+
+            if (!memberScore) {
+                memberScore = new MemberScore();
+            }
+
             memberScore.attendancePercentage = Math.ceil(entry[1]);
             lootScoreMap.set(entry[0], memberScore);
         }
 
         for (let entry of attendanceMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+
+            if (!memberScore) {
+                memberScore = new MemberScore();
+            }
+
             memberScore.attendanceTotal = entry[1].length;
             lootScoreMap.set(entry[0], memberScore);
         }
@@ -96,6 +107,12 @@ export class LootScoreService {
         }
 
         for (let entry of seniorityMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+
+            if (!memberScore) {
+                memberScore = new MemberScore();
+            }
+
             memberScore.seniorityPercentage = Math.round((entry[1] / highestValue) * 100);
             lootScoreMap.set(entry[0], memberScore);
         }
@@ -105,6 +122,12 @@ export class LootScoreService {
 
             for (let item of entry[1]) {
                 total += item.score;
+            }
+
+            let memberScore = lootScoreMap.get(entry[0]);
+
+            if (!memberScore) {
+                memberScore = new MemberScore();
             }
 
             memberScore.itemScoreTotal = total;
@@ -120,6 +143,12 @@ export class LootScoreService {
         }
 
         for (let entry of lootScoreMap) {
+            let memberScore = lootScoreMap.get(entry[0]);
+
+            if (!memberScore) {
+                memberScore = new MemberScore();
+            }
+
             if (memberScore.itemScoreTotal) {
                 memberScore.itemScorePercentage = Math.round((memberScore.itemScoreTotal / highestItemScore) * 100);
             } else {
