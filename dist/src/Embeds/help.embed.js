@@ -16,11 +16,10 @@ class HelpEmbed extends discord_js_1.RichEmbed {
         this.addField('Show who needs item', '```\n/needs shorthand```');
         this.addField('Show who has item', '```\n/has shorthand```');
         this.addBlankField();
-        this.addField('Show LootScore ordered by LootScore', '```\n/ls```');
-        this.addField('Show LootScore ordered by name', '```\n/ls name```');
-        this.addField('Show LootScore ordered by attendance', '```\n/ls attendance```');
-        this.addField('Show LootScore ordered by seniority', '```\n/ls seniority```');
-        this.addField('Descending order is default', '```\nAdd --asc flag to reverse the results```');
+        this.addField('Show LootScore ordered by LootScore', '```\n/ls (add --asc to reverse)```');
+        this.addField('Show LootScore ordered by name', '```\n/ls name (add --asc to reverse)```');
+        this.addField('Show LootScore ordered by attendance', '```\n/ls attendance (add --asc to reverse)```');
+        this.addField('Show LootScore ordered by seniority', '```\n/ls seniority (add --asc to reverse)```');
         this.addBlankField();
         this.addField('Show full overview for member', '```\n/overview @name```');
     }

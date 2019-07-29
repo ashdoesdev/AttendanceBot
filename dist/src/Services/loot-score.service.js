@@ -72,14 +72,14 @@ class LootScoreService {
     }
     createLootScoreMap(attendanceMap, attendancePercentageMap, seniorityMap, lootLogMap) {
         let lootScoreMap = new Map();
+        let memberScore = new loot_score_model_1.MemberScore();
         for (let entry of attendancePercentageMap) {
-            const memberScore = new loot_score_model_1.MemberScore();
             memberScore.attendancePercentage = Math.ceil(entry[1]);
             lootScoreMap.set(entry[0], memberScore);
         }
         for (let entry of attendanceMap) {
-            let memberScore = lootScoreMap.get(entry[0]);
             memberScore.attendanceTotal = entry[1].length;
+            lootScoreMap.set(entry[0], memberScore);
         }
         let highestValue = 1;
         for (let entry of seniorityMap) {
@@ -88,17 +88,16 @@ class LootScoreService {
             }
         }
         for (let entry of seniorityMap) {
-            let memberScore = lootScoreMap.get(entry[0]);
             memberScore.seniorityPercentage = Math.round((entry[1] / highestValue) * 100);
             lootScoreMap.set(entry[0], memberScore);
         }
         for (let entry of lootLogMap) {
-            let memberScore = lootScoreMap.get(entry[0]);
             let total = 0;
             for (let item of entry[1]) {
                 total += item.score;
             }
             memberScore.itemScoreTotal = total;
+            lootScoreMap.set(entry[0], memberScore);
         }
         let sortedMap = this._mapSort.sortByItemScoreTotal(lootScoreMap);
         let highestItemScore;
@@ -106,13 +105,13 @@ class LootScoreService {
             highestItemScore = Array.from(sortedMap)[0][1].itemScoreTotal;
         }
         for (let entry of lootScoreMap) {
-            let memberScore = lootScoreMap.get(entry[0]);
             if (memberScore.itemScoreTotal) {
                 memberScore.itemScorePercentage = Math.round((memberScore.itemScoreTotal / highestItemScore) * 100);
             }
             else {
                 memberScore.itemScorePercentage = 0;
             }
+            lootScoreMap.set(entry[0], memberScore);
         }
         return lootScoreMap;
     }

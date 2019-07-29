@@ -289,7 +289,7 @@ export class LootScoreBot {
 
                 if (member) {
                     this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
-                        let item = array.find((x) => x.shorthand === query);
+                        let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
 
                         if (item) {
                             message.channel.send(`Do you wish to award ${member.displayName} **${item.displayName}**? Please confirm.`).then((sentMessage) => {
@@ -351,7 +351,7 @@ export class LootScoreBot {
                 let query = message.content.replace('/needs ', '').replace(/(@\S+)/, '').replace('<', '').trim();
 
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
-                    let item = array.find((x) => x.shorthand === query);
+                    let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
                     this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
 
                     this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers).then((members) => {
@@ -391,7 +391,7 @@ export class LootScoreBot {
                 let query = message.content.replace('/has ', '').replace(/(@\S+)/, '').replace('<', '').trim();
 
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
-                    let item = array.find((x) => x.shorthand === query);
+                    let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
                     this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
 
                     this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers).then((members) => {
@@ -475,7 +475,7 @@ export class LootScoreBot {
             }
 
             if (message.content.startsWith('/getitemscores') && this.canUseCommands(message)) {
-                const path = message.content.replace('ls getitemscores ', '')
+                const path = message.content.replace('/getitemscores ', '')
                 const results = [];
 
                 fs.createReadStream(path)
