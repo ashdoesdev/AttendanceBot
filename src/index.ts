@@ -1,5 +1,5 @@
 import { LootScoreBot } from './loot-score-bot';
-import * as auth from '../auth.json';
+import * as appSettings from '../app-settings.json';
 
 const attendanceBot = new LootScoreBot();
-attendanceBot.start(auth.token);
+attendanceBot.start(appSettings);

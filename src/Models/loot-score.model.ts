@@ -19,7 +19,11 @@ export class MemberScore {
         }
 
         if (this.attendanceTotal > 48) {
-            lootScore += lootScore * .1;
+            if (lootScore > 0) {
+                lootScore += lootScore * .1;
+            } else {
+                lootScore += lootScore * -.1;
+            }
         }
 
         return Math.round(lootScore);

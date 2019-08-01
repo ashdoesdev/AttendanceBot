@@ -45,22 +45,25 @@ export class LootScoreBot {
     private _lootLogMap: Map<GuildMember, ItemScore[]>;
 
     private _guildMembers: GuildMember[];
+    private _appSettings;
 
-    public start(token: string): void {
-        this._client.login(token);
+    public start(appSettings): void {
+        this._appSettings = appSettings;
+
+        this._client.login(appSettings["token"]);
         this._client.once('ready', () => {
             console.log('Ready!');
 
-            this._raidChannel1 = this._client.channels.get('565701455420588032') as VoiceChannel;
-            this._raidChannel2 = this._client.channels.get('566702461629497365') as VoiceChannel;
-            this._seniorityLogDataChannel = this._client.channels.get('599818971180695573') as TextChannel;
-            this._attendanceLogDataChannel = this._client.channels.get('571160933804539924') as TextChannel;
-            this._attendanceLogChannel = this._client.channels.get('586983799582228482') as TextChannel;
-            this._lootLogDataChannel = this._client.channels.get('571795185399234630') as TextChannel;
-            this._lootLogChannel = this._client.channels.get('586983990976577557') as TextChannel;
-            this._itemScoresChannel = this._client.channels.get('571794427958525962') as TextChannel;
-            this._lootScoreDailyDumpChannel = this._client.channels.get('599082030679982080') as TextChannel;
-            this._adminChannel = this._client.channels.get('603778824487960685') as TextChannel;
+            this._raidChannel1 = this._client.channels.get(appSettings['raidChannel1']) as VoiceChannel;
+            this._raidChannel2 = this._client.channels.get(appSettings['raidChannel2']) as VoiceChannel;
+            this._seniorityLogDataChannel = this._client.channels.get(appSettings['seniorityLogDataChannel']) as TextChannel;
+            this._attendanceLogDataChannel = this._client.channels.get(appSettings['attendanceLogDataChannel']) as TextChannel;
+            this._attendanceLogChannel = this._client.channels.get(appSettings['attendanceLogChannel']) as TextChannel;
+            this._lootLogDataChannel = this._client.channels.get(appSettings['lootLogDataChannel']) as TextChannel;
+            this._lootLogChannel = this._client.channels.get(appSettings['lootLogChannel']) as TextChannel;
+            this._itemScoresChannel = this._client.channels.get(appSettings['itemScoresChannel']) as TextChannel;
+            this._lootScoreDailyDumpChannel = this._client.channels.get(appSettings['lootScoreDailyDumpChannel']) as TextChannel;
+            this._adminChannel = this._client.channels.get(appSettings['adminChannel']) as TextChannel;
 
             var CronJob = require('cron').CronJob;
             var job = new CronJob('00 00 00 * * *', () => {
@@ -150,7 +153,7 @@ export class LootScoreBot {
             }
 
             if ((message.content === '/ls' || message.content === '/ls --asc') && this.canUseCommands(message)) {
-                this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
 
                 this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                     const attendanceMapId = value;
@@ -183,7 +186,7 @@ export class LootScoreBot {
             }
 
             if (message.content.startsWith('/ls attendance') && this.canUseCommands(message)) {
-                this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
 
                 this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                     const attendanceMapId = value;
@@ -216,7 +219,7 @@ export class LootScoreBot {
             }
 
             if (message.content.startsWith('/ls name') && this.canUseCommands(message)) {
-                this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
 
                 this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                     const attendanceMapId = value;
@@ -249,7 +252,7 @@ export class LootScoreBot {
             }
 
             if (message.content.startsWith('/ls seniority') && this.canUseCommands(message)) {
-                this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
 
                 this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
                     const attendanceMapId = value;
@@ -285,7 +288,7 @@ export class LootScoreBot {
                 if (message.content.includes('"')) {
                     let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
 
-                    this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
                     let query = message.content.replace('/give ', '').replace(memberName, '').replace(/"/g, '').trim();
                     let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
 
@@ -357,7 +360,7 @@ export class LootScoreBot {
 
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
-                    this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
 
                     this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers).then((members) => {
 
@@ -397,7 +400,7 @@ export class LootScoreBot {
 
                 this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
                     let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
-                    this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
 
                     this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers).then((members) => {
 
@@ -435,7 +438,7 @@ export class LootScoreBot {
                 if (message.content.includes('"')) {
                     let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
 
-                    this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
                     let query = message.content.replace('/overview ', '').replace(memberName, '').replace(/"/g, '').trim();
                     let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
 
@@ -561,7 +564,7 @@ export class LootScoreBot {
     }
 
     private canUseCommands(message: Message): boolean {
-        return message.channel.id === this._adminChannel.id && message.member.roles.some((role) => role.name === 'LootScore Admin' || role.name === 'Leadership' || message.author.id === '200099393041465345');
+        return message.channel.id === this._adminChannel.id && message.member.roles.some((role) => role.name === 'LootScore Admin' || role.name === 'Leadership' || message.author.id === this._appSettings['admin']);
     }
 
     public manageDailyJobs(): void {
@@ -570,7 +573,7 @@ export class LootScoreBot {
     }
 
     public sendLootScoreDailyDump(): void {
-        this._guildMembers = this._client.guilds.get('565381445736988682').members.array();
+        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
 
         this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
             const attendanceMapId = value;
