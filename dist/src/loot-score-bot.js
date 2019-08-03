@@ -24,6 +24,7 @@ const messages_helper_1 = require("./Helpers/messages.helper");
 const attendance_service_1 = require("./Services/attendance.service");
 const loot_log_service_1 = require("./Services/loot-log.service");
 const loot_score_service_1 = require("./Services/loot-score.service");
+const timestamp_helper_1 = require("./Helpers/timestamp.helper");
 class LootScoreBot {
     constructor() {
         this._client = new discord_js_1.Client();
@@ -33,6 +34,7 @@ class LootScoreBot {
         this._memberMatcher = new member_match_helper_1.MemberMatchHelper();
         this._mapSort = new map_sort_helper_1.MapSortHelper();
         this._messages = new messages_helper_1.MessagesHelper();
+        this._timestamp = new timestamp_helper_1.TimestampHelper();
     }
     start(appSettings) {
         this._appSettings = appSettings;
@@ -516,15 +518,15 @@ class LootScoreBot {
             for (let message of attendanceLog) {
                 cleanAttendanceLogMessages.push(message.content);
             }
-            let dir = 'C:/LootScore/backups';
+            let dir = 'backups';
             if (!fs.existsSync(dir)) {
                 fs.mkdirSync(dir, { recursive: true });
             }
-            fs.createWriteStream(`${dir}/loot.json`)
+            fs.createWriteStream(`${dir}/loot-${this._timestamp.monthDayYearFormatted}.json`)
                 .write(JSON.stringify(cleanLootLogMessages));
-            fs.createWriteStream(`${dir}/seniority.json`)
+            fs.createWriteStream(`${dir}/seniority-${this._timestamp.monthDayYearFormatted}.json`)
                 .write(JSON.stringify(cleanSeniorityLogMessages));
-            fs.createWriteStream(`${dir}/attendance.json`)
+            fs.createWriteStream(`${dir}/attendance-${this._timestamp.monthDayYearFormatted}.json`)
                 .write(JSON.stringify(cleanAttendanceLogMessages));
         });
     }
