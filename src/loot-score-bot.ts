@@ -511,7 +511,7 @@ export class LootScoreBot {
             }
 
             if (message.content.startsWith('/import --loot') && this.canUseCommands(message)) {
-                const path = message.content.replace('ls import --loot ', '')
+                const path = message.content.replace('/import --loot ', '')
 
                 fs.createReadStream(path)
                     .on('data', (data) => {
@@ -527,7 +527,7 @@ export class LootScoreBot {
             }
 
             if (message.content.startsWith('/import --seniority') && this.canUseCommands(message)) {
-                const path = message.content.replace('ls import --seniority ', '')
+                const path = message.content.replace('/import --seniority ', '')
 
                 fs.createReadStream(path)
                     .on('data', (data) => {
@@ -543,7 +543,7 @@ export class LootScoreBot {
             }
 
             if (message.content.startsWith('/import --attendance') && this.canUseCommands(message)) {
-                const path = message.content.replace('ls import --attendance ', '')
+                const path = message.content.replace('/import --attendance ', '')
 
                 fs.createReadStream(path)
                     .on('data', (data) => {
@@ -558,6 +558,15 @@ export class LootScoreBot {
                     });
             }
 
+            if (message.content === '/backup' && this.canUseCommands(message)) {
+                this.backUpValues();
+            }
+
+            if (message.content === '/totalraids' && this.canUseCommands(message)) {
+                this._messages.getMessages(this._attendanceLogChannel).then((messages) => {
+                    message.channel.send(`**${messages.length}** total raids`);
+                });
+            }
         });
     }
 
