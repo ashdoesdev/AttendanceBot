@@ -564,7 +564,7 @@ export class LootScoreBot {
     }
 
     private canUseCommands(message: Message): boolean {
-        return message.channel.id === this._adminChannel.id && message.member.roles.some((role) => role.name === 'LootScore Admin' || role.name === 'Leadership' || message.author.id === this._appSettings['admin']);
+        return message.channel.id === this._adminChannel.id && message.member.roles.some((role) => role.id === this._appSettings['leadership'] || message.author.id === this._appSettings['admin']);
     }
 
     public manageDailyJobs(): void {
@@ -596,7 +596,7 @@ export class LootScoreBot {
                     this._lootScoreDailyDumpChannel.send(new HeadingEmbed('Member', 'Attendance', 'Seniority'));
 
                     for (let entry of sortedMap) {
-                        this._lootScoreDailyDumpChannel.send(new SeniorityEmbed(sortedMap, entry));
+                        this._lootScoreDailyDumpChannel.send(new SeniorityEmbed(sortedMap, entry, this._appSettings));
                     }
                 });
             });

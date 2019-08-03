@@ -4,21 +4,24 @@ import { MemberScore } from "../Models/loot-score.model";
 
 export class SeniorityEmbed extends RichEmbed {
     private _embedHelper: EmbedHelper = new EmbedHelper();
+    private _appSettings;
 
-    constructor(lootScoreMap: Map<GuildMember, MemberScore>, memberEntry: [GuildMember, MemberScore]) {
+    constructor(lootScoreMap: Map<GuildMember, MemberScore>, memberEntry: [GuildMember, MemberScore], appSettings) {
         super();
+
+        this._appSettings = appSettings;
 
         this.addMember(memberEntry);
     }
 
     private getHighestDisplayRole(member: GuildMember): string {
-        if (member.roles.array().find((x) => x.name === 'Leadership')) {
+        if (member.roles.array().find((x) => x.id === this._appSettings['leadership'])) {
             return 'Leadership';
-        } else if (member.roles.array().find((x) => x.name === 'Raider')) {
+        } else if (member.roles.array().find((x) => x.id === this._appSettings['raider'])) {
             return 'Raider';
-        } else if (member.roles.array().find((x) => x.name === 'Applicant')) {
+        } else if (member.roles.array().find((x) => x.id === this._appSettings['applicant'])) {
             return 'Applicant';
-        } else if (member.roles.array().find((x) => x.name === 'Community')) {
+        } else if (member.roles.array().find((x) => x.id === this._appSettings['community'])) {
             return 'Community';
         } else {
             return 'Role not set'

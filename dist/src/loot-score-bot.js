@@ -470,7 +470,7 @@ class LootScoreBot {
         return Array.from(this._raidChannel1.members.values()).concat(Array.from(this._raidChannel2.members.values()));
     }
     canUseCommands(message) {
-        return message.channel.id === this._adminChannel.id && message.member.roles.some((role) => role.name === 'LootScore Admin' || role.name === 'Leadership' || message.author.id === this._appSettings['admin']);
+        return message.channel.id === this._adminChannel.id && message.member.roles.some((role) => role.id === this._appSettings['leadership'] || message.author.id === this._appSettings['admin']);
     }
     manageDailyJobs() {
         this.sendLootScoreDailyDump();
@@ -493,7 +493,7 @@ class LootScoreBot {
                         .then(messages => this._lootScoreDailyDumpChannel.bulkDelete(messages));
                     this._lootScoreDailyDumpChannel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'Seniority'));
                     for (let entry of sortedMap) {
-                        this._lootScoreDailyDumpChannel.send(new seniority_embed_1.SeniorityEmbed(sortedMap, entry));
+                        this._lootScoreDailyDumpChannel.send(new seniority_embed_1.SeniorityEmbed(sortedMap, entry, this._appSettings));
                     }
                 });
             });
