@@ -5,7 +5,10 @@ class LootScore {
 exports.LootScore = LootScore;
 class MemberScore {
     get lootScore() {
-        let lootScore = this.attendanceTotal || 0;
+        let lootScore = 100;
+        if (this.attendanceTotal) {
+            lootScore += this.attendanceTotal;
+        }
         if (this.itemScoreTotal) {
             lootScore -= this.itemScoreTotal;
         }
