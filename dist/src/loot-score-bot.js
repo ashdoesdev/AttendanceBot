@@ -470,7 +470,7 @@ class LootScoreBot {
                 this.backUpValues();
             }
             if (message.content === '/totalraids' && this.canUseCommands(message)) {
-                this._messages.getMessages(this._attendanceLogChannel).then((messages) => {
+                this._messages.getMessages(this._attendanceLogDataChannel).then((messages) => {
                     message.channel.send(`**${messages.length}** total raids`);
                 });
             }

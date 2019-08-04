@@ -1,7 +1,6 @@
 {
   "ExpandedNodes": [
     "",
-    "\\dist",
     "\\dist\\src",
     "\\dist\\src\\Embeds",
     "\\dist\\src\\Models",
@@ -11,6 +10,6 @@
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\src\\loot-score-bot.ts",
+  "SelectedNode": "\\src\\Models\\loot-score.model.ts",
   "PreviewInSolutionExplorer": false
 }
