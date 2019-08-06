@@ -22,7 +22,7 @@ export class LootLogService {
 
         lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
         lootLogReadableChannel.send(new LootLogEmbed(item, member.displayName, message.member.displayName));
-        message.channel.send(`Awarded ${member.displayName} **${item.displayName}** (${item.score}).`);
+        message.channel.send(`Awarded ${member.displayName} **${item.displayName}**.`);
     }
 
     public async getItemScores(itemScoresChannel: TextChannel): Promise<ItemScore[]> {

@@ -29,7 +29,7 @@ class LootLogService {
         let lootScoreData = this._dataHelper.createLootScoreData(awardedItem, message);
         lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
         lootLogReadableChannel.send(new loot_log_embed_1.LootLogEmbed(item, member.displayName, message.member.displayName));
-        message.channel.send(`Awarded ${member.displayName} **${item.displayName}** (${item.score}).`);
+        message.channel.send(`Awarded ${member.displayName} **${item.displayName}**.`);
     }
     getItemScores(itemScoresChannel) {
         return __awaiter(this, void 0, void 0, function* () {
