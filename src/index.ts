@@ -1,5 +1,5 @@
-import { LootScoreBot } from './loot-score-bot';
+import { RaidBot } from './raid-bot';
 import * as appSettings from '../app-settings.dev.json';
 
-const attendanceBot = new LootScoreBot();
-attendanceBot.start(appSettings);
+const raidBot = new RaidBot();
+raidBot.start(appSettings);

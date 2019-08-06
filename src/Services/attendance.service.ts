@@ -107,15 +107,17 @@ export class AttendanceService {
             }
 
             const minifiedAttendanceMap = this.createMinifiedAttendanceMap(this.attendanceLog);
-            const readableMinifiedAttendanceMap = this.createReadableMinifiedAttendanceMap(this.attendanceLog);          
+            const readableMinifiedAttendanceMap = this.createReadableMinifiedAttendanceMap(this.attendanceLog);
             const minifiedAttendanceArray = Array.from(minifiedAttendanceMap.entries());
             let attendanceLootScoreData = this._dataHelper.createLootScoreData(minifiedAttendanceArray, message);
 
-            const minifiedSeniorityMap = await this.createMinifiedSeniorityMap(minifiedAttendanceMap, seniorityLogChannel);
-            const minifiedSeniorityArray = Array.from(minifiedSeniorityMap.entries());
-            let seniorityLootScoreData = this._dataHelper.createLootScoreData(minifiedSeniorityArray, message);
+            if (seniorityLogChannel) {
+                const minifiedSeniorityMap = await this.createMinifiedSeniorityMap(minifiedAttendanceMap, seniorityLogChannel);
+                const minifiedSeniorityArray = Array.from(minifiedSeniorityMap.entries());
+                let seniorityLootScoreData = this._dataHelper.createLootScoreData(minifiedSeniorityArray, message);
+                seniorityLogChannel.send(this.codeBlockify(JSON.stringify(seniorityLootScoreData)));
+            }
 
-            seniorityLogChannel.send(this.codeBlockify(JSON.stringify(seniorityLootScoreData)));
             attendanceLogChannel.send(this.codeBlockify(JSON.stringify(attendanceLootScoreData)));
             attendanceLogReadableChannel.send(new AttendanceEmbed(readableMinifiedAttendanceMap));
 

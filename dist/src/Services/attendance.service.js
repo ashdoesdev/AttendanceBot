@@ -100,10 +100,12 @@ class AttendanceService {
                 const readableMinifiedAttendanceMap = this.createReadableMinifiedAttendanceMap(this.attendanceLog);
                 const minifiedAttendanceArray = Array.from(minifiedAttendanceMap.entries());
                 let attendanceLootScoreData = this._dataHelper.createLootScoreData(minifiedAttendanceArray, message);
-                const minifiedSeniorityMap = yield this.createMinifiedSeniorityMap(minifiedAttendanceMap, seniorityLogChannel);
-                const minifiedSeniorityArray = Array.from(minifiedSeniorityMap.entries());
-                let seniorityLootScoreData = this._dataHelper.createLootScoreData(minifiedSeniorityArray, message);
-                seniorityLogChannel.send(this.codeBlockify(JSON.stringify(seniorityLootScoreData)));
+                if (seniorityLogChannel) {
+                    const minifiedSeniorityMap = yield this.createMinifiedSeniorityMap(minifiedAttendanceMap, seniorityLogChannel);
+                    const minifiedSeniorityArray = Array.from(minifiedSeniorityMap.entries());
+                    let seniorityLootScoreData = this._dataHelper.createLootScoreData(minifiedSeniorityArray, message);
+                    seniorityLogChannel.send(this.codeBlockify(JSON.stringify(seniorityLootScoreData)));
+                }
                 attendanceLogChannel.send(this.codeBlockify(JSON.stringify(attendanceLootScoreData)));
                 attendanceLogReadableChannel.send(new attendance_embed_1.AttendanceEmbed(readableMinifiedAttendanceMap));
                 if (updateDump) {
