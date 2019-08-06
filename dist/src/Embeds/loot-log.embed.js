@@ -10,7 +10,7 @@ class LootLogEmbed extends discord_js_1.RichEmbed {
         this.requester = requester;
         this._timestampHelper = new timestamp_helper_1.TimestampHelper();
         this.setColor('#60b5bc');
-        this.addField(name, `**${itemScore.displayName}** (${itemScore.score})`);
+        this.addField(name, `**${itemScore.displayName}**`);
         this.setFooter(`Awarded by ${requester} on ${this._timestampHelper.monthDayYearFormatted}`);
     }
 }

@@ -497,7 +497,7 @@ export class RaidBot {
 
                                             message.channel.send(new ItemsLootedEmbed(items));
                                         } else {
-                                            message.channel.send(`No loot history found for **${member.displayName}**`);
+                                            message.channel.send(`No history found for **${member.displayName}**`);
                                         }
 
                                     });
@@ -548,7 +548,7 @@ export class RaidBot {
 
                                             message.author.send(new ItemsLootedEmbed(items));
                                         } else {
-                                            message.channel.send(`No loot history found for **${member.displayName}**`);
+                                            message.channel.send(`No history found for **${member.displayName}**`);
                                         }
 
                                     });
@@ -640,6 +640,10 @@ export class RaidBot {
                 this._messages.getMessages(this._attendanceLogDataChannel).then((messages) => {
                     message.channel.send(`**${messages.length}** total raids`);
                 });
+            }
+
+            if (message.content === '/hi' && this.canUseCommands(message)) {
+                message.channel.send('I\'m here');
             }
 
             if (message.content.startsWith('/edit --attendance ') && this.canUseCommands(message)) {

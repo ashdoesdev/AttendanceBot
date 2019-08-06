@@ -9,7 +9,7 @@ export class LootLogEmbed extends RichEmbed {
         super();
 
         this.setColor('#60b5bc');
-        this.addField(name, `**${itemScore.displayName}** (${itemScore.score})`)
+        this.addField(name, `**${itemScore.displayName}**`)
         this.setFooter(`Awarded by ${requester} on ${this._timestampHelper.monthDayYearFormatted}`);
     }
 }

@@ -10,14 +10,14 @@ class ItemsLootedEmbed extends discord_js_1.RichEmbed {
                 for (let i = 0; i < itemsLooted.length; i++) {
                     if (i === itemsLooted.length - 1) {
                         if (i === 0) {
-                            lootString += `**${itemsLooted[i].displayName}** (${itemsLooted[i].score})`;
+                            lootString += `**${itemsLooted[i].displayName}**`;
                         }
                         else {
-                            lootString += `and **${itemsLooted[i].displayName}** (${itemsLooted[i].score})`;
+                            lootString += `and **${itemsLooted[i].displayName}**`;
                         }
                     }
                     else {
-                        lootString += `**${itemsLooted[i].displayName}** (${itemsLooted[i].score}), `;
+                        lootString += `**${itemsLooted[i].displayName}**, `;
                     }
                 }
             }
