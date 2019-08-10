@@ -601,7 +601,7 @@ class RaidBot {
                     sentMessage.channel.awaitMessages(filter, { maxMatches: 1, time: 1800000, errors: ['time'] }).then((collected) => {
                         matchingMessages[0].edit(Array.from(collected.entries())[0][1].cleanContent).then(() => {
                             message.channel.send('Message update successful.');
-                        }).catch(() => {
+                        }).catch((err) => {
                             message.channel.send('Message update failed. Try again.');
                         });
                     }).catch(() => {
