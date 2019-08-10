@@ -1,0 +1,20 @@
+{
+    "token": "NTY1MzY1MDk2MTUxMjUyOTkz.XUjr5A.X5e2AXnQX1Ebcl0lT8xQtLVE5Kg",
+    "raidChannel1": "562808038768246794",
+    "raidChannel2": "562808375738630145",
+    "seniorityLogDataChannel": "608132262684262410",
+    "attendanceLogDataChannel": "608131370383835136",
+    "attendanceLogChannel": "608143203773841418",
+    "lootLogDataChannel": "608132466619711489",
+    "lootLogChannel": "608143088472293376",
+    "itemScoresChannel": "608132606848008192",
+    "lootScoreDailyDumpChannel": "608144703489310721",
+    "adminChannel": "608130639543140362",
+    "feedChannel": "608144827095187466",
+    "server": "562783503045885962",
+    "admin": "200099393041465345",
+    "leadership": "562857347865903114",
+    "raider": "562857204277837854",
+    "applicant": "562857835780636672",
+    "community": "562858345288040448"
+}

@@ -54,7 +54,6 @@ class RaidBot {
             this._feedChannel = this._client.channels.get(appSettings['feedChannel']);
             var CronJob = require('cron').CronJob;
             var job = new CronJob('00 00 00 * * *', () => {
-                this.sendLootScoreDailyDump();
                 this.backUpValues();
             }, null, true, 'America/Los_Angeles');
             job.start();
@@ -63,9 +62,8 @@ class RaidBot {
             if (message.content === '/help' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 message.author.send(new help_embed_1.HelpEmbed(this._appSettings));
             }
-            if (message.content === '!clear' && this.canUseCommands(message)) {
-                message.channel.fetchMessages({ limit: 100 })
-                    .then(messages => message.channel.bulkDelete(messages));
+            if (message.content === '/refresh' && this.canUseCommands(message) && this.isAdminChannel(message)) {
+                this.sendLootScoreDailyDump();
             }
             if (message.content === '/start' && this.canUseCommands(message) && this.isFeedChannel(message)) {
                 if (Array.from(this._raidChannel1.members.values()).length > 0 || Array.from(this._raidChannel2.members.values()).length > 0) {
@@ -535,9 +533,16 @@ class RaidBot {
                 message.channel.send('I\'m here');
             }
             if (message.content.startsWith('/edit --attendance ') && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                let query = message.content.replace('/has ', '');
-                this._messages.getMessages(this._attendanceLogDataChannel).then((messages) => {
-                });
+                let query = message.content.replace('/edit --attendance ', '');
+                this.editMessage(message, this._attendanceLogDataChannel, query);
+            }
+            if (message.content.startsWith('/edit --seniority ') && this.canUseCommands(message) && this.isAdminChannel(message)) {
+                let query = message.content.replace('/edit --seniority ', '');
+                this.editMessage(message, this._seniorityLogDataChannel, query);
+            }
+            if (message.content.startsWith('/edit --loot ') && this.canUseCommands(message) && this.isAdminChannel(message)) {
+                let query = message.content.replace('/edit --loot ', '');
+                this.editMessage(message, this._lootLogDataChannel, query);
             }
         });
     }
@@ -578,6 +583,35 @@ class RaidBot {
                     }
                 });
             });
+        });
+    }
+    editMessage(message, channel, query) {
+        this._messages.getMessages(channel).then((messages) => {
+            let matchingMessages = new Array();
+            for (let message of messages) {
+                if (message.content.includes(query)) {
+                    matchingMessages.push(message);
+                }
+            }
+            if (matchingMessages.length === 1) {
+                message.channel.send(`Message matching ${query} found. Please enter the message you would like to replace it with now.`).then((sentMessage) => {
+                    const filter = response => {
+                        return message.author.id === response.author.id;
+                    };
+                    sentMessage.channel.awaitMessages(filter, { maxMatches: 1, time: 1800000, errors: ['time'] }).then((collected) => {
+                        matchingMessages[0].edit(Array.from(collected.entries())[0][1].cleanContent).then(() => {
+                            message.channel.send('Message update successful.');
+                        }).catch(() => {
+                            message.channel.send('Message update failed. Try again.');
+                        });
+                    }).catch(() => {
+                        message.channel.send('Too slow. Try again.');
+                    });
+                });
+            }
+            else {
+                matchingMessages.length === 0 ? message.channel.send('No matching message found. If you aren\'t already, try including the full timestamp.') : message.channel.send('Too many matching messages found. Try entering the full message body.');
+            }
         });
     }
     backUpValues() {

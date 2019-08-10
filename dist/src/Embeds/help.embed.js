@@ -5,7 +5,7 @@ class HelpEmbed extends discord_js_1.RichEmbed {
     constructor(appSettings) {
         super();
         this.setColor('#60b5bc');
-        this.addField('Feed Commands', `<#${appSettings['feedChannel']}>`);
+        this.addField('Input Channel Commands', `<#${appSettings['feedChannel']}>`);
         this.addBlankField();
         this.addField('Start attendance', '```\n/start```');
         this.addField('End attendance', '```\n/end```');
@@ -13,7 +13,7 @@ class HelpEmbed extends discord_js_1.RichEmbed {
         this.addField('End attendance without counting seniority', '```\n/end --noseniority```');
         this.addField('Award item', '```\n/give @name shorthand (or full item name)```');
         this.addBlankField();
-        this.addField('Admin Commands', `<#${appSettings['adminChannel']}>`);
+        this.addField('Admin Channel Commands', `<#${appSettings['adminChannel']}>`);
         this.addBlankField();
         this.addField('Show who needs item', '```\n/needs shorthand (or full item name)```');
         this.addField('Show who has item', '```\n/has shorthand (or full item name)```');
