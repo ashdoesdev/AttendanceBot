@@ -16,12 +16,12 @@ export class HelpEmbed extends RichEmbed {
         this.addBlankField();
         this.addField('Admin Channel Commands', `<#${appSettings['adminChannel']}>`);
         this.addBlankField();
-        this.addField('Show who needs item', '```\n/needs shorthand (or full item name)```');
-        this.addField('Show who has item', '```\n/has shorthand (or full item name)```');
-        this.addField('Show LootScore ordered by LootScore', '```\n/show (add --asc to reverse)```');
-        this.addField('Show LootScore ordered by name', '```\n/show name (add --asc to reverse)```');
-        this.addField('Show LootScore ordered by attendance', '```\n/show attendance (add --asc to reverse)```');
-        this.addField('Show LootScore ordered by seniority', '```\n/show seniority (add --asc to reverse)```');
-        this.addField('Show full overview for member', '```\n/overview "name"```');
+        this.addField('Report who needs item', '```\n/report needs shorthand (or full item name)```');
+        this.addField('Report who has item', '```\n/report has shorthand (or full item name)```');
+        this.addField('Report ordered by LootScore', '```\n/report (add --asc to reverse)```');
+        this.addField('Report ordered by name', '```\n/report name (add --asc to reverse)```');
+        this.addField('Report ordered by attendance', '```\n/report attendance (add --asc to reverse)```');
+        this.addField('Report ordered by seniority', '```\n/report seniority (add --asc to reverse)```');
+        this.addField('Report for single member', '```\n/report "name"```');
     }
 }
