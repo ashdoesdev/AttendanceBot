@@ -58,7 +58,7 @@ class RaidBot {
             }, null, true, 'America/Los_Angeles');
             job.start();
         });
-        this._client.on('message', message => {
+        this._client.on('message', (message) => __awaiter(this, void 0, void 0, function* () {
             if (message.content === '/help' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 message.author.send(new help_embed_1.HelpEmbed(this._appSettings));
             }
@@ -154,109 +154,75 @@ class RaidBot {
                     message.channel.send(`Did you mean to start attendance first? (Hint: !ls -s)`);
                 }
             }
-            if ((message.content === '/report lootscore') && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-                this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
-                    const attendanceMapId = value;
-                    this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-                    this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
-                        const seniorityMapId = value;
-                        this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                        this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
-                            this._lootLogMap = value;
-                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                            let sortedMap = new Map();
-                            if (message.content.includes('--asc')) {
-                                sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap, true);
+            if ((message.content.startsWith('/report') && this.canUseCommands(message) && this.isAdminChannel(message))) {
+                yield this.refreshDataMaps();
+                let sortedMap = new Map();
+                let asc = message.content.includes('--asc');
+                let orderByName = message.content.includes('--name');
+                let orderByAttendance = message.content.includes('--attendance');
+                let orderBySeniority = message.content.includes('--seniority');
+                let orderString = orderByName ? 'ordered by **name**' : orderByAttendance ? 'ordered by **attendance**' : orderBySeniority ? 'ordered by **seniority**' : 'ordered by **LootScore**';
+                asc ? orderString = orderString += ' (asc)' : orderString = orderString += ' (desc)';
+                if (message.content.startsWith('/report has')) {
+                    let query = message.content.replace('/report has ', '');
+                    let itemScores = yield this._lootLogService.getItemScores(this._itemScoresChannel);
+                    let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
+                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                    let membersWhoHave = yield this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
+                    if (membersWhoHave.length > 0) {
+                        const sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
+                        const filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
+                        let title = `Members who have **${item.displayName}**`;
+                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                    }
+                    else {
+                        message.channel.send('No members have this item.');
+                    }
+                }
+                if (message.content.startsWith('/report eligible')) {
+                    let query = message.content.replace('/report elibible ', '');
+                    let itemScores = yield this._lootLogService.getItemScores(this._itemScoresChannel);
+                    let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
+                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                    let membersWhoNeed = yield this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers);
+                    if (membersWhoNeed.length > 0) {
+                        const sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
+                        const filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
+                        let title = `Members who need **${item.displayName}** ${orderString}`;
+                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                    }
+                    else {
+                        message.channel.send('No members need this item.');
+                    }
+                }
+                if (message.content.startsWith('/report all')) {
+                    let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
+                    let title = `Overview ${orderString}`;
+                    message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(sortedMap, title));
+                }
+                if (message.content.startsWith('/report class')) {
+                    let className = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
+                    if (className.length > 0) {
+                        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                        let membersOfClass = this._guildMembers.filter((x) => x.roles.array().find((role) => role.name.toLowerCase() === className.toLowerCase()));
+                        if (membersOfClass.length > 0) {
+                            let classIds = new Array();
+                            for (let member of membersOfClass) {
+                                classIds.push(member.id);
                             }
-                            else {
-                                sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                            }
-                            let title = 'Overview ordered by **LootScore**';
-                            message.content.includes('--asc') ? title += ' (asc)' : title += ' (desc)';
-                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(sortedMap, title));
-                        });
-                    });
-                });
-            }
-            if (message.content.startsWith('/report attendance') && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-                this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
-                    const attendanceMapId = value;
-                    this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-                    this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
-                        const seniorityMapId = value;
-                        this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                        this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
-                            this._lootLogMap = value;
-                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                            let sortedMap = new Map();
-                            if (message.content.includes('--asc')) {
-                                sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap, true);
-                            }
-                            else {
-                                sortedMap = this._mapSort.sortByAttendance(this._lootScoreMap);
-                            }
-                            let title = 'Overview ordered by **attendance**';
-                            message.content.includes('--asc') ? title += ' (asc)' : title += ' (desc)';
-                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(sortedMap, title));
-                        });
-                    });
-                });
-            }
-            if (message.content.startsWith('/report name') && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-                this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
-                    const attendanceMapId = value;
-                    this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-                    this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
-                        const seniorityMapId = value;
-                        this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                        this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
-                            this._lootLogMap = value;
-                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                            let sortedMap = new Map();
-                            if (message.content.includes('--asc')) {
-                                sortedMap = this._mapSort.sortByName(this._lootScoreMap, true);
-                            }
-                            else {
-                                sortedMap = this._mapSort.sortByName(this._lootScoreMap);
-                            }
-                            let title = 'Overview ordered by **name**';
-                            message.content.includes('--asc') ? title += ' (asc)' : title += ' (desc)';
-                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(sortedMap, title));
-                        });
-                    });
-                });
-            }
-            if (message.content.startsWith('/report seniority') && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-                this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
-                    const attendanceMapId = value;
-                    this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-                    this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                    this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
-                        const seniorityMapId = value;
-                        this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                        this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
-                            this._lootLogMap = value;
-                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                            let sortedMap = new Map();
-                            if (message.content.includes('--asc')) {
-                                sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap, true);
-                            }
-                            else {
-                                sortedMap = this._mapSort.sortBySeniority(this._lootScoreMap);
-                            }
-                            let title = 'Overview ordered by **seniority**';
-                            message.content.includes('--asc') ? title += ' (asc)' : title += ' (desc)';
-                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(sortedMap, title));
-                        });
-                    });
-                });
+                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
+                            const filteredMap = this._mapSort.filterMembers(sortedMap, classIds);
+                            let title = `Overview for **${className.charAt(0).toUpperCase() + className.slice(1).toLowerCase()}** ${orderString}`;
+                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                        }
+                        else {
+                            message.channel.send('No members of class found. Check the spelling of the class. Not case sensitive.');
+                        }
+                    }
+                    else {
+                        message.channel.send('Class not found. Ensure the class flag comes immediately after /report class. Ex: /report class "paladin"');
+                    }
+                }
             }
             if (message.content.startsWith('/give') && this.canUseCommands(message) && this.isFeedChannel(message)) {
                 let query = '';
@@ -316,68 +282,6 @@ class RaidBot {
                     message.channel.send('Could not find member. Be sure to use a @mention.');
                 }
             }
-            if (message.content.startsWith('/report needs') && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                let query = message.content.replace('/report needs ', '');
-                this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
-                    let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
-                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-                    this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers).then((members) => {
-                        if (members.length > 0) {
-                            this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
-                                const attendanceMapId = value;
-                                this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-                                this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
-                                    const seniorityMapId = value;
-                                    this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                                    this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
-                                        this._lootLogMap = value;
-                                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                                        const filteredMap = this._mapSort.filterMembers(sortedMap, members);
-                                        let title = `Members who are eligible for **${item.displayName}**`;
-                                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
-                                    });
-                                });
-                            });
-                        }
-                        else {
-                            message.channel.send('No members need this item.');
-                        }
-                    });
-                });
-            }
-            if (message.content.startsWith('/report has') && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                let query = message.content.replace('/report has ', '');
-                this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
-                    let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
-                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-                    this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers).then((members) => {
-                        if (members.length > 0) {
-                            this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
-                                const attendanceMapId = value;
-                                this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-                                this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                                this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
-                                    const seniorityMapId = value;
-                                    this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                                    this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
-                                        this._lootLogMap = value;
-                                        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                                        const filteredMap = this._mapSort.filterMembers(sortedMap, members);
-                                        let title = `Members who have **${item.displayName}**`;
-                                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
-                                    });
-                                });
-                            });
-                        }
-                        else {
-                            message.channel.send('No members have this item.');
-                        }
-                    });
-                });
-            }
             if (message.content.startsWith('/report "') && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
                 this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
@@ -416,46 +320,6 @@ class RaidBot {
                     message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
                 }
             }
-            //if (message.content.startsWith('/overview') && message.channel.type === 'dm') {
-            //    if (message.content.includes('"')) {
-            //        let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
-            //        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-            //        let query = message.content.replace('/overview ', '').replace(memberName, '').replace(/"/g, '').trim();
-            //        let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
-            //        if (member) {
-            //            this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers).then((items) => {
-            //                this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
-            //                    const attendanceMapId = value;
-            //                    this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-            //                    this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-            //                    this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
-            //                        const seniorityMapId = value;
-            //                        this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-            //                        this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
-            //                            this._lootLogMap = value;
-            //                            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-            //                            const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-            //                            const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
-            //                            if (Array.from(filteredMap).length > 0) {
-            //                                message.author.send(new HeadingEmbed('Member', 'Attendance', 'Seniority'));
-            //                                for (let entry of filteredMap) {
-            //                                    message.author.send(new SeniorityEmbed(sortedMap, entry, this._appSettings));
-            //                                }
-            //                                message.author.send(new ItemsLootedEmbed(items));
-            //                            } else {
-            //                                message.channel.send(`No history found for **${member.displayName}**`);
-            //                            }
-            //                        });
-            //                    });
-            //                });
-            //            });
-            //        } else {
-            //            message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
-            //        }
-            //    } else {
-            //        message.channel.send('Could not handle request. Make sure the member name is in quotes.');
-            //    }
-            //}
             if (message.content.startsWith('/getitemscores') && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 const path = message.content.replace('/getitemscores ', '');
                 const results = [];
@@ -538,7 +402,7 @@ class RaidBot {
                 let query = message.content.replace('/edit --loot ', '');
                 this.editMessage(message, this._lootLogDataChannel, query);
             }
-        });
+        }));
     }
     get presentMembers() {
         return Array.from(this._raidChannel1.members.values()).concat(Array.from(this._raidChannel2.members.values()));
@@ -642,6 +506,18 @@ class RaidBot {
         return (reaction, user) => {
             return (reaction.emoji.name === '✅' || reaction.emoji.name === '❌') && user.id === message.author.id;
         };
+    }
+    refreshDataMaps() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+            let attendanceMapId = yield this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel);
+            this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
+            this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
+            let seniorityMapId = yield this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel);
+            this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+            this._lootLogMap = yield this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers);
+            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+        });
     }
 }
 exports.RaidBot = RaidBot;

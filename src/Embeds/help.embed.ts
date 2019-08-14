@@ -12,16 +12,23 @@ export class HelpEmbed extends RichEmbed {
         this.addField('End attendance', '```\n/end```');
         this.addField('End attendance without logging (in case of accidental start)', '```\n/end --nolog```');
         this.addField('End attendance without counting seniority', '```\n/end --noseniority```');
-        this.addField('Award item', '```\n/give @name shorthand (or full item name)```');
+        this.addField('Award item', '```\n/give @name shorthandorfullitemname```');
         this.addBlankField();
         this.addField('Admin Channel Commands', `<#${appSettings['adminChannel']}>`);
         this.addBlankField();
-        this.addField('Report who needs item', '```\n/report needs shorthand (or full item name)```');
-        this.addField('Report who has item', '```\n/report has shorthand (or full item name)```');
-        this.addField('Report ordered by LootScore', '```\n/report (add --asc to reverse)```');
-        this.addField('Report ordered by name', '```\n/report name (add --asc to reverse)```');
-        this.addField('Report ordered by attendance', '```\n/report attendance (add --asc to reverse)```');
-        this.addField('Report ordered by seniority', '```\n/report seniority (add --asc to reverse)```');
-        this.addField('Report for single member', '```\n/report "name"```');
+        this.addField('Report who is eligible for item', '```\n/report eligible shorthandorfullitemname```');
+        this.addField('Report who has item', '```\n/report has shorthandorfullitemname```');
+        this.addField('Report full roster', '```\n/report all```');
+        this.addField('Report specific class', '```\n/report class "classnameinquotes"```');
+        this.addField('Report specific person', '```\n/report "nameinquotes"```');
+        this.addBlankField();
+        this.addField('Additional modifiers for reports', `Add to any of the report commands above to modify`);
+        this.addBlankField();
+        this.addField('Order by LootScore', '```\nDefault. No modifier needed```');
+        this.addField('Order by name', '```\n--name```');
+        this.addField('Order by attendance', '```\n--attendance```');
+        this.addField('Order by seniority', '```\n--seniority```');
+        this.addField('Report in descending order', '```\nDefault. No modifier needed```');
+        this.addField('Report in ascending order', '```\n--asc```');
     }
 }

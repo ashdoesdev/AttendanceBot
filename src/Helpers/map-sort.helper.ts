@@ -67,4 +67,20 @@ export class MapSortHelper {
         let filteredArray = array.filter((value) => members.includes(value[0].id));
         return new Map(filteredArray);
     }
+
+    public sortByFlag(lootScoreMap: Map<GuildMember, MemberScore>, ascending: boolean, orderByName: boolean, orderByAttendance: boolean, orderBySeniority: boolean): Map<GuildMember, MemberScore> {
+        if (orderByName) {
+            return this.sortByName(lootScoreMap, ascending);
+        }
+
+        if (orderByAttendance) {
+            return this.sortByAttendance(lootScoreMap, ascending);
+        }
+
+        if (orderBySeniority) {
+            return this.sortBySeniority(lootScoreMap, ascending);
+        }
+
+        return this.sortByLootScore(lootScoreMap, ascending);
+    }
 }
