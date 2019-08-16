@@ -9,6 +9,6 @@
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\src\\index.ts",
+  "SelectedNode": "\\src\\Helpers\\timestamp.helper.ts",
   "PreviewInSolutionExplorer": false
 }

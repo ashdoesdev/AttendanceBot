@@ -62,6 +62,10 @@ class RaidBot {
             if (message.content === '/help' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 message.author.send(new help_embed_1.HelpEmbed(this._appSettings));
             }
+            if (message.content === '!clear' && this.canUseCommands(message)) {
+                message.channel.fetchMessages({ limit: 100 })
+                    .then(messages => message.channel.bulkDelete(messages));
+            }
             if (message.content === '/refresh' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 this.sendLootScoreDailyDump();
             }
@@ -164,35 +168,95 @@ class RaidBot {
                 let orderString = orderByName ? 'ordered by **name**' : orderByAttendance ? 'ordered by **attendance**' : orderBySeniority ? 'ordered by **seniority**' : 'ordered by **LootScore**';
                 asc ? orderString = orderString += ' (asc)' : orderString = orderString += ' (desc)';
                 if (message.content.startsWith('/report has')) {
-                    let query = message.content.replace('/report has ', '');
+                    let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
                     let itemScores = yield this._lootLogService.getItemScores(this._itemScoresChannel);
                     let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
-                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-                    let membersWhoHave = yield this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
-                    if (membersWhoHave.length > 0) {
-                        const sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
-                        const filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
-                        let title = `Members who have **${item.displayName}**`;
-                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                    if (item) {
+                        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                        let membersWhoHave = yield this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
+                        if (membersWhoHave.length > 0) {
+                            const sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
+                            const filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
+                            let title = `Members who have **${item.displayName}** ${orderString}`;
+                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                        }
+                        else {
+                            message.channel.send('No members have this item.');
+                        }
                     }
                     else {
-                        message.channel.send('No members have this item.');
+                        message.channel.send('Item does not exist.');
+                        let relatedItems = new Array();
+                        itemScores.forEach((item) => {
+                            var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
+                            var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
+                            if (shorthandSimilarity > .5 || displayNameSimilarity > .25 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                                relatedItems.push(item);
+                            }
+                        });
+                        let relatedString = '';
+                        if (relatedItems.length > 0) {
+                            for (let i = 0; i < relatedItems.length; i++) {
+                                if (i === relatedItems.length - 1) {
+                                    if (i === 0) {
+                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                    }
+                                    else {
+                                        relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                    }
+                                }
+                                else {
+                                    relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
+                                }
+                            }
+                            message.channel.send(`Did you mean ${relatedString}?`);
+                        }
                     }
                 }
                 if (message.content.startsWith('/report eligible')) {
-                    let query = message.content.replace('/report elibible ', '');
+                    let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
                     let itemScores = yield this._lootLogService.getItemScores(this._itemScoresChannel);
                     let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
-                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-                    let membersWhoNeed = yield this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers);
-                    if (membersWhoNeed.length > 0) {
-                        const sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
-                        const filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
-                        let title = `Members who need **${item.displayName}** ${orderString}`;
-                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                    if (item) {
+                        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                        let membersWhoNeed = yield this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers);
+                        if (membersWhoNeed.length > 0) {
+                            const sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
+                            const filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
+                            let title = `Members who need **${item.displayName}** ${orderString}`;
+                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                        }
+                        else {
+                            message.channel.send('No members need this item.');
+                        }
                     }
                     else {
-                        message.channel.send('No members need this item.');
+                        message.channel.send('Item does not exist.');
+                        let relatedItems = new Array();
+                        itemScores.forEach((item) => {
+                            var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
+                            var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
+                            if (shorthandSimilarity > .5 || displayNameSimilarity > .25 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                                relatedItems.push(item);
+                            }
+                        });
+                        let relatedString = '';
+                        if (relatedItems.length > 0) {
+                            for (let i = 0; i < relatedItems.length; i++) {
+                                if (i === relatedItems.length - 1) {
+                                    if (i === 0) {
+                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                    }
+                                    else {
+                                        relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                    }
+                                }
+                                else {
+                                    relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
+                                }
+                            }
+                            message.channel.send(`Did you mean ${relatedString}?`);
+                        }
                     }
                 }
                 if (message.content.startsWith('/report all')) {

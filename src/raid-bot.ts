@@ -82,6 +82,11 @@ export class RaidBot {
                 message.author.send(new HelpEmbed(this._appSettings));
             }
 
+            if (message.content === '!clear' && this.canUseCommands(message)) {
+                message.channel.fetchMessages({ limit: 100 })
+                    .then(messages => message.channel.bulkDelete(messages));
+            }
+
             if (message.content === '/refresh' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 this.sendLootScoreDailyDump();
             }
@@ -191,41 +196,111 @@ export class RaidBot {
                 asc ? orderString = orderString += ' (asc)' : orderString = orderString += ' (desc)';
 
                 if (message.content.startsWith('/report has')) {
-                    let query = message.content.replace('/report has ', '');
+                    let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
                     let itemScores = await this._lootLogService.getItemScores(this._itemScoresChannel);
                     let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
-                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-                    let membersWhoHave = await this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
 
-                    if (membersWhoHave.length > 0) {
-                        const sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
-                        const filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
+                    if (item) {
+                        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                        let membersWhoHave = await this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
 
-                        let title = `Members who have **${item.displayName}**`;
+                        if (membersWhoHave.length > 0) {
+                            const sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
+                            const filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
 
-                        message.channel.send(new MinimalVisualizationEmbed(filteredMap, title));
+                            let title = `Members who have **${item.displayName}** ${orderString}`;
+
+                            message.channel.send(new MinimalVisualizationEmbed(filteredMap, title));
+                        } else {
+                            message.channel.send('No members have this item.');
+                        }
                     } else {
-                        message.channel.send('No members have this item.');
+                        message.channel.send('Item does not exist.');
+
+                        let relatedItems = new Array<ItemScore>();
+
+                        itemScores.forEach((item) => {
+                            var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
+                            var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
+
+                            if (shorthandSimilarity > .5 || displayNameSimilarity > .25 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                                relatedItems.push(item);
+                            }
+                        });
+
+                        let relatedString = '';
+
+                        if (relatedItems.length > 0) {
+                            for (let i = 0; i < relatedItems.length; i++) {
+                                if (i === relatedItems.length - 1) {
+                                    if (i === 0) {
+                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                    } else {
+                                        relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                    }
+                                } else {
+                                    relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
+                                }
+                            }
+
+                            message.channel.send(`Did you mean ${relatedString}?`);
+                        }
                     }
+
                 }
                 
                 if (message.content.startsWith('/report eligible')) {
-                    let query = message.content.replace('/report elibible ', '');
+                    let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
                     let itemScores = await this._lootLogService.getItemScores(this._itemScoresChannel);
                     let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
-                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-                    let membersWhoNeed = await this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers)
 
-                    if (membersWhoNeed.length > 0) {
-                        const sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
-                        const filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
+                    if (item) {
+                        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                        let membersWhoNeed = await this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers)
 
-                        let title = `Members who need **${item.displayName}** ${orderString}`;
+                        if (membersWhoNeed.length > 0) {
+                            const sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
+                            const filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
 
-                        message.channel.send(new MinimalVisualizationEmbed(filteredMap, title));
+                            let title = `Members who need **${item.displayName}** ${orderString}`;
+
+                            message.channel.send(new MinimalVisualizationEmbed(filteredMap, title));
+                        } else {
+                            message.channel.send('No members need this item.');
+                        }
                     } else {
-                        message.channel.send('No members need this item.');
+                        message.channel.send('Item does not exist.');
+
+                        let relatedItems = new Array<ItemScore>();
+
+                        itemScores.forEach((item) => {
+                            var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
+                            var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
+
+                            if (shorthandSimilarity > .5 || displayNameSimilarity > .25 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                                relatedItems.push(item);
+                            }
+                        });
+
+                        let relatedString = '';
+
+                        if (relatedItems.length > 0) {
+                            for (let i = 0; i < relatedItems.length; i++) {
+                                if (i === relatedItems.length - 1) {
+                                    if (i === 0) {
+                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                    } else {
+                                        relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                    }
+                                } else {
+                                    relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
+                                }
+                            }
+
+                            message.channel.send(`Did you mean ${relatedString}?`);
+                        }
                     }
+
                 }
 
                 if (message.content.startsWith('/report all')) {
@@ -259,7 +334,6 @@ export class RaidBot {
                     } else {
                         message.channel.send('Class not found. Ensure the class flag comes immediately after /report class. Ex: /report class "paladin"');
                     }
-
 
                 }
 

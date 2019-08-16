@@ -16,8 +16,8 @@ export class HelpEmbed extends RichEmbed {
         this.addBlankField();
         this.addField('Admin Channel Commands', `<#${appSettings['adminChannel']}>`);
         this.addBlankField();
-        this.addField('Report who is eligible for item', '```\n/report eligible shorthandorfullitemname```');
-        this.addField('Report who has item', '```\n/report has shorthandorfullitemname```');
+        this.addField('Report who is eligible for item', '```\n/report eligible "shorthandorfullitemname"```');
+        this.addField('Report who has item', '```\n/report has "shorthandorfullitemname"```');
         this.addField('Report full roster', '```\n/report all```');
         this.addField('Report specific class', '```\n/report class "classnameinquotes"```');
         this.addField('Report specific person', '```\n/report "nameinquotes"```');
