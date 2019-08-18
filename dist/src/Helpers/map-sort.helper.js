@@ -66,17 +66,17 @@ class MapSortHelper {
         let filteredArray = array.filter((value) => members.includes(value[0].id));
         return new Map(filteredArray);
     }
-    sortByFlag(lootScoreMap, ascending, orderByName, orderByAttendance, orderBySeniority) {
+    sortByFlag(lootScoreMap, orderByName, orderByAttendance, orderBySeniority) {
         if (orderByName) {
-            return this.sortByName(lootScoreMap, ascending);
+            return this.sortByName(lootScoreMap);
         }
         if (orderByAttendance) {
-            return this.sortByAttendance(lootScoreMap, ascending);
+            return this.sortByAttendance(lootScoreMap);
         }
         if (orderBySeniority) {
-            return this.sortBySeniority(lootScoreMap, ascending);
+            return this.sortBySeniority(lootScoreMap);
         }
-        return this.sortByLootScore(lootScoreMap, ascending);
+        return this.sortByLootScore(lootScoreMap);
     }
 }
 exports.MapSortHelper = MapSortHelper;

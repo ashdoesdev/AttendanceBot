@@ -18,17 +18,17 @@ export class HelpEmbed extends RichEmbed {
         this.addBlankField();
         this.addField('Report who is eligible for item', '```\n/report eligible "shorthandorfullitemname"```');
         this.addField('Report who has item', '```\n/report has "shorthandorfullitemname"```');
-        this.addField('Report full roster', '```\n/report all```');
-        this.addField('Report specific class', '```\n/report class "classnameinquotes"```');
         this.addField('Report specific person', '```\n/report "nameinquotes"```');
+        this.addField('Report full roster', '```\n/report```');
         this.addBlankField();
-        this.addField('Additional modifiers for reports', `Add to any of the report commands above to modify`);
+        this.addField('Report Modifiers', `Add to any of the report commands above to modify`);
         this.addBlankField();
-        this.addField('Order by LootScore', '```\nDefault. No modifier needed```');
+        this.addField('Filter by certain class (or classes)', '```\n--classname')
+        this.addField('Order by ItemScore', '```\nDefault. No modifier needed```');
+        this.addField('Order by offspec ItemScore', '```\n--offspec```');
+        this.addField('Order by last loot date', '```\n--lastloot```');
         this.addField('Order by name', '```\n--name```');
         this.addField('Order by attendance', '```\n--attendance```');
         this.addField('Order by seniority', '```\n--seniority```');
-        this.addField('Report in descending order', '```\nDefault. No modifier needed```');
-        this.addField('Report in ascending order', '```\n--asc```');
     }
 }

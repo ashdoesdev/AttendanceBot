@@ -68,19 +68,19 @@ export class MapSortHelper {
         return new Map(filteredArray);
     }
 
-    public sortByFlag(lootScoreMap: Map<GuildMember, MemberScore>, ascending: boolean, orderByName: boolean, orderByAttendance: boolean, orderBySeniority: boolean): Map<GuildMember, MemberScore> {
+    public sortByFlag(lootScoreMap: Map<GuildMember, MemberScore>, orderByName: boolean, orderByAttendance: boolean, orderBySeniority: boolean): Map<GuildMember, MemberScore> {
         if (orderByName) {
-            return this.sortByName(lootScoreMap, ascending);
+            return this.sortByName(lootScoreMap);
         }
 
         if (orderByAttendance) {
-            return this.sortByAttendance(lootScoreMap, ascending);
+            return this.sortByAttendance(lootScoreMap);
         }
 
         if (orderBySeniority) {
-            return this.sortBySeniority(lootScoreMap, ascending);
+            return this.sortBySeniority(lootScoreMap);
         }
 
-        return this.sortByLootScore(lootScoreMap, ascending);
+        return this.sortByLootScore(lootScoreMap);
     }
 }

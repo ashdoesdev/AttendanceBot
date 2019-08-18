@@ -16,6 +16,8 @@ export class ItemsLootedEmbed extends RichEmbed {
                         } else {
                             lootString += `and **${itemsLooted[i].displayName}**`;
                         }
+                    } else if (i === itemsLooted.length - 2) {
+                        lootString += `**${itemsLooted[i].displayName}** `;
                     } else {
                         lootString += `**${itemsLooted[i].displayName}**, `;
                     }

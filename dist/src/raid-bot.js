@@ -161,12 +161,50 @@ class RaidBot {
             if ((message.content.startsWith('/report') && this.canUseCommands(message) && this.isAdminChannel(message))) {
                 yield this.refreshDataMaps();
                 let sortedMap = new Map();
-                let asc = message.content.includes('--asc');
+                let modifiers = message.content.split(' ').filter((x) => x.startsWith('--'));
+                modifiers.forEach((modifier, i) => {
+                    modifiers[i] = modifier.slice(2);
+                });
+                let classModifiers = modifiers.filter((modifier) => exports.classes.includes(modifier));
                 let orderByName = message.content.includes('--name');
                 let orderByAttendance = message.content.includes('--attendance');
                 let orderBySeniority = message.content.includes('--seniority');
-                let orderString = orderByName ? 'ordered by **name**' : orderByAttendance ? 'ordered by **attendance**' : orderBySeniority ? 'ordered by **seniority**' : 'ordered by **LootScore**';
-                asc ? orderString = orderString += ' (asc)' : orderString = orderString += ' (desc)';
+                let orderByOffspecItemScore = message.content.includes('--offspec');
+                let orderByLastLootDate = message.content.includes('--lastloot');
+                let orderString = 'ordered by ';
+                let classString = '';
+                let membersOfClass = new Array();
+                if (classModifiers.length > 0) {
+                    classString += '(showing ';
+                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                    if (classModifiers.length > 0) {
+                        for (let i = 0; i < classModifiers.length; i++) {
+                            let members = this._guildMembers.filter((x) => x.roles.array().find((role) => role.name.toLowerCase() === classModifiers[i].toLowerCase()));
+                            members.forEach((member) => {
+                                membersOfClass.push(member.id);
+                            });
+                            membersOfClass = membersOfClass.concat();
+                            if (i === classModifiers.length - 1) {
+                                if (i === 0) {
+                                    classString += `**${classModifiers[i]}** only)`;
+                                }
+                                else {
+                                    classString += `and **${classModifiers[i]}** only)`;
+                                }
+                            }
+                            else if (i === classModifiers.length - 2) {
+                                classString += `**${classModifiers[i]}** `;
+                            }
+                            else {
+                                classString += `**${classModifiers[i]}**, `;
+                            }
+                        }
+                    }
+                    if (membersOfClass.length === 0) {
+                        classString = '';
+                    }
+                }
+                orderString += orderByOffspecItemScore ? '**offspec ItemScore**' : orderByLastLootDate ? '**last loot date**' : orderByName ? '**name**' : orderByAttendance ? '**attendance**' : orderBySeniority ? '**seniority**' : '**ItemScore**';
                 if (message.content.startsWith('/report has')) {
                     let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
                     let itemScores = yield this._lootLogService.getItemScores(this._itemScoresChannel);
@@ -175,9 +213,12 @@ class RaidBot {
                         this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
                         let membersWhoHave = yield this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
                         if (membersWhoHave.length > 0) {
-                            const sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
-                            const filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
-                            let title = `Members who have **${item.displayName}** ${orderString}`;
+                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority);
+                            let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
+                            if (membersOfClass.length > 0) {
+                                filteredMap = this._mapSort.filterMembers(filteredMap, membersOfClass);
+                            }
+                            let title = `Members who have **${item.displayName}** ${orderString} ${classString}`;
                             message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
                         }
                         else {
@@ -213,7 +254,7 @@ class RaidBot {
                         }
                     }
                 }
-                if (message.content.startsWith('/report eligible')) {
+                else if (message.content.startsWith('/report eligible')) {
                     let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
                     let itemScores = yield this._lootLogService.getItemScores(this._itemScoresChannel);
                     let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
@@ -221,9 +262,12 @@ class RaidBot {
                         this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
                         let membersWhoNeed = yield this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers);
                         if (membersWhoNeed.length > 0) {
-                            const sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
-                            const filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
-                            let title = `Members who need **${item.displayName}** ${orderString}`;
+                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority);
+                            let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
+                            if (membersOfClass.length > 0) {
+                                filteredMap = this._mapSort.filterMembers(filteredMap, membersOfClass);
+                            }
+                            let title = `Members who need **${item.displayName}** ${orderString} ${classString}`;
                             message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
                         }
                         else {
@@ -259,32 +303,39 @@ class RaidBot {
                         }
                     }
                 }
-                if (message.content.startsWith('/report all')) {
-                    let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
-                    let title = `Overview ${orderString}`;
-                    message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(sortedMap, title));
-                }
-                if (message.content.startsWith('/report class')) {
-                    let className = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
-                    if (className.length > 0) {
-                        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-                        let membersOfClass = this._guildMembers.filter((x) => x.roles.array().find((role) => role.name.toLowerCase() === className.toLowerCase()));
-                        if (membersOfClass.length > 0) {
-                            let classIds = new Array();
-                            for (let member of membersOfClass) {
-                                classIds.push(member.id);
+                else if (message.content.startsWith('/report "')) {
+                    let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
+                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                    let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
+                    if (member) {
+                        let itemsLooted = yield this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers);
+                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
+                        const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
+                        if (Array.from(filteredMap).length > 0) {
+                            message.channel.send(`Overview for **${member.displayName}**`);
+                            message.channel.send(new heading_embed_1.HeadingEmbed('LootScore', 'Attendance', 'Seniority'));
+                            for (let entry of filteredMap) {
+                                message.channel.send(new member_overview_embed_1.MemberOverviewEmbed(filteredMap, entry));
                             }
-                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, asc, orderByName, orderByAttendance, orderBySeniority);
-                            const filteredMap = this._mapSort.filterMembers(sortedMap, classIds);
-                            let title = `Overview for **${className.charAt(0).toUpperCase() + className.slice(1).toLowerCase()}** ${orderString}`;
-                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                            message.channel.send(new items_looted_embed_1.ItemsLootedEmbed(itemsLooted));
                         }
                         else {
-                            message.channel.send('No members of class found. Check the spelling of the class. Not case sensitive.');
+                            message.channel.send(`No history found for **${member.displayName}**`);
                         }
                     }
                     else {
-                        message.channel.send('Class not found. Ensure the class flag comes immediately after /report class. Ex: /report class "paladin"');
+                        message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
+                    }
+                }
+                else {
+                    let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority);
+                    let title = `Overview ${orderString} ${classString}`;
+                    if (membersOfClass.length > 0) {
+                        const filteredMap = this._mapSort.filterMembers(sortedMap, membersOfClass);
+                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                    }
+                    else {
+                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(sortedMap, title));
                     }
                 }
             }
@@ -344,44 +395,6 @@ class RaidBot {
                 }
                 else {
                     message.channel.send('Could not find member. Be sure to use a @mention.');
-                }
-            }
-            if (message.content.startsWith('/report "') && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
-                this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-                let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
-                if (member) {
-                    this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers).then((items) => {
-                        this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
-                            const attendanceMapId = value;
-                            this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-                            this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
-                            this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
-                                const seniorityMapId = value;
-                                this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-                                this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
-                                    this._lootLogMap = value;
-                                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
-                                    const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                                    const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
-                                    if (Array.from(filteredMap).length > 0) {
-                                        message.channel.send(`Overview for **${member.displayName}**`);
-                                        message.channel.send(new heading_embed_1.HeadingEmbed('LootScore', 'Attendance', 'Seniority'));
-                                        for (let entry of filteredMap) {
-                                            message.channel.send(new member_overview_embed_1.MemberOverviewEmbed(filteredMap, entry));
-                                        }
-                                        message.channel.send(new items_looted_embed_1.ItemsLootedEmbed(items));
-                                    }
-                                    else {
-                                        message.channel.send(`No history found for **${member.displayName}**`);
-                                    }
-                                });
-                            });
-                        });
-                    });
-                }
-                else {
-                    message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
                 }
             }
             if (message.content.startsWith('/getitemscores') && this.canUseCommands(message) && this.isAdminChannel(message)) {
@@ -585,3 +598,4 @@ class RaidBot {
     }
 }
 exports.RaidBot = RaidBot;
+exports.classes = ['paladin', 'ret', 'rogue', 'prot', 'fury', 'mage', 'druid', 'feral', 'balance', 'hunter', 'priest', 'shadow', 'warlock'];

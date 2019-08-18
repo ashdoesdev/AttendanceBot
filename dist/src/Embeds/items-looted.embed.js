@@ -16,6 +16,9 @@ class ItemsLootedEmbed extends discord_js_1.RichEmbed {
                             lootString += `and **${itemsLooted[i].displayName}**`;
                         }
                     }
+                    else if (i === itemsLooted.length - 2) {
+                        lootString += `**${itemsLooted[i].displayName}** `;
+                    }
                     else {
                         lootString += `**${itemsLooted[i].displayName}**, `;
                     }
