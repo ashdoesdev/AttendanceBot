@@ -175,7 +175,6 @@ class RaidBot {
                 let membersOfClass = new Array();
                 if (classModifiers.length > 0) {
                     classString += '(showing ';
-                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
                     if (classModifiers.length > 0) {
                         for (let i = 0; i < classModifiers.length; i++) {
                             let members = this._guildMembers.filter((x) => x.roles.array().find((role) => role.name.toLowerCase() === classModifiers[i].toLowerCase()));
@@ -209,7 +208,6 @@ class RaidBot {
                     let itemScores = yield this._lootLogService.getItemScores(this._itemScoresChannel);
                     let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
                     if (item) {
-                        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
                         let membersWhoHave = yield this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
                         if (membersWhoHave.length > 0) {
                             let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority);
@@ -258,7 +256,6 @@ class RaidBot {
                     let itemScores = yield this._lootLogService.getItemScores(this._itemScoresChannel);
                     let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
                     if (item) {
-                        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
                         let membersWhoNeed = yield this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers);
                         if (membersWhoNeed.length > 0) {
                             let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority);
@@ -304,7 +301,6 @@ class RaidBot {
                 }
                 else if (message.content.startsWith('/report "')) {
                     let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
-                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
                     let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
                     if (member) {
                         let itemsLooted = yield this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers);
@@ -335,8 +331,9 @@ class RaidBot {
                 }
             }
             if (message.content.startsWith('/give') && this.canUseCommands(message) && this.isFeedChannel(message)) {
+                let offspec = message.content.includes('--offspec');
                 let query = '';
-                query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+                query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('--offspec', '').trim();
                 let member = message.mentions.members.array()[0];
                 if (member) {
                     this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
@@ -347,7 +344,7 @@ class RaidBot {
                                 sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                                     .then((collected) => {
                                     if (collected.first().emoji.name === '✅') {
-                                        this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member);
+                                        this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec);
                                     }
                                     else {
                                         message.channel.send('Request to award item aborted.');

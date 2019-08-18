@@ -1,6 +1,6 @@
 import { GuildMember, Message, TextChannel } from "discord.js";
 import { MapSortHelper } from "../Helpers/map-sort.helper";
-import { ItemScore } from "../Models/item-score.model";
+import { ItemScore, AwardedItem } from "../Models/item-score.model";
 import { LootScoreData, MemberScore } from "../Models/loot-score.model";
 import { MessagesHelper } from "../Helpers/messages.helper";
 
@@ -73,7 +73,7 @@ export class LootScoreService {
         return percentageMap;
     }
 
-    public createLootScoreMap(attendanceMap: Map<GuildMember, number[]>, attendancePercentageMap: Map<GuildMember, number>, seniorityMap: Map<GuildMember, number>, lootLogMap: Map<GuildMember, ItemScore[]>): Map<GuildMember, MemberScore> {
+    public createLootScoreMap(attendanceMap: Map<GuildMember, number[]>, attendancePercentageMap: Map<GuildMember, number>, seniorityMap: Map<GuildMember, number>, lootLogMap: Map<GuildMember, LootScoreData<AwardedItem>[]>): Map<GuildMember, MemberScore> {
         let lootScoreMap = new Map<GuildMember, MemberScore>();
 
         for (let entry of attendancePercentageMap) {
@@ -119,9 +119,16 @@ export class LootScoreService {
 
         for (let entry of lootLogMap) {
             let total = 0;
+            let offspecTotal = 0;
 
-            for (let item of entry[1]) {
-                total += item.score;
+            for (let awardLog of entry[1]) {
+                if (awardLog) {
+                    if (!awardLog.value.offspec) {
+                        total += awardLog.value.item.score;
+                    } else {
+                        offspecTotal += awardLog.value.item.score;
+                    }
+                }
             }
 
             let memberScore = lootScoreMap.get(entry[0]);
@@ -131,6 +138,8 @@ export class LootScoreService {
             }
 
             memberScore.itemScoreTotal = total;
+            memberScore.itemScoreOffspecTotal = offspecTotal;
+
             lootScoreMap.set(entry[0], memberScore);
         }
 

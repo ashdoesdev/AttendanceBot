@@ -104,14 +104,23 @@ class LootScoreService {
         }
         for (let entry of lootLogMap) {
             let total = 0;
-            for (let item of entry[1]) {
-                total += item.score;
+            let offspecTotal = 0;
+            for (let awardLog of entry[1]) {
+                if (awardLog) {
+                    if (!awardLog.value.offspec) {
+                        total += awardLog.value.item.score;
+                    }
+                    else {
+                        offspecTotal += awardLog.value.item.score;
+                    }
+                }
             }
             let memberScore = lootScoreMap.get(entry[0]);
             if (!memberScore) {
                 memberScore = new loot_score_model_1.MemberScore();
             }
             memberScore.itemScoreTotal = total;
+            memberScore.itemScoreOffspecTotal = offspecTotal;
             lootScoreMap.set(entry[0], memberScore);
         }
         return lootScoreMap;

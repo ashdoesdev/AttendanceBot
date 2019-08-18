@@ -16,6 +16,6 @@ export class MinimalVisualizationEmbed extends RichEmbed {
 
         this.setColor('#60b5bc');
         this.setTitle(title);
-        this.addField('**Name**: Attendance - Seniority - ItemScore - Offspec ItemScore - Last Loot Date', memberLines);
+        this.addField('**Name**: Attendance - Seniority - ItemScore - Offspec - Last Loot Date', memberLines);
     }
 }

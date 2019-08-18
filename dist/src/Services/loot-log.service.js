@@ -20,16 +20,25 @@ class LootLogService {
         this._dataHelper = new loot_score_data_helper_1.LootScoreDataHelper();
         this._messages = new messages_helper_1.MessagesHelper();
     }
-    awardItem(message, lootLogChannel, lootLogReadableChannel, item, member) {
+    awardItem(message, lootLogChannel, lootLogReadableChannel, item, member, offspec = false) {
         let awardedItem = new item_score_model_1.AwardedItem();
         awardedItem.member = new loot_score_model_1.MinimalMember();
         awardedItem.member.displayName = member.displayName;
         awardedItem.member.id = member.id;
         awardedItem.item = item;
+        awardedItem.offspec = offspec;
+        if (offspec) {
+            awardedItem.item.score = awardedItem.item.score * .25;
+        }
         let lootScoreData = this._dataHelper.createLootScoreData(awardedItem, message);
         lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
         lootLogReadableChannel.send(new loot_log_embed_1.LootLogEmbed(item, member.displayName, message.member.displayName));
-        message.channel.send(`Awarded ${member.displayName} **${item.displayName}**.`);
+        if (offspec) {
+            message.channel.send(`Awarded ${member.displayName} **${item.displayName}** (offspec).`);
+        }
+        else {
+            message.channel.send(`Awarded ${member.displayName} **${item.displayName}**.`);
+        }
     }
     getItemScores(itemScoresChannel) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -57,8 +66,8 @@ class LootLogService {
             let eligibleMembers = new Array();
             lootLogMap.forEach((key, value) => {
                 for (let looted of key) {
-                    if (item) {
-                        if (looted.displayName === item.displayName) {
+                    if (looted.value.item) {
+                        if (looted.value.item.displayName === item.displayName) {
                             memberLootHistory.push(value.id);
                         }
                     }
@@ -89,8 +98,8 @@ class LootLogService {
             let hasLooted = new Array();
             lootLogMap.forEach((key, value) => {
                 for (let looted of key) {
-                    if (item) {
-                        if (looted.displayName === item.displayName) {
+                    if (looted.value.item) {
+                        if (looted.value.item.displayName === item.displayName) {
                             memberLootHistory.push(value.id);
                         }
                     }
@@ -119,10 +128,10 @@ class LootLogService {
                     entries = lootLogMap.get(member);
                 }
                 if (entries) {
-                    lootLogMap.set(member, entries.concat(lootLogEntry.item));
+                    lootLogMap.set(member, entries.concat(lootScoreData));
                 }
                 else {
-                    lootLogMap.set(member, [lootLogEntry.item]);
+                    lootLogMap.set(member, [lootScoreData]);
                 }
             }
             return lootLogMap;

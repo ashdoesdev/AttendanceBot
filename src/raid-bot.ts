@@ -10,8 +10,8 @@ import { SeniorityEmbed } from './Embeds/seniority.embed';
 import { MapSortHelper } from './Helpers/map-sort.helper';
 import { MemberMatchHelper } from './Helpers/member-match.helper';
 import { MessagesHelper } from './Helpers/messages.helper';
-import { ItemScore } from './Models/item-score.model';
-import { MemberScore } from './Models/loot-score.model';
+import { ItemScore, AwardedItem } from './Models/item-score.model';
+import { MemberScore, LootScoreData } from './Models/loot-score.model';
 import { AttendanceService } from './Services/attendance.service';
 import { LootLogService } from './Services/loot-log.service';
 import { LootScoreService } from './Services/loot-score.service';
@@ -44,7 +44,7 @@ export class RaidBot {
     private _attendanceMap: Map<GuildMember, number[]>;
     private _attendancePercentageMap: Map<GuildMember, number>;
     private _lootScoreMap: Map<GuildMember, MemberScore>;
-    private _lootLogMap: Map<GuildMember, ItemScore[]>;
+    private _lootLogMap: Map<GuildMember, LootScoreData<AwardedItem>[]>;
 
     private _guildMembers: GuildMember[];
     private _appSettings;
@@ -208,8 +208,6 @@ export class RaidBot {
                 if (classModifiers.length > 0) {
                     classString += '(showing ';
 
-                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
-
                     if (classModifiers.length > 0) {
                         for (let i = 0; i < classModifiers.length; i++) {
                             let members = this._guildMembers.filter((x) => x.roles.array().find((role) => role.name.toLowerCase() === classModifiers[i].toLowerCase()));
@@ -247,7 +245,6 @@ export class RaidBot {
                     let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
 
                     if (item) {
-                        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
                         let membersWhoHave = await this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
 
                         if (membersWhoHave.length > 0) {
@@ -305,7 +302,6 @@ export class RaidBot {
                     let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
 
                     if (item) {
-                        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
                         let membersWhoNeed = await this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers)
 
                         if (membersWhoNeed.length > 0) {
@@ -361,7 +357,6 @@ export class RaidBot {
                 else if (message.content.startsWith('/report "')) {
                     let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
 
-                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
                     let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
 
                     if (member) {
@@ -398,8 +393,10 @@ export class RaidBot {
             }
 
             if (message.content.startsWith('/give') && this.canUseCommands(message) && this.isFeedChannel(message)) {
+                let offspec = message.content.includes('--offspec');
+                
                 let query = '';
-                query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('<', '').trim();
+                query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('--offspec', '').trim();
 
                 let member = message.mentions.members.array()[0];
 
@@ -414,7 +411,7 @@ export class RaidBot {
                                 (sentMessage as Message).awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                                     .then((collected) => {
                                         if (collected.first().emoji.name === '✅') {
-                                            this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member);
+                                            this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec);
                                         } else {
                                             message.channel.send('Request to award item aborted.');
                                         }

@@ -11,4 +11,5 @@ export class ItemScore {
 export class AwardedItem {
     public member: MinimalMember;
     public item: ItemScore;
+    public offspec: boolean;
 }

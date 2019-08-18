@@ -11,18 +11,28 @@ export class LootLogService {
     private _dataHelper: LootScoreDataHelper = new LootScoreDataHelper();
     private _messages: MessagesHelper = new MessagesHelper();
 
-    public awardItem(message: Message, lootLogChannel: TextChannel, lootLogReadableChannel: TextChannel, item: ItemScore, member: GuildMember): void {
+    public awardItem(message: Message, lootLogChannel: TextChannel, lootLogReadableChannel: TextChannel, item: ItemScore, member: GuildMember, offspec = false): void {
         let awardedItem = new AwardedItem();
         awardedItem.member = new MinimalMember();
         awardedItem.member.displayName = member.displayName;
         awardedItem.member.id = member.id;
         awardedItem.item = item;
+        awardedItem.offspec = offspec;
+
+        if (offspec) {
+            awardedItem.item.score = awardedItem.item.score * .25;
+        }
 
         let lootScoreData = this._dataHelper.createLootScoreData(awardedItem, message);
 
         lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
         lootLogReadableChannel.send(new LootLogEmbed(item, member.displayName, message.member.displayName));
-        message.channel.send(`Awarded ${member.displayName} **${item.displayName}**.`);
+
+        if (offspec) {
+            message.channel.send(`Awarded ${member.displayName} **${item.displayName}** (offspec).`);
+        } else {
+            message.channel.send(`Awarded ${member.displayName} **${item.displayName}**.`);
+        }
     }
 
     public async getItemScores(itemScoresChannel: TextChannel): Promise<ItemScore[]> {
@@ -55,8 +65,8 @@ export class LootLogService {
 
         lootLogMap.forEach((key, value) => {
             for (let looted of key) {
-                if (item) {
-                    if (looted.displayName === item.displayName) {
+                if (looted.value.item) {
+                    if (looted.value.item.displayName === item.displayName) {
                         memberLootHistory.push(value.id);
                     }
                 }
@@ -91,8 +101,8 @@ export class LootLogService {
 
         lootLogMap.forEach((key, value) => {
             for (let looted of key) {
-                if (item) {
-                    if (looted.displayName === item.displayName) {
+                if (looted.value.item) {
+                    if (looted.value.item.displayName === item.displayName) {
                         memberLootHistory.push(value.id);
                     }
                 }
@@ -108,9 +118,9 @@ export class LootLogService {
         return hasLooted;
     }
 
-    public async createLootLogMap(lootLogChannel: TextChannel, members: GuildMember[]): Promise<Map<GuildMember, ItemScore[]>> {
+    public async createLootLogMap(lootLogChannel: TextChannel, members: GuildMember[]): Promise<Map<GuildMember, LootScoreData<AwardedItem>[]>> {
         let messageEntries = await this._messages.getMessages(lootLogChannel);
-        let lootLogMap = new Map<GuildMember, ItemScore[]>();
+        let lootLogMap = new Map<GuildMember, LootScoreData<AwardedItem>[]>();
 
         for (let entry of messageEntries) {
             let cleanString = entry.content.replace(/`/g, '');
@@ -124,16 +134,16 @@ export class LootLogService {
             }
 
             if (entries) {
-                lootLogMap.set(member, entries.concat(lootLogEntry.item));
+                lootLogMap.set(member, entries.concat(lootScoreData));
             } else {
-                lootLogMap.set(member, [lootLogEntry.item]);
+                lootLogMap.set(member, [lootScoreData]);
             }
         }
 
         return lootLogMap;
     }
 
-    public async getLootHistory(member: GuildMember, lootLogChannel: TextChannel, members: GuildMember[]): Promise<ItemScore[]> {
+    public async getLootHistory(member: GuildMember, lootLogChannel: TextChannel, members: GuildMember[]): Promise<LootScoreData<AwardedItem>[]> {
         let lootLogMap = await this.createLootLogMap(lootLogChannel, members);
         return lootLogMap.get(member);
     }
