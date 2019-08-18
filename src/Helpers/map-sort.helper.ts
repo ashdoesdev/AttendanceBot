@@ -2,63 +2,39 @@ import { GuildMember } from "discord.js";
 import { MemberScore } from "Models/loot-score.model";
 
 export class MapSortHelper {
-    public sortByAttendance(lootScoreMap: Map<GuildMember, MemberScore>, ascending?: boolean): Map<GuildMember, MemberScore> {
+    public sortByAttendance(lootScoreMap: Map<GuildMember, MemberScore>): Map<GuildMember, MemberScore> {
         const array = Array.from(lootScoreMap);
-        if (ascending) {
-            array.sort((a, b) => a[1].attendancePercentage - b[1].attendancePercentage);
-        } else {
-            array.sort((a, b) => b[1].attendancePercentage - a[1].attendancePercentage);
-        }
+        array.sort((a, b) => b[1].attendancePercentage - a[1].attendancePercentage);
         return new Map(array);
     }
 
-    public sortByItemScoreTotal(lootScoreMap: Map<GuildMember, MemberScore>, ascending?: boolean): Map<GuildMember, MemberScore> {
+    public sortByItemScoreTotal(lootScoreMap: Map<GuildMember, MemberScore>): Map<GuildMember, MemberScore> {
         const array = Array.from(lootScoreMap);
-        if (ascending) {
-            array.sort((a, b) => a[1].itemScoreTotal - b[1].itemScoreTotal);
-        } else {
-            array.sort((a, b) => b[1].itemScoreTotal - a[1].itemScoreTotal);
-        }
+        array.sort((a, b) => a[1].itemScoreTotal - b[1].itemScoreTotal);
+        return new Map(array);
+    }
+    
+    public sortByItemScoreOffspecTotal(lootScoreMap: Map<GuildMember, MemberScore>): Map<GuildMember, MemberScore> {
+        const array = Array.from(lootScoreMap);
+        array.sort((a, b) => a[1].itemScoreOffspecTotal - b[1].itemScoreOffspecTotal);
+        return new Map(array);
+    }
+        
+    public sortByLastLootDate(lootScoreMap: Map<GuildMember, MemberScore>): Map<GuildMember, MemberScore> {
+        const array = Array.from(lootScoreMap);
+        array.sort((a, b) => a[1].lastLootDate - b[1].lastLootDate);
         return new Map(array);
     }
 
-    public sortByLootScore(lootScoreMap: Map<GuildMember, MemberScore>, ascending?: boolean): Map<GuildMember, MemberScore> {
+    public sortBySeniority(lootScoreMap: Map<GuildMember, MemberScore>): Map<GuildMember, MemberScore> {
         const array = Array.from(lootScoreMap);
-        if (ascending) {
-            array.sort((a, b) => a[1].lootScore - b[1].lootScore);
-        } else {
-            array.sort((a, b) => b[1].lootScore - a[1].lootScore);
-        }
+        array.sort((a, b) => b[1].seniorityPercentage - a[1].seniorityPercentage);
         return new Map(array);
     }
 
-    public sortBySeniority(lootScoreMap: Map<GuildMember, MemberScore>, ascending?: boolean): Map<GuildMember, MemberScore> {
+    public sortByName(lootScoreMap: Map<GuildMember, MemberScore>): Map<GuildMember, MemberScore> {
         const array = Array.from(lootScoreMap);
-        if (ascending) {
-            array.sort((a, b) => a[1].seniorityPercentage - b[1].seniorityPercentage);
-        } else {
-            array.sort((a, b) => b[1].seniorityPercentage - a[1].seniorityPercentage);
-        }
-        return new Map(array);
-    }
-
-    public sortByName(lootScoreMap: Map<GuildMember, MemberScore>, ascending?: boolean): Map<GuildMember, MemberScore> {
-        const array = Array.from(lootScoreMap);
-        if (ascending) {
-            array.sort((a, b) => b[0].displayName.localeCompare(a[0].displayName));
-        } else {
-            array.sort((a, b) => a[0].displayName.localeCompare(b[0].displayName));
-        }
-        return new Map(array);
-    }
-
-    public sortByDistance(relatedTermsMap: Map<string, number>, ascending?: boolean): Map<string, number> {
-        const array = Array.from(relatedTermsMap);
-        if (ascending) {
-            array.sort((a, b) => b[1] - a[1]);
-        } else {
-            array.sort((a, b) => a[1] - b[1]);
-        }
+        array.sort((a, b) => a[0].displayName.localeCompare(b[0].displayName));
         return new Map(array);
     }
 
@@ -81,6 +57,6 @@ export class MapSortHelper {
             return this.sortBySeniority(lootScoreMap);
         }
 
-        return this.sortByLootScore(lootScoreMap);
+        return this.sortByItemScoreTotal(lootScoreMap);
     }
 }

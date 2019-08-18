@@ -15,7 +15,6 @@ const stringSimilarity = require("string-similarity");
 const heading_embed_1 = require("./Embeds/heading.embed");
 const help_embed_1 = require("./Embeds/help.embed");
 const items_looted_embed_1 = require("./Embeds/items-looted.embed");
-const member_overview_embed_1 = require("./Embeds/member-overview.embed");
 const minimal_visualization_embed_1 = require("./Embeds/minimal-visualization.embed");
 const seniority_embed_1 = require("./Embeds/seniority.embed");
 const map_sort_helper_1 = require("./Helpers/map-sort.helper");
@@ -309,14 +308,10 @@ class RaidBot {
                     let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
                     if (member) {
                         let itemsLooted = yield this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers);
-                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                        const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
+                        const filteredMap = this._mapSort.filterMembers(this._lootScoreMap, [member.id]);
                         if (Array.from(filteredMap).length > 0) {
-                            message.channel.send(`Overview for **${member.displayName}**`);
-                            message.channel.send(new heading_embed_1.HeadingEmbed('LootScore', 'Attendance', 'Seniority'));
-                            for (let entry of filteredMap) {
-                                message.channel.send(new member_overview_embed_1.MemberOverviewEmbed(filteredMap, entry));
-                            }
+                            let title = `Overview for **${member.displayName}**`;
+                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
                             message.channel.send(new items_looted_embed_1.ItemsLootedEmbed(itemsLooted));
                         }
                         else {

@@ -4,23 +4,13 @@ class LootScore {
 }
 exports.LootScore = LootScore;
 class MemberScore {
-    get lootScore() {
-        let lootScore = 100;
-        if (this.attendanceTotal) {
-            lootScore += this.attendanceTotal;
-        }
-        if (this.itemScoreTotal) {
-            lootScore -= this.itemScoreTotal;
-        }
-        if (this.attendanceTotal > 48) {
-            if (lootScore > 0) {
-                lootScore += lootScore * .1;
-            }
-            else {
-                lootScore += lootScore * -.1;
-            }
-        }
-        return Math.round(lootScore);
+    constructor() {
+        this.attendancePercentage = 0;
+        this.seniorityPercentage = 0;
+        this.attendanceTotal = 0;
+        this.itemScoreTotal = 0;
+        this.itemScoreOffspecTotal = 0;
+        this.lastLootDate = 'N/A';
     }
 }
 exports.MemberScore = MemberScore;

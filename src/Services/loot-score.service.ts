@@ -134,30 +134,6 @@ export class LootScoreService {
             lootScoreMap.set(entry[0], memberScore);
         }
 
-        let sortedMap = this._mapSort.sortByItemScoreTotal(lootScoreMap);
-
-        let highestItemScore;
-
-        if (Array.from(sortedMap)[0]) {
-            highestItemScore = Array.from(sortedMap)[0][1].itemScoreTotal;
-        }
-
-        for (let entry of lootScoreMap) {
-            let memberScore = lootScoreMap.get(entry[0]);
-
-            if (!memberScore) {
-                memberScore = new MemberScore();
-            }
-
-            if (memberScore.itemScoreTotal) {
-                memberScore.itemScorePercentage = Math.round((memberScore.itemScoreTotal / highestItemScore) * 100);
-            } else {
-                memberScore.itemScorePercentage = 0;
-            }
-
-            lootScoreMap.set(entry[0], memberScore);
-        }
-
         return lootScoreMap;
     }
 }

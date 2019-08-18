@@ -5,33 +5,12 @@ export class LootScore {
 }
 
 export class MemberScore {
-    public attendancePercentage: number;
-    public seniorityPercentage: number;
-    public attendanceTotal: number;
-    public itemScoreTotal: number;
-    public itemScorePercentage: number;
-
-    public get lootScore(): number {
-        let lootScore = 100;
-
-        if (this.attendanceTotal) {
-            lootScore += this.attendanceTotal;
-        }
-
-        if (this.itemScoreTotal) {
-            lootScore -= this.itemScoreTotal;
-        }
-
-        if (this.attendanceTotal > 48) {
-            if (lootScore > 0) {
-                lootScore += lootScore * .1;
-            } else {
-                lootScore += lootScore * -.1;
-            }
-        }
-
-        return Math.round(lootScore);
-    }
+    public attendancePercentage: number = 0;
+    public seniorityPercentage: number = 0;
+    public attendanceTotal: number = 0;
+    public itemScoreTotal: number = 0;
+    public itemScoreOffspecTotal: number = 0;
+    public lastLootDate: any = 'N/A';
 }
 
 export class LootScoreData<T> {

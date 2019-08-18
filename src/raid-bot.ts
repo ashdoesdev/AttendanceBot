@@ -5,7 +5,6 @@ import * as stringSimilarity from 'string-similarity';
 import { HeadingEmbed } from './Embeds/heading.embed';
 import { HelpEmbed } from './Embeds/help.embed';
 import { ItemsLootedEmbed } from './Embeds/items-looted.embed';
-import { MemberOverviewEmbed } from './Embeds/member-overview.embed';
 import { MinimalVisualizationEmbed } from './Embeds/minimal-visualization.embed';
 import { SeniorityEmbed } from './Embeds/seniority.embed';
 import { MapSortHelper } from './Helpers/map-sort.helper';
@@ -368,18 +367,12 @@ export class RaidBot {
                     if (member) {
                         let itemsLooted = await this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers);
 
-                        const sortedMap = this._mapSort.sortByLootScore(this._lootScoreMap);
-                        const filteredMap = this._mapSort.filterMembers(sortedMap, [member.id]);
+                        const filteredMap = this._mapSort.filterMembers(this._lootScoreMap, [member.id]);
 
                         if (Array.from(filteredMap).length > 0) {
-                            message.channel.send(`Overview for **${member.displayName}**`);
+                            let title = `Overview for **${member.displayName}**`;
 
-                            message.channel.send(new HeadingEmbed('LootScore', 'Attendance', 'Seniority'));
-
-                            for (let entry of filteredMap) {
-                                message.channel.send(new MemberOverviewEmbed(filteredMap, entry));
-                            }
-
+                            message.channel.send(new MinimalVisualizationEmbed(filteredMap, title));
                             message.channel.send(new ItemsLootedEmbed(itemsLooted));
                         } else {
                             message.channel.send(`No history found for **${member.displayName}**`);
