@@ -3,12 +3,13 @@
     "",
     "\\dist",
     "\\dist\\src",
+    "\\dist\\src\\Services",
     "\\src",
     "\\src\\Embeds",
     "\\src\\Helpers",
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\src\\Helpers\\timestamp.helper.ts",
+  "SelectedNode": "\\src\\Models\\loot-score.model.ts",
   "PreviewInSolutionExplorer": false
 }

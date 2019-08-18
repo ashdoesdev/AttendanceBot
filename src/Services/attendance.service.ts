@@ -58,10 +58,12 @@ export class AttendanceService {
     public async createMinifiedSeniorityMap(minifiedAttendanceMap: Map<string, number>, seniorityLogChannel: TextChannel): Promise<Map<string, number>> {
         let seniorityMap = await this._lootScoreService.getSeniorityMap(seniorityLogChannel);
 
+        for (let entry of seniorityMap) {
+            seniorityMap.set(entry[0], seniorityMap.get(entry[0]) + 1);
+        }
+
         for (let entry of minifiedAttendanceMap) {
-            if (seniorityMap.get(entry[0])) {
-                seniorityMap.set(entry[0], seniorityMap.get(entry[0]) + 1);
-            } else {
+            if (!seniorityMap.get(entry[0])) {
                 seniorityMap.set(entry[0], 1);
             }
         }
@@ -72,7 +74,9 @@ export class AttendanceService {
     public startLogging(message: Message, raidChannel1: VoiceChannel, raidChannel2: VoiceChannel): void {
         this.loggingInProgress = true;
 
-        message.channel.send('Starting attendance log.');
+        message.channel.send('Starting attendance log. Make sure you are in the raid channel.');
+        message.channel.send('*Don\'t fret. There is a 5 minute grace period at beginning and end.*');
+        message.channel.send(':snail:');
 
         this._timerSubscription = timer(0, 60000).subscribe(() => {
             this._tick++;
@@ -106,8 +110,18 @@ export class AttendanceService {
                 message.channel.send(`Ended attendance log. Total duration: ${this._tick} minutes`);
             }
 
-            const minifiedAttendanceMap = this.createMinifiedAttendanceMap(this.attendanceLog);
-            const readableMinifiedAttendanceMap = this.createReadableMinifiedAttendanceMap(this.attendanceLog);
+            let attendanceArray = Array.from(this.attendanceLog.entries());
+            if (attendanceArray.length > 10) {
+                attendanceArray = attendanceArray.slice(5, attendanceArray.length - 5);
+            }
+
+            let modifiedAttendanceLog = new Map<number, GuildMember[]>();
+            for (let entry of attendanceArray) {
+                modifiedAttendanceLog.set(entry[0], entry[1]);
+            }
+
+            const minifiedAttendanceMap = this.createMinifiedAttendanceMap(modifiedAttendanceLog);
+            const readableMinifiedAttendanceMap = this.createReadableMinifiedAttendanceMap(modifiedAttendanceLog);
             const minifiedAttendanceArray = Array.from(minifiedAttendanceMap.entries());
             let attendanceLootScoreData = this._dataHelper.createLootScoreData(minifiedAttendanceArray, message);
 
@@ -129,6 +143,7 @@ export class AttendanceService {
         this._tick = 0;
         this._timerSubscription.unsubscribe();
         this.loggingInProgress = false;
+        this.attendanceLog = new Map<number, GuildMember[]>();
     }
 
     private codeBlockify(string: string): string {
