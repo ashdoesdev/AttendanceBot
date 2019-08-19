@@ -333,7 +333,7 @@ class RaidBot {
             if (message.content.startsWith('/give') && this.canUseCommands(message) && this.isFeedChannel(message)) {
                 let offspec = message.content.includes('--offspec');
                 let query = '';
-                query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('--offspec', '').trim();
+                query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('--offspec', '').replace('<', '').trim();
                 let member = message.mentions.members.array()[0];
                 if (member) {
                     this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
@@ -350,7 +350,8 @@ class RaidBot {
                                         message.channel.send('Request to award item aborted.');
                                     }
                                 })
-                                    .catch(() => {
+                                    .catch((err) => {
+                                    console.log(err);
                                     message.channel.send('No reply received. Request to award item aborted.');
                                 });
                             });

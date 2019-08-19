@@ -19,14 +19,10 @@ export class LootLogService {
         awardedItem.item = item;
         awardedItem.offspec = offspec;
 
-        if (offspec) {
-            awardedItem.item.score = awardedItem.item.score * .25;
-        }
-
         let lootScoreData = this._dataHelper.createLootScoreData(awardedItem, message);
 
         lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
-        lootLogReadableChannel.send(new LootLogEmbed(item, member.displayName, message.member.displayName));
+        lootLogReadableChannel.send(new LootLogEmbed(lootScoreData));
 
         if (offspec) {
             message.channel.send(`Awarded ${member.displayName} **${item.displayName}** (offspec).`);

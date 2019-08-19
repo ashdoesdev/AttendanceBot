@@ -396,7 +396,7 @@ export class RaidBot {
                 let offspec = message.content.includes('--offspec');
                 
                 let query = '';
-                query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('--offspec', '').trim();
+                query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('--offspec', '').replace('<', '').trim();
 
                 let member = message.mentions.members.array()[0];
 
@@ -416,7 +416,8 @@ export class RaidBot {
                                             message.channel.send('Request to award item aborted.');
                                         }
                                     })
-                                    .catch(() => {
+                                    .catch((err) => {
+                                        console.log(err);
                                         message.channel.send('No reply received. Request to award item aborted.');
                                     });
                             });
