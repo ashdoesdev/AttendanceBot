@@ -10,7 +10,7 @@ export class MemberScore {
     public attendanceTotal: number = 0;
     public itemScoreTotal: number = 0;
     public itemScoreOffspecTotal: number = 0;
-    public lastLootDate: any = 'N/A';
+    public lastLootDate: string = 'N/A';
 }
 
 export class LootScoreData<T> {

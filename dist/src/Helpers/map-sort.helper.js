@@ -18,7 +18,11 @@ class MapSortHelper {
     }
     sortByLastLootDate(lootScoreMap) {
         const array = Array.from(lootScoreMap);
-        array.sort((a, b) => a[1].lastLootDate - b[1].lastLootDate);
+        array.sort((a, b) => {
+            var dateA = new Date(a[1].lastLootDate).getTime();
+            var dateB = new Date(b[1].lastLootDate).getTime();
+            return dateA - dateB;
+        });
         return new Map(array);
     }
     sortBySeniority(lootScoreMap) {
@@ -36,7 +40,7 @@ class MapSortHelper {
         let filteredArray = array.filter((value) => members.includes(value[0].id));
         return new Map(filteredArray);
     }
-    sortByFlag(lootScoreMap, orderByName, orderByAttendance, orderBySeniority) {
+    sortByFlag(lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate) {
         if (orderByName) {
             return this.sortByName(lootScoreMap);
         }
@@ -45,6 +49,12 @@ class MapSortHelper {
         }
         if (orderBySeniority) {
             return this.sortBySeniority(lootScoreMap);
+        }
+        if (orderByOffspecItemScore) {
+            return this.sortByItemScoreOffspecTotal(lootScoreMap);
+        }
+        if (orderByLastLootDate) {
+            return this.sortByLastLootDate(lootScoreMap);
         }
         return this.sortByItemScoreTotal(lootScoreMap);
     }

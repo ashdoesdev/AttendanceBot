@@ -248,7 +248,7 @@ export class RaidBot {
                         let membersWhoHave = await this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
 
                         if (membersWhoHave.length > 0) {
-                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority);
+                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
                             let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
 
                             if (membersOfClass.length > 0) {
@@ -305,7 +305,7 @@ export class RaidBot {
                         let membersWhoNeed = await this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers)
 
                         if (membersWhoNeed.length > 0) {
-                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority);
+                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
                             let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
 
                             if (membersOfClass.length > 0) {
@@ -378,7 +378,7 @@ export class RaidBot {
                 }
 
                 else {
-                    let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority);
+                    let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
                     let title = `Overview ${orderString} ${classString}`;
 
                     if (membersOfClass.length > 0) {

@@ -22,7 +22,11 @@ export class MapSortHelper {
         
     public sortByLastLootDate(lootScoreMap: Map<GuildMember, MemberScore>): Map<GuildMember, MemberScore> {
         const array = Array.from(lootScoreMap);
-        array.sort((a, b) => a[1].lastLootDate - b[1].lastLootDate);
+        array.sort((a, b) => {
+            var dateA = new Date(a[1].lastLootDate).getTime();
+            var dateB = new Date(b[1].lastLootDate).getTime();
+            return dateA - dateB;
+        });
         return new Map(array);
     }
 
@@ -44,7 +48,7 @@ export class MapSortHelper {
         return new Map(filteredArray);
     }
 
-    public sortByFlag(lootScoreMap: Map<GuildMember, MemberScore>, orderByName: boolean, orderByAttendance: boolean, orderBySeniority: boolean): Map<GuildMember, MemberScore> {
+    public sortByFlag(lootScoreMap: Map<GuildMember, MemberScore>, orderByName: boolean, orderByAttendance: boolean, orderBySeniority: boolean, orderByOffspecItemScore: boolean, orderByLastLootDate: boolean): Map<GuildMember, MemberScore> {
         if (orderByName) {
             return this.sortByName(lootScoreMap);
         }
@@ -55,6 +59,14 @@ export class MapSortHelper {
 
         if (orderBySeniority) {
             return this.sortBySeniority(lootScoreMap);
+        }
+
+        if (orderByOffspecItemScore) {
+            return this.sortByItemScoreOffspecTotal(lootScoreMap);
+        }
+
+        if (orderByLastLootDate) {
+            return this.sortByLastLootDate(lootScoreMap);
         }
 
         return this.sortByItemScoreTotal(lootScoreMap);

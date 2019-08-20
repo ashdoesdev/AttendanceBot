@@ -11,10 +11,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const map_sort_helper_1 = require("../Helpers/map-sort.helper");
 const loot_score_model_1 = require("../Models/loot-score.model");
 const messages_helper_1 = require("../Helpers/messages.helper");
+const timestamp_helper_1 = require("../Helpers/timestamp.helper");
 class LootScoreService {
     constructor() {
         this._mapSort = new map_sort_helper_1.MapSortHelper();
         this._messages = new messages_helper_1.MessagesHelper();
+        this._timestampHelper = new timestamp_helper_1.TimestampHelper();
     }
     getAttendanceMap(attendanceLogChannel) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -121,6 +123,7 @@ class LootScoreService {
             }
             memberScore.itemScoreTotal = total;
             memberScore.itemScoreOffspecTotal = offspecTotal;
+            memberScore.lastLootDate = new Date(entry[1][0].signature.timestamp).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit' });
             lootScoreMap.set(entry[0], memberScore);
         }
         return lootScoreMap;

@@ -210,7 +210,7 @@ class RaidBot {
                     if (item) {
                         let membersWhoHave = yield this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
                         if (membersWhoHave.length > 0) {
-                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority);
+                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
                             let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
                             if (membersOfClass.length > 0) {
                                 filteredMap = this._mapSort.filterMembers(filteredMap, membersOfClass);
@@ -258,7 +258,7 @@ class RaidBot {
                     if (item) {
                         let membersWhoNeed = yield this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers);
                         if (membersWhoNeed.length > 0) {
-                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority);
+                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
                             let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
                             if (membersOfClass.length > 0) {
                                 filteredMap = this._mapSort.filterMembers(filteredMap, membersOfClass);
@@ -319,7 +319,7 @@ class RaidBot {
                     }
                 }
                 else {
-                    let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority);
+                    let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
                     let title = `Overview ${orderString} ${classString}`;
                     if (membersOfClass.length > 0) {
                         const filteredMap = this._mapSort.filterMembers(sortedMap, membersOfClass);

@@ -3,10 +3,12 @@ import { MapSortHelper } from "../Helpers/map-sort.helper";
 import { ItemScore, AwardedItem } from "../Models/item-score.model";
 import { LootScoreData, MemberScore } from "../Models/loot-score.model";
 import { MessagesHelper } from "../Helpers/messages.helper";
+import { TimestampHelper } from "../Helpers/timestamp.helper";
 
 export class LootScoreService {
     private _mapSort: MapSortHelper = new MapSortHelper();
     private _messages: MessagesHelper = new MessagesHelper();
+    private _timestampHelper: TimestampHelper = new TimestampHelper();
 
     public totalRaids: number;
 
@@ -139,7 +141,7 @@ export class LootScoreService {
 
             memberScore.itemScoreTotal = total;
             memberScore.itemScoreOffspecTotal = offspecTotal;
-
+            memberScore.lastLootDate = new Date(entry[1][0].signature.timestamp).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit' });
             lootScoreMap.set(entry[0], memberScore);
         }
 
