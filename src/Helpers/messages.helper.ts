@@ -17,6 +17,12 @@ export class MessagesHelper {
         return entries;
     }
 
+    public async getLast(textChannel: TextChannel): Promise<Message> {
+        let message = await textChannel.fetchMessages({ limit: 1 });
+
+        return message.array()[0];
+    }
+
     private async bundleMessages(textChannel: TextChannel, entries: Message[], previousLastId?: number): Promise<[Message[], number]> {
         let options;
         if (previousLastId) {

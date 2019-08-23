@@ -23,6 +23,12 @@ class MessagesHelper {
             return entries;
         });
     }
+    getLast(textChannel) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let message = yield textChannel.fetchMessages({ limit: 1 });
+            return message.array()[0];
+        });
+    }
     bundleMessages(textChannel, entries, previousLastId) {
         return __awaiter(this, void 0, void 0, function* () {
             let options;

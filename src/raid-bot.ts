@@ -11,11 +11,14 @@ import { MapSortHelper } from './Helpers/map-sort.helper';
 import { MemberMatchHelper } from './Helpers/member-match.helper';
 import { MessagesHelper } from './Helpers/messages.helper';
 import { ItemScore, AwardedItem } from './Models/item-score.model';
-import { MemberScore, LootScoreData } from './Models/loot-score.model';
+import { MemberScore, LootScoreData, LootScore } from './Models/loot-score.model';
 import { AttendanceService } from './Services/attendance.service';
 import { LootLogService } from './Services/loot-log.service';
 import { LootScoreService } from './Services/loot-score.service';
 import { TimestampHelper } from './Helpers/timestamp.helper';
+import { StatsEmbed } from './Embeds/stats.embed';
+import { LastRaidLootEmbed } from './Embeds/last-raid-loot.embed';
+import { LastRaidAttendanceEmbed } from './Embeds/last-raid-attendance.embed';
 
 export class RaidBot {
     private _client = new Client();
@@ -365,7 +368,7 @@ export class RaidBot {
                         const filteredMap = this._mapSort.filterMembers(this._lootScoreMap, [member.id]);
 
                         if (Array.from(filteredMap).length > 0) {
-                            let title = `Overview for **${member.displayName}**`;
+                            let title = `Single Member Overview`;
 
                             message.channel.send(new MinimalVisualizationEmbed(filteredMap, title));
                             message.channel.send(new ItemsLootedEmbed(itemsLooted));
@@ -390,6 +393,58 @@ export class RaidBot {
 
                 }
 
+            }
+
+            if (message.content === '/lastraid' && (this.isAdminChannel(message) || message.channel.type === 'dm')) {
+                await this.refreshDataMaps();
+
+                let lastAttendance = await this._messages.getLast(this._attendanceLogDataChannel);
+
+                let cleanString = lastAttendance.content.replace(/`/g, '');
+
+                if (cleanString.length > 0) {
+                    let attendance: LootScoreData<[string, number][]> = JSON.parse(cleanString);
+                    let date = attendance.signature.timestamp.slice(0, 10);
+                    let formattedDate = new Date(attendance.signature.timestamp).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit' });
+
+                    let lootArray = Array.from(this._lootLogMap.entries())
+                    let itemsLooted = new Array<LootScoreData<AwardedItem>>();
+
+                    for (let member of lootArray) {
+                        for (let item of member[1]) {
+                            if (item.signature.timestamp.startsWith(date)) {
+                                itemsLooted.push(item);
+                            }
+                        }
+                    }
+
+                    let itemsLootedChunked = this.chunk(itemsLooted, 15);
+
+                    for (let i = 0; i < itemsLootedChunked.length; i++) {
+                        let first = i === 0;
+                        let last = i === itemsLootedChunked.length - 1;
+                        message.channel.send(new LastRaidLootEmbed(itemsLootedChunked[i], first, last));
+                    }
+
+                    message.channel.send(new LastRaidAttendanceEmbed(attendance, this._guildMembers));
+                    
+                } else {
+                    message.channel.send('Raid not found.');
+                }
+
+            }
+
+            if (message.content === '/stats' && message.channel.type === 'dm') {
+                await this.refreshDataMaps();
+
+                let filteredMap = this._mapSort.filterMembers(this._lootScoreMap, [message.author.id]);
+                let member = this._memberMatcher.matchMemberFromId(this._guildMembers, message.author.id);
+                let itemsLooted = await this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers);
+
+                if (Array.from(filteredMap.entries()).length > 0) {
+                    message.channel.send(new StatsEmbed(Array.from(filteredMap.entries())[0]));
+                    message.channel.send(new ItemsLootedEmbed(itemsLooted));
+                }
             }
 
             if (message.content.startsWith('/give') && this.canUseCommands(message) && this.isFeedChannel(message)) {
@@ -705,6 +760,13 @@ export class RaidBot {
 
         this._lootLogMap = await this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers);
         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+    }
+
+    public chunk(arr, chunkSize) {
+        var R = [];
+        for (var i = 0, len = arr.length; i < len; i += chunkSize)
+            R.push(arr.slice(i, i + chunkSize));
+        return R;
     }
 }
 

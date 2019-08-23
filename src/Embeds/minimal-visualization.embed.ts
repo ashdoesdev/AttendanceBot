@@ -3,8 +3,6 @@ import { TimestampHelper } from "../Helpers/timestamp.helper";
 import { MemberScore } from "../Models/loot-score.model";
 
 export class MinimalVisualizationEmbed extends RichEmbed {
-    private _timestampHelper: TimestampHelper = new TimestampHelper();
-
     constructor(private lootScoreMap: Map<GuildMember, MemberScore>, title: string) {
         super();
 
