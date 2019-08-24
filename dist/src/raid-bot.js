@@ -219,7 +219,12 @@ class RaidBot {
                                 filteredMap = this._mapSort.filterMembers(filteredMap, membersOfClass);
                             }
                             let title = `Members who have **${item.displayName}** ${orderString} ${classString}`;
-                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                            let mapChunked = this.chunk(Array.from(filteredMap), 15);
+                            for (let i = 0; i < mapChunked.length; i++) {
+                                let first = i === 0;
+                                let last = i === mapChunked.length - 1;
+                                message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                            }
                         }
                         else {
                             message.channel.send('No members have this item.');
@@ -267,7 +272,12 @@ class RaidBot {
                                 filteredMap = this._mapSort.filterMembers(filteredMap, membersOfClass);
                             }
                             let title = `Members who need **${item.displayName}** ${orderString} ${classString}`;
-                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                            let mapChunked = this.chunk(Array.from(filteredMap), 15);
+                            for (let i = 0; i < mapChunked.length; i++) {
+                                let first = i === 0;
+                                let last = i === mapChunked.length - 1;
+                                message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                            }
                         }
                         else {
                             message.channel.send('No members need this item.');
@@ -310,7 +320,7 @@ class RaidBot {
                         const filteredMap = this._mapSort.filterMembers(this._lootScoreMap, [member.id]);
                         if (Array.from(filteredMap).length > 0) {
                             let title = `Single Member Overview`;
-                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title, true, true));
                             message.channel.send(new items_looted_embed_1.ItemsLootedEmbed(itemsLooted));
                         }
                         else {
@@ -326,10 +336,20 @@ class RaidBot {
                     let title = `Overview ${orderString} ${classString}`;
                     if (membersOfClass.length > 0) {
                         const filteredMap = this._mapSort.filterMembers(sortedMap, membersOfClass);
-                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title));
+                        let mapChunked = this.chunk(Array.from(filteredMap), 15);
+                        for (let i = 0; i < mapChunked.length; i++) {
+                            let first = i === 0;
+                            let last = i === mapChunked.length - 1;
+                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                        }
                     }
                     else {
-                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(sortedMap, title));
+                        let mapChunked = this.chunk(Array.from(sortedMap), 15);
+                        for (let i = 0; i < mapChunked.length; i++) {
+                            let first = i === 0;
+                            let last = i === mapChunked.length - 1;
+                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                        }
                     }
                 }
             }

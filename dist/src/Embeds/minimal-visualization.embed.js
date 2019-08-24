@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
 class MinimalVisualizationEmbed extends discord_js_1.RichEmbed {
-    constructor(lootScoreMap, title) {
+    constructor(lootScoreMap, title, first, last) {
         super();
         this.lootScoreMap = lootScoreMap;
         let memberLines = '';
@@ -21,8 +21,20 @@ class MinimalVisualizationEmbed extends discord_js_1.RichEmbed {
             memberLines += `║ ${name} ║ ${attendance} ║ ${seniority} ║ ${main} ║ ${offspec} ║ ${lastLootDate} ║\n`;
         }
         this.setColor('#60b5bc');
-        this.setTitle(title);
-        this.setDescription(this.codeBlockify(topSeparator + header + memberLines + bottomSeparator));
+        if (first && last) {
+            this.setTitle(title);
+            this.setDescription(this.codeBlockify(topSeparator + header + memberLines + bottomSeparator));
+        }
+        else if (first) {
+            this.setTitle(title);
+            this.setDescription(this.codeBlockify(topSeparator + header + memberLines));
+        }
+        else if (last) {
+            this.setDescription(this.codeBlockify(memberLines + bottomSeparator));
+        }
+        else {
+            this.setDescription(this.codeBlockify(memberLines));
+        }
     }
     codeBlockify(string) {
         return '```' + string + '```';

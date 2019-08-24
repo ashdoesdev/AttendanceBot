@@ -3,7 +3,7 @@ import { TimestampHelper } from "../Helpers/timestamp.helper";
 import { MemberScore } from "../Models/loot-score.model";
 
 export class MinimalVisualizationEmbed extends RichEmbed {
-    constructor(private lootScoreMap: Map<GuildMember, MemberScore>, title: string) {
+    constructor(private lootScoreMap: Map<GuildMember, MemberScore>, title: string, first?: boolean, last?: boolean) {
         super();
 
         let memberLines: string = '';
@@ -26,8 +26,19 @@ export class MinimalVisualizationEmbed extends RichEmbed {
         }
 
         this.setColor('#60b5bc');
-        this.setTitle(title);
-        this.setDescription(this.codeBlockify(topSeparator + header + memberLines + bottomSeparator));
+
+        if (first && last) {
+            this.setTitle(title);
+            this.setDescription(this.codeBlockify(topSeparator + header + memberLines + bottomSeparator));
+        } else if (first) {
+            this.setTitle(title);
+            this.setDescription(this.codeBlockify(topSeparator + header + memberLines));
+        } else if (last) {
+            this.setDescription(this.codeBlockify(memberLines + bottomSeparator));
+        } else {
+            this.setDescription(this.codeBlockify(memberLines));
+        }
+
     }
 
     private codeBlockify(string: string): string {

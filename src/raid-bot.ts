@@ -260,7 +260,14 @@ export class RaidBot {
 
                             let title = `Members who have **${item.displayName}** ${orderString} ${classString}`;
 
-                            message.channel.send(new MinimalVisualizationEmbed(filteredMap, title));
+                            let mapChunked = this.chunk(Array.from(filteredMap), 15);
+
+                            for (let i = 0; i < mapChunked.length; i++) {
+                                let first = i === 0;
+                                let last = i === mapChunked.length - 1;
+                                message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                            }
+
                         } else {
                             message.channel.send('No members have this item.');
                         }
@@ -317,7 +324,13 @@ export class RaidBot {
 
                             let title = `Members who need **${item.displayName}** ${orderString} ${classString}`;
 
-                            message.channel.send(new MinimalVisualizationEmbed(filteredMap, title));
+                            let mapChunked = this.chunk(Array.from(filteredMap), 15);
+
+                            for (let i = 0; i < mapChunked.length; i++) {
+                                let first = i === 0;
+                                let last = i === mapChunked.length - 1;
+                                message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                            }
                         } else {
                             message.channel.send('No members need this item.');
                         }
@@ -370,7 +383,7 @@ export class RaidBot {
                         if (Array.from(filteredMap).length > 0) {
                             let title = `Single Member Overview`;
 
-                            message.channel.send(new MinimalVisualizationEmbed(filteredMap, title));
+                            message.channel.send(new MinimalVisualizationEmbed(filteredMap, title, true, true));
                             message.channel.send(new ItemsLootedEmbed(itemsLooted));
                         } else {
                             message.channel.send(`No history found for **${member.displayName}**`);
@@ -386,9 +399,21 @@ export class RaidBot {
 
                     if (membersOfClass.length > 0) {
                         const filteredMap = this._mapSort.filterMembers(sortedMap, membersOfClass);
-                        message.channel.send(new MinimalVisualizationEmbed(filteredMap, title));
+                        let mapChunked = this.chunk(Array.from(filteredMap), 15);
+
+                        for (let i = 0; i < mapChunked.length; i++) {
+                            let first = i === 0;
+                            let last = i === mapChunked.length - 1;
+                            message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                        }
                     } else {
-                        message.channel.send(new MinimalVisualizationEmbed(sortedMap, title));
+                        let mapChunked = this.chunk(Array.from(sortedMap), 15);
+
+                        for (let i = 0; i < mapChunked.length; i++) {
+                            let first = i === 0;
+                            let last = i === mapChunked.length - 1;
+                            message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                        }
                     }
 
                 }

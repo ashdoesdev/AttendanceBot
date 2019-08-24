@@ -10,7 +10,7 @@ class LastRaidLootEmbed extends discord_js_1.RichEmbed {
         let itemTop = '╔════════════════════════════════════╦════════════════════╗\n';
         let itemSeparator = '╠════════════════════════════════════╬════════════════════╣\n';
         let itemBottom = '╚════════════════════════════════════╩════════════════════╝\n';
-        let itemHeader = '║ [Item Name]                        ║ [Awarded To]       ║\n';
+        let itemHeader = '║ [ Item Name ]                      ║ [ Awarded To ]     ║\n';
         for (let item of itemsLooted) {
             itemLines += itemSeparator;
             let itemName = item.value.item.displayName.slice(0, 34).padEnd(34, ' ');

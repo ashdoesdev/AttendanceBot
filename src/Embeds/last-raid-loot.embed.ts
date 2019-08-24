@@ -13,7 +13,7 @@ export class LastRaidLootEmbed extends RichEmbed {
         let itemTop = '╔════════════════════════════════════╦════════════════════╗\n';
         let itemSeparator = '╠════════════════════════════════════╬════════════════════╣\n';
         let itemBottom = '╚════════════════════════════════════╩════════════════════╝\n';
-        let itemHeader = '║ [Item Name]                        ║ [Awarded To]       ║\n';
+        let itemHeader = '║ [ Item Name ]                      ║ [ Awarded To ]     ║\n';
 
         for (let item of itemsLooted) {
             itemLines += itemSeparator;
