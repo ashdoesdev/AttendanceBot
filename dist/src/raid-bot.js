@@ -84,7 +84,8 @@ class RaidBot {
                                 message.channel.send('Request to start logging aborted.');
                             }
                         })
-                            .catch(() => {
+                            .catch((err) => {
+                            console.log(err);
                             message.channel.send('No reply received. Request to start logging aborted.');
                         });
                     });
@@ -106,7 +107,8 @@ class RaidBot {
                                 message.channel.send('Request to end logging aborted. Logging will continue.');
                             }
                         })
-                            .catch(() => {
+                            .catch((err) => {
+                            console.log(err);
                             message.channel.send('No reply received. Request to end logging aborted. Logging will continue.');
                         });
                     });
@@ -128,7 +130,8 @@ class RaidBot {
                                 message.channel.send('Request to end logging aborted. Logging will continue.');
                             }
                         })
-                            .catch(() => {
+                            .catch((err) => {
+                            console.log(err);
                             message.channel.send('No reply received. Request to end logging aborted. Logging will continue.');
                         });
                     });
@@ -151,7 +154,8 @@ class RaidBot {
                                 message.channel.send('Request to end logging aborted. Logging will continue.');
                             }
                         })
-                            .catch(() => {
+                            .catch((err) => {
+                            console.log(err);
                             message.channel.send('No reply received. Request to end logging aborted. Logging will continue.');
                         });
                     });
@@ -592,9 +596,11 @@ class RaidBot {
                         matchingMessages[0].edit(Array.from(collected.entries())[0][1].cleanContent).then(() => {
                             message.channel.send('Message update successful.');
                         }).catch((err) => {
+                            console.log(err);
                             message.channel.send('Message update failed. Try again.');
                         });
-                    }).catch(() => {
+                    }).catch((err) => {
+                        console.log(err);
                         message.channel.send('Too slow. Try again.');
                     });
                 });
