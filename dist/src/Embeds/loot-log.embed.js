@@ -14,7 +14,7 @@ class LootLogEmbed extends discord_js_1.RichEmbed {
         else {
             this.addField(lootScoreData.value.member.displayName, `**${lootScoreData.value.item.displayName}** (offspec)`);
         }
-        this.setFooter(`Awarded by ${lootScoreData.signature.requester} on ${this._timestampHelper.monthDayYearFormatted}`);
+        this.setFooter(`Awarded by ${lootScoreData.signature.requester.displayName} on ${this._timestampHelper.monthDayYearFormatted}`);
     }
 }
 exports.LootLogEmbed = LootLogEmbed;

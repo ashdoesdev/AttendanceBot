@@ -3,13 +3,14 @@
     "",
     "\\dist",
     "\\dist\\src",
-    "\\dist\\src\\Services",
+    "\\dist\\src\\Embeds",
+    "\\dist\\src\\Helpers",
+    "\\dist\\src\\Models",
     "\\src",
-    "\\src\\Embeds",
     "\\src\\Helpers",
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\src\\Embeds\\last-raid-loot.embed.ts",
+  "SelectedNode": "\\src\\Helpers\\member-match.helper.ts",
   "PreviewInSolutionExplorer": false
 }

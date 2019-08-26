@@ -19,6 +19,7 @@ import { TimestampHelper } from './Helpers/timestamp.helper';
 import { StatsEmbed } from './Embeds/stats.embed';
 import { LastRaidLootEmbed } from './Embeds/last-raid-loot.embed';
 import { LastRaidAttendanceEmbed } from './Embeds/last-raid-attendance.embed';
+import { ItemsLootedExpandedEmbed } from './Embeds/items-looted-expanded.embed';
 
 export class RaidBot {
     private _client = new Client();
@@ -388,7 +389,7 @@ export class RaidBot {
                             let title = `Single Member Overview`;
 
                             message.channel.send(new MinimalVisualizationEmbed(filteredMap, title, true, true));
-                            message.channel.send(new ItemsLootedEmbed(itemsLooted));
+                            message.channel.send(new ItemsLootedExpandedEmbed(itemsLooted));
                         } else {
                             message.channel.send(`No history found for **${member.displayName}**`);
                         }

@@ -23,7 +23,7 @@ export class HelpEmbed extends RichEmbed {
         this.addBlankField();
         this.addField('Report Modifiers', `Add to any of the report commands above to modify`);
         this.addBlankField();
-        this.addField('Filter by certain class (or classes)', '```\n--classname')
+        this.addField('Filter by certain class (or classes)', '```\n--classname```')
         this.addField('Order by ItemScore', '```\nDefault. No modifier needed```');
         this.addField('Order by offspec ItemScore', '```\n--offspec```');
         this.addField('Order by last loot date', '```\n--lastloot```');

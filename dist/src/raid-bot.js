@@ -27,6 +27,7 @@ const timestamp_helper_1 = require("./Helpers/timestamp.helper");
 const stats_embed_1 = require("./Embeds/stats.embed");
 const last_raid_loot_embed_1 = require("./Embeds/last-raid-loot.embed");
 const last_raid_attendance_embed_1 = require("./Embeds/last-raid-attendance.embed");
+const items_looted_expanded_embed_1 = require("./Embeds/items-looted-expanded.embed");
 class RaidBot {
     constructor() {
         this._client = new discord_js_1.Client();
@@ -325,7 +326,7 @@ class RaidBot {
                         if (Array.from(filteredMap).length > 0) {
                             let title = `Single Member Overview`;
                             message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title, true, true));
-                            message.channel.send(new items_looted_embed_1.ItemsLootedEmbed(itemsLooted));
+                            message.channel.send(new items_looted_expanded_embed_1.ItemsLootedExpandedEmbed(itemsLooted));
                         }
                         else {
                             message.channel.send(`No history found for **${member.displayName}**`);
