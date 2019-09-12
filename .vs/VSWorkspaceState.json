@@ -3,14 +3,14 @@
     "",
     "\\dist",
     "\\dist\\src",
-    "\\dist\\src\\Embeds",
     "\\dist\\src\\Helpers",
     "\\dist\\src\\Models",
     "\\src",
+    "\\src\\Embeds",
     "\\src\\Helpers",
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\src\\Helpers\\member-match.helper.ts",
+  "SelectedNode": "\\src\\raid-bot.ts",
   "PreviewInSolutionExplorer": false
 }

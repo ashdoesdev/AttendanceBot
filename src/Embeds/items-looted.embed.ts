@@ -8,9 +8,10 @@ export class ItemsLootedEmbed extends RichEmbed {
 
         let lootString = '';
         let offspecLootString = '';
+        let otherLootString = '';
 
         if (itemsLooted) {
-            let mainItemsLooted = itemsLooted.filter((item) => !item.value.offspec);
+            let mainItemsLooted = itemsLooted.filter((item) => !item.value.offspec && (!item.value.roll && !item.value.rot));
             let mainT1 = mainItemsLooted.filter((item => item.value.item.shorthand === 't1'));
             let mainT2 = mainItemsLooted.filter((item => item.value.item.shorthand === 't2'));
             let mainNonTierLooted = mainItemsLooted.filter((item) => item.value.item.shorthand !== 't1' && item.value.item.shorthand !== 't2');
@@ -46,7 +47,7 @@ export class ItemsLootedEmbed extends RichEmbed {
                 lootString = 'No items looted.';
             }
 
-            let offspecItemsLooted = itemsLooted.filter((item) => item.value.offspec === true);
+            let offspecItemsLooted = itemsLooted.filter((item) => item.value.offspec === true && (!item.value.roll && !item.value.rot));
             let offspecT1 = offspecItemsLooted.filter((item => item.value.item.shorthand === 't1'));
             let offspecT2 = offspecItemsLooted.filter((item => item.value.item.shorthand === 't2'));
             let offspecNonTierLooted = offspecItemsLooted.filter((item) => item.value.item.shorthand !== 't1' && item.value.item.shorthand !== 't2');
@@ -81,13 +82,42 @@ export class ItemsLootedEmbed extends RichEmbed {
             } else {
                 offspecLootString = 'No offspec items looted.';
             }
+
+            let otherItemsLooted = itemsLooted.filter((item) => item.value.roll || item.value.rot);
+            
+            let otherItemsArray = new Array<string>();
+
+            otherItemsLooted.forEach((item) => {
+                otherItemsArray.push(item.value.item.displayName);
+            })
+
+            if (otherItemsArray.length > 0) {
+                for (let i = 0; i < otherItemsArray.length; i++) {
+                    if (i === otherItemsArray.length - 1) {
+                        if (i === 0) {
+                            otherLootString += `**${otherItemsArray[i]}**`;
+                        } else {
+                            otherLootString += `and **${otherItemsArray[i]}**`;
+                        }
+                    } else if (i === otherItemsArray.length - 2) {
+                        otherLootString += `**${otherItemsArray[i]}** `;
+                    } else {
+                        otherLootString += `**${otherItemsArray[i]}**, `;
+                    }
+                }
+            } else {
+                otherLootString = 'No other items looted.';
+            }
+
         } else {
             lootString = 'No items looted.';
             offspecLootString = 'No offspec items looted.';
+            otherLootString = 'No other items looted.';
         }
 
         this.setColor('#60b5bc');
         this.addField('Items Looted', lootString);
         this.addField('Offspec Items Looted', offspecLootString);
+        this.addField('Other Items (rolled, existing, or rot)', otherLootString);
     }
 }

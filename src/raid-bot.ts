@@ -479,6 +479,9 @@ export class RaidBot {
 
             if (message.content.startsWith('/give') && this.canUseCommands(message) && this.isFeedChannel(message)) {
                 let offspec = message.content.includes('--offspec');
+                let rot = message.content.includes('--rot');
+                let roll = message.content.includes('--roll');
+                let existing = message.content.includes('--existing');
                 
                 let query = '';
                 query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('--offspec', '').replace('<', '').trim();
@@ -496,7 +499,7 @@ export class RaidBot {
                                 (sentMessage as Message).awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                                     .then((collected) => {
                                         if (collected.first().emoji.name === '✅') {
-                                            this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec);
+                                            this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, rot, roll, existing);
                                         } else {
                                             message.channel.send('Request to award item aborted.');
                                         }

@@ -12,8 +12,10 @@ class LastRaidAttendanceEmbed extends discord_js_1.RichEmbed {
         let attendanceLines = '';
         let attendanceNameArray = new Array();
         for (let entry of attendance.value) {
-            let memberName = this._memberMatcher.matchMemberFromId(guildMembers, entry[0]);
-            attendanceNameArray.push([memberName.displayName, entry[1]]);
+            let member = this._memberMatcher.matchMemberFromId(guildMembers, entry[0]);
+            if (member) {
+                attendanceNameArray.push([member.displayName, entry[1]]);
+            }
         }
         attendanceNameArray.sort((a, b) => a[0].localeCompare(b[0]));
         for (let entry of attendanceNameArray) {
