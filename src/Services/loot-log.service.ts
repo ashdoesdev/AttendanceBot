@@ -11,16 +11,14 @@ export class LootLogService {
     private _dataHelper: LootScoreDataHelper = new LootScoreDataHelper();
     private _messages: MessagesHelper = new MessagesHelper();
 
-    public awardItem(message: Message, lootLogChannel: TextChannel, lootLogReadableChannel: TextChannel, item: ItemScore, member: GuildMember, offspec = false, rot = false, roll = false, existing = false): void {
+    public awardItem(message: Message, lootLogChannel: TextChannel, lootLogReadableChannel: TextChannel, item: ItemScore, member: GuildMember, offspec = false, flags: string[]): void {
         let awardedItem = new AwardedItem();
         awardedItem.member = new MinimalMember();
         awardedItem.member.displayName = member.displayName;
         awardedItem.member.id = member.id;
         awardedItem.item = item;
         awardedItem.offspec = offspec;
-        awardedItem.rot = rot;
-        awardedItem.roll = roll;
-        awardedItem.existing = existing;
+        awardedItem.flags = flags;
 
         let lootScoreData = this._dataHelper.createLootScoreData(awardedItem, message);
 

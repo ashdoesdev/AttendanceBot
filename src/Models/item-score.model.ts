@@ -12,7 +12,5 @@ export class AwardedItem {
     public member: MinimalMember;
     public item: ItemScore;
     public offspec: boolean;
-    public rot: boolean;
-    public roll: boolean;
-    public existing: boolean;
+    public flags: string[] = new Array<string>();
 }

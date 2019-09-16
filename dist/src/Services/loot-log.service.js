@@ -20,16 +20,14 @@ class LootLogService {
         this._dataHelper = new loot_score_data_helper_1.LootScoreDataHelper();
         this._messages = new messages_helper_1.MessagesHelper();
     }
-    awardItem(message, lootLogChannel, lootLogReadableChannel, item, member, offspec = false, rot = false, roll = false, existing = false) {
+    awardItem(message, lootLogChannel, lootLogReadableChannel, item, member, offspec = false, flags) {
         let awardedItem = new item_score_model_1.AwardedItem();
         awardedItem.member = new loot_score_model_1.MinimalMember();
         awardedItem.member.displayName = member.displayName;
         awardedItem.member.id = member.id;
         awardedItem.item = item;
         awardedItem.offspec = offspec;
-        awardedItem.rot = rot;
-        awardedItem.roll = roll;
-        awardedItem.existing = existing;
+        awardedItem.flags = flags;
         let lootScoreData = this._dataHelper.createLootScoreData(awardedItem, message);
         lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
         lootLogReadableChannel.send(new loot_log_embed_1.LootLogEmbed(lootScoreData));

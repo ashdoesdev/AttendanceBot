@@ -399,9 +399,16 @@ class RaidBot {
             }
             if (message.content.startsWith('/give') && this.canUseCommands(message) && this.isFeedChannel(message)) {
                 let offspec = message.content.includes('--offspec');
-                let rot = message.content.includes('--rot');
-                let roll = message.content.includes('--roll');
-                let existing = message.content.includes('--existing');
+                let flags = new Array();
+                if (message.content.includes('--rot')) {
+                    flags.push('rot');
+                }
+                if (message.content.includes('--roll')) {
+                    flags.push('roll');
+                }
+                if (message.content.includes('--existing')) {
+                    flags.push('existing');
+                }
                 let query = '';
                 query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('--offspec', '').replace('<', '').trim();
                 let member = message.mentions.members.array()[0];
@@ -414,7 +421,7 @@ class RaidBot {
                                 sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                                     .then((collected) => {
                                     if (collected.first().emoji.name === '✅') {
-                                        this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, rot, roll, existing);
+                                        this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, flags);
                                     }
                                     else {
                                         message.channel.send('Request to award item aborted.');
