@@ -34,12 +34,14 @@ class LootLogService {
         let lootScoreData = this._dataHelper.createLootScoreData(awardedItem, message);
         lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
         lootLogReadableChannel.send(new loot_log_embed_1.LootLogEmbed(lootScoreData));
+        let extras = '';
         if (offspec) {
-            message.channel.send(`Awarded ${member.displayName} **${item.displayName}** (offspec).`);
+            extras = ' (offspec)';
         }
-        else {
-            message.channel.send(`Awarded ${member.displayName} **${item.displayName}**.`);
+        if (flags.length > 0) {
+            extras = ` (${flags[0]})`;
         }
+        message.channel.send(`Awarded ${member.displayName} **${item.displayName}**${extras}.`);
     }
     getItemScores(itemScoresChannel) {
         return __awaiter(this, void 0, void 0, function* () {

@@ -102,7 +102,7 @@ export class RaidBot {
                         (sentMessage as Message).awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                             .then((collected) => {
                                 if (collected.first().emoji.name === '✅') {
-                                    this._attendanceService.startLogging(message, this._raidChannel1, this._raidChannel2);
+                                    this._attendanceService.startLogging(message, this._raidChannel1, this._raidChannel2, this._appSettings);
                                 } else {
                                     message.channel.send('Request to start logging aborted.');
                                 }
@@ -524,33 +524,16 @@ export class RaidBot {
                             let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
 
                             if (item) {
-                                message.channel.send(`Do you wish to award ${member.displayName} **${item.displayName}**? Please confirm.`).then((sentMessage) => {
-                                    const filter = this.setReactionFilter(sentMessage as Message, message);
-
-                                    (sentMessage as Message).awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
-                                        .then((collected) => {
-                                            if (collected.first().emoji.name === '✅') {
-                                                this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, noValue, flags);
-                                            } else {
-                                                message.channel.send('Request to award item aborted.');
-                                            }
-                                        })
-                                        .catch((err) => {
-                                            console.log(err);
-                                            message.channel.send('No reply received. Request to award item aborted.');
-                                        });
-                                });
+                                this.manageAwardMessage(message, member, item, offspec, noValue, flags);
 
                             } else {
-                                message.channel.send('Item does not exist.');
-
                                 let relatedItems = new Array<ItemScore>();
 
                                 array.forEach((item) => {
                                     var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
                                     var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
 
-                                    if (shorthandSimilarity > .5 || displayNameSimilarity > .25 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                                    if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
                                         relatedItems.push(item);
                                     }
                                 });
@@ -558,21 +541,29 @@ export class RaidBot {
                                 let relatedString = '';
 
                                 if (relatedItems.length > 0) {
-                                    for (let i = 0; i < relatedItems.length; i++) {
-                                        if (i === relatedItems.length - 1) {
-                                            if (i === 0) {
-                                                relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                    if (relatedItems.length === 1) {
+                                        item = relatedItems[0];
+
+                                        this.manageAwardMessage(message, member, item, offspec, noValue, flags);
+
+                                    } else {
+                                        for (let i = 0; i < relatedItems.length; i++) {
+                                            if (i === relatedItems.length - 1) {
+                                                if (i === 0) {
+                                                    relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                                } else {
+                                                    relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                                }
                                             } else {
-                                                relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                                relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
                                             }
-                                        } else {
-                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
                                         }
+
+                                        message.channel.send(`Did you mean ${relatedString}?`);
                                     }
-
-                                    message.channel.send(`Did you mean ${relatedString}?`);
+                                } else {
+                                    message.channel.send('Item does not exist.');
                                 }
-
                             }
                         });
                     } else {
@@ -585,9 +576,6 @@ export class RaidBot {
                         }
                     }
                 }
-
-
-
             }
 
             if (message.content.startsWith('/getitemscores') && this.canUseCommands(message) && this.isAdminChannel(message)) {
@@ -710,6 +698,35 @@ export class RaidBot {
     public manageDailyJobs(): void {
         this.sendLootScoreDailyDump();
         this.backUpValues();
+    }
+
+    private manageAwardMessage(message: Message, member: GuildMember, item: ItemScore, offspec: boolean, noValue: boolean, flags: string[]): void {
+        let extras = '';
+
+        if (offspec) {
+            extras = ' (offspec)';
+        }
+
+        if (flags.length > 0) {
+            extras = ` (${flags[0]})`;
+        }
+
+        message.channel.send(`Do you wish to award ${member.displayName} **${item.displayName}**${extras}? Please confirm.`).then((sentMessage) => {
+            const filter = this.setReactionFilter(sentMessage as Message, message);
+
+            (sentMessage as Message).awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
+                .then((collected) => {
+                    if (collected.first().emoji.name === '✅') {
+                        this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, noValue, flags);
+                    } else {
+                        message.channel.send('Request to award item aborted.');
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                    message.channel.send('No reply received. Request to award item aborted.');
+                });
+        });
     }
 
     public sendLootScoreDailyDump(): void {

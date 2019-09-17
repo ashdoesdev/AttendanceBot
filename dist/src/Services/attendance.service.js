@@ -68,7 +68,7 @@ class AttendanceService {
             return seniorityMap;
         });
     }
-    startLogging(message, raidChannel1, raidChannel2) {
+    startLogging(message, raidChannel1, raidChannel2, appSettings) {
         this.loggingInProgress = true;
         message.channel.send('Starting attendance log. Make sure you are in the raid channel.');
         message.channel.send('*Don\'t fret. There is a 5 minute grace period at beginning and end.*');
@@ -78,14 +78,14 @@ class AttendanceService {
             if (Array.from(raidChannel1.members.values())) {
                 if (Array.from(raidChannel2.members.values()).length > 0) {
                     this.attendanceLog.set(this._tick, Array.from(raidChannel1.members.values())
-                        .concat(Array.from(raidChannel2.members.values())));
+                        .concat(Array.from(raidChannel2.members.values()).filter((member) => this.memberShouldBeTracked(member, appSettings))));
                 }
                 else {
-                    this.attendanceLog.set(this._tick, Array.from(raidChannel1.members.values()));
+                    this.attendanceLog.set(this._tick, Array.from(raidChannel1.members.values()).filter((member) => this.memberShouldBeTracked(member, appSettings)));
                 }
             }
             else {
-                this.attendanceLog.set(this._tick, Array.from(raidChannel1.members.values()));
+                this.attendanceLog.set(this._tick, Array.from(raidChannel1.members.values()).filter((member) => this.memberShouldBeTracked(member, appSettings)));
             }
         });
     }
@@ -130,6 +130,13 @@ class AttendanceService {
     }
     codeBlockify(string) {
         return '```' + string + '```';
+    }
+    memberShouldBeTracked(member, appSettings) {
+        if (member.roles.array().length > 0) {
+            if (member.roles.array().find((x) => x.id === appSettings['applicant']) || member.roles.array().find((x) => x.id === appSettings['raider']) || member.roles.array().find((x) => x.id === appSettings['leadership'])) {
+                return true;
+            }
+        }
     }
 }
 exports.AttendanceService = AttendanceService;

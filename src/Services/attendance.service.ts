@@ -71,7 +71,7 @@ export class AttendanceService {
         return seniorityMap;
     }
 
-    public startLogging(message: Message, raidChannel1: VoiceChannel, raidChannel2: VoiceChannel): void {
+    public startLogging(message: Message, raidChannel1: VoiceChannel, raidChannel2: VoiceChannel, appSettings: any): void {
         this.loggingInProgress = true;
 
         message.channel.send('Starting attendance log. Make sure you are in the raid channel.');
@@ -85,18 +85,18 @@ export class AttendanceService {
                     this.attendanceLog.set(
                         this._tick,
                         Array.from(raidChannel1.members.values())
-                            .concat(Array.from(raidChannel2.members.values()))
+                            .concat(Array.from(raidChannel2.members.values()).filter((member) => this.memberShouldBeTracked(member, appSettings)))
                     );
                 } else {
                     this.attendanceLog.set(
                         this._tick,
-                        Array.from(raidChannel1.members.values())
+                        Array.from(raidChannel1.members.values()).filter((member) => this.memberShouldBeTracked(member, appSettings))
                     );
                 }
             } else {
                 this.attendanceLog.set(
                     this._tick,
-                    Array.from(raidChannel1.members.values())
+                    Array.from(raidChannel1.members.values()).filter((member) => this.memberShouldBeTracked(member, appSettings))
                 );
             }
         });
@@ -148,5 +148,13 @@ export class AttendanceService {
 
     private codeBlockify(string: string): string {
         return '```' + string + '```';
+    }
+
+    private memberShouldBeTracked(member: GuildMember, appSettings: any): boolean {
+        if (member.roles.array().length > 0) {
+            if (member.roles.array().find((x) => x.id === appSettings['applicant']) || member.roles.array().find((x) => x.id === appSettings['raider']) || member.roles.array().find((x) => x.id === appSettings['leadership'])) {
+                return true;
+            }
+        }
     }
 }

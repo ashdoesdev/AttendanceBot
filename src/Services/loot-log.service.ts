@@ -29,11 +29,17 @@ export class LootLogService {
         lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
         lootLogReadableChannel.send(new LootLogEmbed(lootScoreData));
 
+        let extras = '';
+
         if (offspec) {
-            message.channel.send(`Awarded ${member.displayName} **${item.displayName}** (offspec).`);
-        } else {
-            message.channel.send(`Awarded ${member.displayName} **${item.displayName}**.`);
+            extras = ' (offspec)';
         }
+
+        if (flags.length > 0) {
+            extras = ` (${flags[0]})`;
+        }
+
+        message.channel.send(`Awarded ${member.displayName} **${item.displayName}**${extras}.`);
     }
 
     public async getItemScores(itemScoresChannel: TextChannel): Promise<ItemScore[]> {
