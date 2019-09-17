@@ -7,14 +7,14 @@ class LastRaidLootEmbed extends discord_js_1.RichEmbed {
         this.itemsLooted = itemsLooted;
         let raidDate = new Date(itemsLooted[0].signature.timestamp).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit' });
         let itemLines = '';
-        let itemTop = '╔════════════════════════════════════╦════════════════════╗\n';
-        let itemSeparator = '╠════════════════════════════════════╬════════════════════╣\n';
-        let itemBottom = '╚════════════════════════════════════╩════════════════════╝\n';
-        let itemHeader = '║ [ Item Name ]                      ║ [ Awarded To ]     ║\n';
+        let itemTop = '╔══════════════════════════════════╦═══════════════════╗\n';
+        let itemSeparator = '╠══════════════════════════════════╬═══════════════════╣\n';
+        let itemBottom = '╚══════════════════════════════════╩═══════════════════╝\n';
+        let itemHeader = '║ [ Item Name ]                    ║ [ Awarded To ]    ║\n';
         for (let item of itemsLooted) {
             itemLines += itemSeparator;
-            let itemName = item.value.item.displayName.slice(0, 34).padEnd(34, ' ');
-            let awardedTo = item.value.member.displayName.slice(0, 18).padEnd(18, ' ');
+            let itemName = item.value.item.displayName.slice(0, 32).padEnd(32, ' ');
+            let awardedTo = item.value.member.displayName.slice(0, 17).padEnd(17, ' ');
             itemLines += `║ ${itemName} ║ ${awardedTo} ║\n`;
         }
         this.setColor('#60b5bc');

@@ -5,7 +5,7 @@
   "seniorityLogDataChannel": "599818971180695573",
   "attendanceLogDataChannel": "571160933804539924",
   "attendanceLogChannel": "586983799582228482",
-  "lootLogDataChannel": "571795185399234630",
+  "lootLogDataChannel": "623294160644079629",
   "lootLogChannel": "586983990976577557",
   "itemScoresChannel": "571794427958525962",
   "lootScoreDailyDumpChannel": "599082030679982080",
@@ -16,5 +16,6 @@
   "leadership": "604867684571545611",
   "raider": "565716405396439060",
   "applicant": "607308253868589057",
+  "reserve": "620782916598890496",
   "community": "607308265398992946"
 }

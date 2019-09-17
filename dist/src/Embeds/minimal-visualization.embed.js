@@ -6,13 +6,13 @@ class MinimalVisualizationEmbed extends discord_js_1.RichEmbed {
         super();
         this.lootScoreMap = lootScoreMap;
         let memberLines = '';
-        let topSeparator = '╔═════════════════╦══════╦══════╦══════╦══════╦═══════════╗\n';
-        let separator = '╠═════════════════╬══════╬══════╬══════╬══════╬═══════════╣\n';
-        let bottomSeparator = '╚═════════════════╩══════╩══════╩══════╩══════╩═══════════╝\n';
-        let header = '║ Name            ║ Att. ║ Sen. ║ Main ║ O/S  ║ Last Loot ║\n';
+        let topSeparator = '╔══════════════╦══════╦══════╦══════╦══════╦═══════════╗\n';
+        let separator = '╠══════════════╬══════╬══════╬══════╬══════╬═══════════╣\n';
+        let bottomSeparator = '╚══════════════╩══════╩══════╩══════╩══════╩═══════════╝\n';
+        let header = '║ Name         ║ Att. ║ Sen. ║ Main ║ O/S  ║ Last Loot ║\n';
         for (let member of lootScoreMap) {
             memberLines += separator;
-            let name = member[0].displayName.slice(0, 15).padEnd(15, ' ');
+            let name = member[0].displayName.slice(0, 12).padEnd(12, ' ');
             let attendance = `${member[1].attendancePercentage}%`.padEnd(4, ' ');
             let seniority = `${member[1].seniorityPercentage}%`.padEnd(4, ' ');
             let main = member[1].itemScoreTotal.toString().slice(0, 4).padEnd(4, ' ');

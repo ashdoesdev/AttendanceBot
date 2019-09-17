@@ -98,24 +98,24 @@ export class ItemsLootedExpandedEmbed extends RichEmbed {
             let otherItemsLooted = itemsLooted.filter((item) => item.value.flags.includes('existing') || item.value.flags.includes('rot') || item.value.flags.includes('roll'));
             let otherItemsT1 = otherItemsLooted.filter((item => item.value.item.shorthand === 't1'));
             let otherItemsT2 = otherItemsLooted.filter((item => item.value.item.shorthand === 't2'));
-            let otherItemsNonTierLooted = offspecItemsLooted.filter((item) => item.value.item.shorthand !== 't1' && item.value.item.shorthand !== 't2');
+            let otherItemsNonTierLooted = otherItemsLooted.filter((item) => item.value.item.shorthand !== 't1' && item.value.item.shorthand !== 't2');
             let otherItemsArray = new Array<string>();
 
             if (otherItemsT1.length > 0) {
-                otherItemsArray.push(`T1 Set x${otherItemsT1.length} (${otherItemsT1[0].value.item.score * otherItemsT1.length})`)
+                otherItemsArray.push(`T1 Set x${otherItemsT1.length}`)
             }
 
             if (otherItemsT2.length > 0) {
-                otherItemsArray.push(`T2 Set x${otherItemsT2.length} (${otherItemsT2[0].value.item.score * otherItemsT2.length})`)
+                otherItemsArray.push(`T2 Set x${otherItemsT2.length}`)
             }
 
             otherItemsNonTierLooted.sort((a, b) => b.value.item.score - a.value.item.score);
 
             otherItemsNonTierLooted.forEach((item) => {
                 if (item.value.item.score === 8) {
-                    otherItemsArray.push(`**${item.value.item.displayName}** (${item.value.item.score})`);
+                    otherItemsArray.push(`**${item.value.item.displayName}**`);
                 } else {
-                    otherItemsArray.push(`${item.value.item.displayName} (${item.value.item.score})`);
+                    otherItemsArray.push(`${item.value.item.displayName}`);
                 }
             })
 
