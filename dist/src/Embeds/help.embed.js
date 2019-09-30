@@ -10,13 +10,14 @@ class HelpEmbed extends discord_js_1.RichEmbed {
         this.addField('Start attendance', '```\n/start```');
         this.addField('End attendance', '```\n/end```');
         this.addField('End attendance without logging (in case of accidental start)', '```\n/end --nolog```');
-        this.addField('End attendance without counting seniority', '```\n/end --noseniority```');
-        this.addField('Award item', '```\n/give @name shorthandorfullitemname```');
+        this.addField('Award item', '```\n/g (or /give) @name itemname```');
+        this.addField('Award offspec item', '```\n/g (or /give) @name itemname --offspec```');
         this.addBlankField();
         this.addField('Admin Channel Commands', `<#${appSettings['adminChannel']}>`);
         this.addBlankField();
-        this.addField('Report who is eligible for item', '```\n/report eligible "shorthandorfullitemname"```');
-        this.addField('Report who has item', '```\n/report has "shorthandorfullitemname"```');
+        this.addField('Award existing item (for recruits that come geared - no value)', '```\n/g (or /give) "nameinquotes" itemname --existing```');
+        this.addField('Report who is eligible for item', '```\n/report eligible "itemname"```');
+        this.addField('Report who has item', '```\n/report has "itemname"```');
         this.addField('Report specific person', '```\n/report "nameinquotes"```');
         this.addField('Report full roster', '```\n/report```');
         this.addBlankField();

@@ -1,20 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
-const timestamp_helper_1 = require("../Helpers/timestamp.helper");
 class LootLogEmbed extends discord_js_1.RichEmbed {
     constructor(lootScoreData) {
         super();
         this.lootScoreData = lootScoreData;
-        this._timestampHelper = new timestamp_helper_1.TimestampHelper();
         this.setColor('#60b5bc');
-        if (!lootScoreData.value.offspec) {
-            this.addField(lootScoreData.value.member.displayName, `**${lootScoreData.value.item.displayName}**`);
+        if (lootScoreData.value.existing) {
+            this.addField(lootScoreData.value.member.displayName, `**${lootScoreData.value.item.displayName}** (existing)`);
         }
-        else {
+        else if (lootScoreData.value.offspec) {
             this.addField(lootScoreData.value.member.displayName, `**${lootScoreData.value.item.displayName}** (offspec)`);
         }
-        this.setFooter(`Awarded by ${lootScoreData.signature.requester.displayName} on ${this._timestampHelper.monthDayYearFormatted}`);
+        else {
+            this.addField(lootScoreData.value.member.displayName, `**${lootScoreData.value.item.displayName}**`);
+        }
+        this.setFooter(`Awarded by ${lootScoreData.signature.requester.displayName} on ${new Date().toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: '2-digit' })}`);
     }
 }
 exports.LootLogEmbed = LootLogEmbed;

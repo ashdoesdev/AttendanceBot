@@ -7,7 +7,7 @@ export class LastRaidLootEmbed extends RichEmbed {
     constructor(private itemsLooted: LootScoreData<AwardedItem>[], first?: boolean, last?: boolean) {
         super();
 
-        let raidDate = new Date(itemsLooted[0].signature.timestamp).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit' });
+        let raidDate = new Date(itemsLooted[0].signature.timestamp).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: '2-digit' });
 
         let itemLines: string = '';
         let itemTop = '╔══════════════════════════════════╦═══════════════════╗\n';

@@ -10,7 +10,7 @@ export class LastRaidAttendanceEmbed extends RichEmbed {
     constructor(private attendance: LootScoreData<[string, number][]>, private guildMembers: GuildMember[]) {
         super();
 
-        let raidDate = new Date(attendance.signature.timestamp).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit' });
+        let raidDate = new Date(attendance.signature.timestamp).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: '2-digit' });
 
         let attendanceLines: string = '';
 

@@ -8,7 +8,7 @@ class LastRaidAttendanceEmbed extends discord_js_1.RichEmbed {
         this.attendance = attendance;
         this.guildMembers = guildMembers;
         this._memberMatcher = new member_match_helper_1.MemberMatchHelper();
-        let raidDate = new Date(attendance.signature.timestamp).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit' });
+        let raidDate = new Date(attendance.signature.timestamp).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: '2-digit' });
         let attendanceLines = '';
         let attendanceNameArray = new Array();
         for (let entry of attendance.value) {

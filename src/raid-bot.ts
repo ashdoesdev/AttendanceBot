@@ -85,16 +85,16 @@ export class RaidBot {
                 message.author.send(new HelpEmbed(this._appSettings));
             }
 
-            if (message.content === '!clear' && this.canUseCommands(message)) {
-                message.channel.fetchMessages({ limit: 100 })
-                    .then(messages => message.channel.bulkDelete(messages));
-            }
-
             if (message.content === '/refresh' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 this.sendLootScoreDailyDump();
             }
+            
+            if (message.content === '/refreshmembers' && this.canUseCommands(message) && this.isAdminChannel(message)) {
+                this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                message.channel.send('Refreshed guild members.');
+            }
 
-            if (message.content === '/start' && this.canUseCommands(message) && this.isFeedChannel(message)) {
+            if ((message.content === '/s' || message.content === '/start') && this.canUseCommands(message) && this.isFeedChannel(message)) {
                 if (Array.from(this._raidChannel1.members.values()).length > 0 || Array.from(this._raidChannel2.members.values()).length > 0) {
                     message.channel.send('Do you wish to start logging? Please confirm.').then((sentMessage) => {
                         const filter = this.setReactionFilter(sentMessage as Message, message);
@@ -117,7 +117,7 @@ export class RaidBot {
                 }
             }
 
-            if (message.content === '/end' && this.canUseCommands(message) && this.isFeedChannel(message)) {
+            if ((message.content === '/end' || message.content === '/e') && this.canUseCommands(message) && this.isFeedChannel(message)) {
                 if (this._attendanceService.loggingInProgress) {
                     message.channel.send('Are you ready to end logging? This command will end logging and submit all values.').then((sentMessage) => {
                         const filter = this.setReactionFilter(sentMessage as Message, message);
@@ -141,7 +141,7 @@ export class RaidBot {
                 }
             }
 
-            if (message.content === '/end --noseniority' && this.canUseCommands(message) && this.isFeedChannel(message)) {
+            if ((message.content === '/end --noseniority' || message.content === '/e --noseniority') && this.canUseCommands(message) && this.isFeedChannel(message)) {
                 if (this._attendanceService.loggingInProgress) {
                     message.channel.send('Are you ready to end logging? This command will end logging and submit all values except seniority.').then((sentMessage) => {
                         const filter = this.setReactionFilter(sentMessage as Message, message);
@@ -165,7 +165,7 @@ export class RaidBot {
                 }
             }
 
-            if (message.content === '/end --nolog' && this.canUseCommands(message) && this.isFeedChannel(message)) {
+            if ((message.content === '/end --nolog' || message.content === '/e --nolog') && this.canUseCommands(message) && this.isFeedChannel(message)) {
                 if (this._attendanceService.loggingInProgress) {
                     message.channel.send('Are you sure? This command will end the raid and not save any values.').then((sentMessage) => {
                         const filter = this.setReactionFilter(sentMessage as Message, message);
@@ -253,39 +253,15 @@ export class RaidBot {
                     let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
 
                     if (item) {
-                        let membersWhoHave = await this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
-
-                        if (membersWhoHave.length > 0) {
-                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
-                            let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
-
-                            if (membersOfClass.length > 0) {
-                                filteredMap = this._mapSort.filterMembers(filteredMap, membersOfClass);
-                            }
-
-                            let title = `Members who have **${item.displayName}** ${orderString} ${classString}`;
-
-                            let mapChunked = this.chunk(Array.from(filteredMap), 15);
-
-                            for (let i = 0; i < mapChunked.length; i++) {
-                                let first = i === 0;
-                                let last = i === mapChunked.length - 1;
-                                message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
-                            }
-
-                        } else {
-                            message.channel.send('No members have this item.');
-                        }
+                        this.sendHasEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
                     } else {
-                        message.channel.send('Item does not exist.');
-
                         let relatedItems = new Array<ItemScore>();
 
                         itemScores.forEach((item) => {
                             var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
                             var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
 
-                            if (shorthandSimilarity > .5 || displayNameSimilarity > .25 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                            if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
                                 relatedItems.push(item);
                             }
                         });
@@ -293,19 +269,25 @@ export class RaidBot {
                         let relatedString = '';
 
                         if (relatedItems.length > 0) {
-                            for (let i = 0; i < relatedItems.length; i++) {
-                                if (i === relatedItems.length - 1) {
-                                    if (i === 0) {
-                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                            if (relatedItems.length === 1) {
+                                this.sendHasEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
+                            } else {
+                                for (let i = 0; i < relatedItems.length; i++) {
+                                    if (i === relatedItems.length - 1) {
+                                        if (i === 0) {
+                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                        } else {
+                                            relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                        }
                                     } else {
-                                        relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
                                     }
-                                } else {
-                                    relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
                                 }
-                            }
 
-                            message.channel.send(`Did you mean ${relatedString}?`);
+                                message.channel.send(`Did you mean ${relatedString}?`);
+                            }
+                        } else {
+                            message.channel.send('Item does not exist.');
                         }
                     }
 
@@ -317,39 +299,15 @@ export class RaidBot {
                     let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
 
                     if (item) {
-                        let membersWhoNeed = await this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers)
-
-                        if (membersWhoNeed.length > 0) {
-                            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
-                            let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
-
-                            if (membersOfClass.length > 0) {
-                                filteredMap = this._mapSort.filterMembers(filteredMap, membersOfClass);
-                            }
-
-                            let title = `Members who need **${item.displayName}** ${orderString} ${classString}`;
-
-                            let mapChunked = this.chunk(Array.from(filteredMap), 15);
-
-                            for (let i = 0; i < mapChunked.length; i++) {
-                                let first = i === 0;
-                                let last = i === mapChunked.length - 1;
-                                message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
-                            }
-                        } else {
-                            message.channel.send('No members need this item.');
-                        }
-                    } 
-                    else {
-                        message.channel.send('Item does not exist.');
-
+                        this.sendEligibleEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
+                    } else {
                         let relatedItems = new Array<ItemScore>();
 
                         itemScores.forEach((item) => {
                             var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
                             var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
 
-                            if (shorthandSimilarity > .5 || displayNameSimilarity > .25 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                            if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
                                 relatedItems.push(item);
                             }
                         });
@@ -357,19 +315,25 @@ export class RaidBot {
                         let relatedString = '';
 
                         if (relatedItems.length > 0) {
-                            for (let i = 0; i < relatedItems.length; i++) {
-                                if (i === relatedItems.length - 1) {
-                                    if (i === 0) {
-                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                            if (relatedItems.length === 1) {
+                                this.sendEligibleEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
+                            } else {
+                                for (let i = 0; i < relatedItems.length; i++) {
+                                    if (i === relatedItems.length - 1) {
+                                        if (i === 0) {
+                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                        } else {
+                                            relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                        }
                                     } else {
-                                        relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
                                     }
-                                } else {
-                                    relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
                                 }
-                            }
 
-                            message.channel.send(`Did you mean ${relatedString}?`);
+                                message.channel.send(`Did you mean ${relatedString}?`);
+                            }
+                        } else {
+                            message.channel.send('Item does not exist.');
                         }
                     }
 
@@ -436,7 +400,7 @@ export class RaidBot {
                     if (cleanString.length > 0) {
                         let attendance: LootScoreData<[string, number][]> = JSON.parse(cleanString);
                         let date = attendance.signature.timestamp.slice(0, 10);
-                        let formattedDate = new Date(attendance.signature.timestamp).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit' });
+                        let formattedDate = new Date(attendance.signature.timestamp).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: '2-digit' });
 
                         let lootArray = Array.from(this._lootLogMap.entries())
                         let itemsLooted = new Array<LootScoreData<AwardedItem>>();
@@ -480,105 +444,87 @@ export class RaidBot {
                 }
             }
 
-            if (message.content.startsWith('/give') && this.canUseCommands(message)) {
+            if ((message.content.startsWith('/g ') || message.content.startsWith('/give')) && this.canUseCommands(message)) {
                 let member: GuildMember;
                 let query = '';
 
                 if (this.isFeedChannel(message)) {
                     member = message.mentions.members.array()[0];
-                    query = message.content.replace('/give ', '').replace(/(@\S+)/, '').replace('--offspec', '').replace('--rot', '').replace('--roll', '').replace('--existing', '').replace('<', '').trim();
+                    query = message.content.replace('/give ', '').replace('/g', '').replace(/(@\S+)/, '').replace('--offspec', '').replace('--existing', '').replace('<', '').trim();
                 }
 
                 if (this.isAdminChannel(message)) {
-                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                    if (!this._guildMembers) {
+                        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                    }
 
                     let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
                     member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
-                    query = message.content.replace('/give ', '').replace(memberName, '').replace(/"/g, '').replace('--offspec', '').replace('--rot', '').replace('--roll', '').replace('--existing', '').replace('<', '').trim();
+                    query = message.content.replace('/give ', '').replace('/g', '').replace(memberName, '').replace(/"/g, '').replace('--offspec', '').replace('--existing', '').replace('<', '').trim();
                 }
 
                 let offspec = message.content.includes('--offspec');
-                let flags = new Array<string>();
-                let noValue = false;
+                let existing = message.content.includes('--existing');
 
-                if (message.content.includes('--rot')) {
-                    flags.push('rot');
-                    noValue = true;
-                }
-                
-                if (message.content.includes('--roll')) {
-                    flags.push('roll');
-                    noValue = true;
-                }
-                
-                if (message.content.includes('--existing')) {
-                    flags.push('existing');
-                    noValue = true;
-                }
+                if (member) {
+                    this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
+                        let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
 
-                if (offspec && flags.length > 0) {
-                    message.channel.send('Flag --offspec is incompatible with other flags.');
-                } else {
-                    if (member) {
-                        this._lootLogService.getItemScores(this._itemScoresChannel).then((array) => {
-                            let item = array.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
+                        if (item) {
+                            this.manageAwardMessage(message, member, item, offspec, existing);
 
-                            if (item) {
-                                this.manageAwardMessage(message, member, item, offspec, noValue, flags);
+                        } else {
+                            let relatedItems = new Array<ItemScore>();
 
-                            } else {
-                                let relatedItems = new Array<ItemScore>();
+                            array.forEach((item) => {
+                                var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
+                                var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
 
-                                array.forEach((item) => {
-                                    var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
-                                    var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
-
-                                    if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
-                                        relatedItems.push(item);
-                                    }
-                                });
-
-                                let relatedString = '';
-
-                                if (relatedItems.length > 0) {
-                                    if (relatedItems.length === 1) {
-                                        item = relatedItems[0];
-
-                                        this.manageAwardMessage(message, member, item, offspec, noValue, flags);
-
-                                    } else {
-                                        for (let i = 0; i < relatedItems.length; i++) {
-                                            if (i === relatedItems.length - 1) {
-                                                if (i === 0) {
-                                                    relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                                } else {
-                                                    relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                                }
-                                            } else {
-                                                relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
-                                            }
-                                        }
-
-                                        message.channel.send(`Did you mean ${relatedString}?`);
-                                    }
-                                } else {
-                                    message.channel.send('Item does not exist.');
+                                if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                                    relatedItems.push(item);
                                 }
-                            }
-                        });
-                    } else {
-                        if (this.isFeedChannel(message)) {
-                            message.channel.send('Could not find member. Be sure to use a @mention.');
-                        }
+                            });
 
-                        if (this.isAdminChannel(message)) {
-                            message.channel.send('Could not find member. Be sure to use quotes around the member name when requesting in the admin channel.');
+                            let relatedString = '';
+
+                            if (relatedItems.length > 0) {
+                                if (relatedItems.length === 1) {
+                                    item = relatedItems[0];
+
+                                    this.manageAwardMessage(message, member, item, offspec, existing);
+
+                                } else {
+                                    for (let i = 0; i < relatedItems.length; i++) {
+                                        if (i === relatedItems.length - 1) {
+                                            if (i === 0) {
+                                                relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                            } else {
+                                                relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                            }
+                                        } else {
+                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
+                                        }
+                                    }
+
+                                    message.channel.send(`Did you mean ${relatedString}?`);
+                                }
+                            } else {
+                                message.channel.send('Item does not exist.');
+                            }
                         }
+                    });
+                } else {
+                    if (this.isFeedChannel(message)) {
+                        message.channel.send('Could not find member. Be sure to use a @mention.');
+                    }
+
+                    if (this.isAdminChannel(message)) {
+                        message.channel.send('Could not find member. Be sure to use quotes around the member name when requesting in the admin channel.');
                     }
                 }
             }
 
-            if (message.content.startsWith('/getitemscores') && this.canUseCommands(message) && this.isAdminChannel(message)) {
+            if (message.content.startsWith('/getitemscores') && this.canUseCommands(message) && this.isItemScoresChannel(message)) {
                 const path = message.content.replace('/getitemscores ', '')
                 const results = [];
 
@@ -591,7 +537,7 @@ export class RaidBot {
                     .on('end', () => {
                         for (let result of results) {
                             if (result[3]) {
-                                this._itemScoresChannel.send(`${result[0]}  |  ${result[1]}  |  ${result[2]}  |  ${result[3]}`);
+                                this._itemScoresChannel.send(`${result[0]}  |  ${result[1]}  |  ${result[2]}  |  ${result[3].replace(/ /g, '').replace(/,/g, ', ')}`);
                             } else {
                                 this._itemScoresChannel.send(`${result[0]}  |  ${result[1]}  |  ${result[2]}`);
                             }
@@ -649,6 +595,7 @@ export class RaidBot {
 
             if (message.content === '/backup' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 this.backUpValues();
+                message.channel.send('Backed up data.');
             }
              
             if (message.content === '/totalraids' && this.canUseCommands(message) && this.isAdminChannel(message)) {
@@ -691,6 +638,10 @@ export class RaidBot {
         return message.channel.id === this._adminChannel.id;
     }
     
+    private isItemScoresChannel(message: Message): boolean {
+        return message.channel.id === this._itemScoresChannel.id;
+    }
+    
     private isFeedChannel(message: Message): boolean {
         return message.channel.id === this._feedChannel.id;
     }
@@ -700,15 +651,13 @@ export class RaidBot {
         this.backUpValues();
     }
 
-    private manageAwardMessage(message: Message, member: GuildMember, item: ItemScore, offspec: boolean, noValue: boolean, flags: string[]): void {
+    private manageAwardMessage(message: Message, member: GuildMember, item: ItemScore, offspec: boolean, existing: boolean, flags = new Array<string>()): void {
         let extras = '';
 
-        if (offspec) {
+        if (existing) {
+            extras = ' (existing)';
+        } else if (offspec) {
             extras = ' (offspec)';
-        }
-
-        if (flags.length > 0) {
-            extras = ` (${flags[0]})`;
         }
 
         message.channel.send(`Do you wish to award ${member.displayName} **${item.displayName}**${extras}? Please confirm.`).then((sentMessage) => {
@@ -717,7 +666,7 @@ export class RaidBot {
             (sentMessage as Message).awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                 .then((collected) => {
                     if (collected.first().emoji.name === '✅') {
-                        this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, noValue, flags);
+                        this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, existing, flags);
                     } else {
                         message.channel.send('Request to award item aborted.');
                     }
@@ -727,6 +676,57 @@ export class RaidBot {
                     message.channel.send('No reply received. Request to award item aborted.');
                 });
         });
+    }
+
+    private async sendHasEmbed(item: ItemScore, orderByName: boolean, orderByAttendance: boolean, orderBySeniority: boolean, orderByOffspecItemScore: boolean, orderByLastLootDate: boolean, membersOfClass: string[], orderString: string, classString: string, message: Message): Promise<void> {
+        let membersWhoHave = await this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
+
+        if (membersWhoHave.length > 0) {
+            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
+            let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
+
+            if (membersOfClass.length > 0) {
+                filteredMap = this._mapSort.filterMembers(filteredMap, membersOfClass);
+            }
+
+            let title = `Members who have **${item.displayName}** ${orderString} ${classString}`;
+
+            let mapChunked = this.chunk(Array.from(filteredMap), 15);
+
+            for (let i = 0; i < mapChunked.length; i++) {
+                let first = i === 0;
+                let last = i === mapChunked.length - 1;
+                message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+            }
+
+        } else {
+            message.channel.send(`No members have **${item.displayName}**.`);
+        }
+    }
+
+    private async sendEligibleEmbed(item: ItemScore, orderByName: boolean, orderByAttendance: boolean, orderBySeniority: boolean, orderByOffspecItemScore: boolean, orderByLastLootDate: boolean, membersOfClass: string[], orderString: string, classString: string, message: Message): Promise<void> {
+        let membersWhoNeed = await this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers)
+
+        if (membersWhoNeed.length > 0) {
+            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
+            let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
+
+            if (membersOfClass.length > 0) {
+                filteredMap = this._mapSort.filterMembers(filteredMap, membersOfClass);
+            }
+
+            let title = `Members who need **${item.displayName}** ${orderString} ${classString}`;
+
+            let mapChunked = this.chunk(Array.from(filteredMap), 15);
+
+            for (let i = 0; i < mapChunked.length; i++) {
+                let first = i === 0;
+                let last = i === mapChunked.length - 1;
+                message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+            }
+        } else {
+            message.channel.send('No members need this item.');
+        }
     }
 
     public sendLootScoreDailyDump(): void {
@@ -753,7 +753,9 @@ export class RaidBot {
                     this._lootScoreDailyDumpChannel.send(new HeadingEmbed('Member', 'Attendance', 'Seniority'));
 
                     for (let entry of sortedMap) {
-                        this._lootScoreDailyDumpChannel.send(new SeniorityEmbed(sortedMap, entry, this._appSettings));
+                        if (entry[0].roles.array().find((x) => x.id === this._appSettings['leadership'] || x.id === this._appSettings['raider'] || x.id === this._appSettings['applicant'])) {
+                            this._lootScoreDailyDumpChannel.send(new SeniorityEmbed(sortedMap, entry, this._appSettings));
+                        }
                     }
                 });
             });
@@ -842,7 +844,9 @@ export class RaidBot {
     }
 
     public async refreshDataMaps(): Promise<void> {
-        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+        if (!this._guildMembers) {
+            this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+        }
 
         let attendanceMapId = await this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel);
         this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);

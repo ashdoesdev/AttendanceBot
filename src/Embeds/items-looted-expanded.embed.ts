@@ -11,7 +11,7 @@ export class ItemsLootedExpandedEmbed extends RichEmbed {
         let otherLootString = '';
 
         if (itemsLooted) {
-            let mainItemsLooted = itemsLooted.filter((item) => !item.value.offspec && (!item.value.flags.includes('existing') && !item.value.flags.includes('rot') && !item.value.flags.includes('roll')));
+            let mainItemsLooted = itemsLooted.filter((item) => !item.value.offspec && !item.value.existing);
             let mainT1 = mainItemsLooted.filter((item => item.value.item.shorthand === 't1'));
             let mainT2 = mainItemsLooted.filter((item => item.value.item.shorthand === 't2'));
             let mainNonTierLooted = mainItemsLooted.filter((item) => item.value.item.shorthand !== 't1' && item.value.item.shorthand !== 't2');
@@ -28,7 +28,7 @@ export class ItemsLootedExpandedEmbed extends RichEmbed {
             mainNonTierLooted.sort((a, b) => b.value.item.score - a.value.item.score);
 
             mainNonTierLooted.forEach((item) => {
-                if (item.value.item.score === 8) {
+                if (item.value.item.score === 15) {
                     mainItemsArray.push(`**${item.value.item.displayName}** (${item.value.item.score})`);
                 } else {
                     mainItemsArray.push(`${item.value.item.displayName} (${item.value.item.score})`);
@@ -53,7 +53,7 @@ export class ItemsLootedExpandedEmbed extends RichEmbed {
                 lootString = 'No items looted.';
             }
 
-            let offspecItemsLooted = itemsLooted.filter((item) => item.value.offspec === true && (!item.value.flags.includes('existing') && !item.value.flags.includes('rot') && !item.value.flags.includes('roll')));
+            let offspecItemsLooted = itemsLooted.filter((item) => item.value.offspec === true && !item.value.existing);
             let offspecT1 = offspecItemsLooted.filter((item => item.value.item.shorthand === 't1'));
             let offspecT2 = offspecItemsLooted.filter((item => item.value.item.shorthand === 't2'));
             let offspecNonTierLooted = offspecItemsLooted.filter((item) => item.value.item.shorthand !== 't1' && item.value.item.shorthand !== 't2');
@@ -70,7 +70,7 @@ export class ItemsLootedExpandedEmbed extends RichEmbed {
             offspecNonTierLooted.sort((a, b) => b.value.item.score - a.value.item.score);
 
             offspecNonTierLooted.forEach((item) => {
-                if (item.value.item.score === 8) {
+                if (item.value.item.score === 15) {
                     offspecItemsArray.push(`**${item.value.item.displayName}** (${item.value.item.score})`);
                 } else {
                     offspecItemsArray.push(`${item.value.item.displayName} (${item.value.item.score})`);
@@ -95,7 +95,7 @@ export class ItemsLootedExpandedEmbed extends RichEmbed {
                 offspecLootString = 'No offspec items looted.';
             }
 
-            let otherItemsLooted = itemsLooted.filter((item) => item.value.flags.includes('existing') || item.value.flags.includes('rot') || item.value.flags.includes('roll'));
+            let otherItemsLooted = itemsLooted.filter((item) => item.value.existing === true);
             let otherItemsT1 = otherItemsLooted.filter((item => item.value.item.shorthand === 't1'));
             let otherItemsT2 = otherItemsLooted.filter((item => item.value.item.shorthand === 't2'));
             let otherItemsNonTierLooted = otherItemsLooted.filter((item) => item.value.item.shorthand !== 't1' && item.value.item.shorthand !== 't2');
@@ -112,7 +112,7 @@ export class ItemsLootedExpandedEmbed extends RichEmbed {
             otherItemsNonTierLooted.sort((a, b) => b.value.item.score - a.value.item.score);
 
             otherItemsNonTierLooted.forEach((item) => {
-                if (item.value.item.score === 8) {
+                if (item.value.item.score === 15) {
                     otherItemsArray.push(`**${item.value.item.displayName}**`);
                 } else {
                     otherItemsArray.push(`${item.value.item.displayName}`);
@@ -133,19 +133,19 @@ export class ItemsLootedExpandedEmbed extends RichEmbed {
                         otherLootString += `${otherItemsArray[i]}, `;
                     }
                 }
-            } else {
-                otherLootString = 'No other items looted.';
             }
 
         } else {
             lootString = 'No items looted.';
             offspecLootString = 'No offspec items looted.';
-            otherLootString = 'No other items looted.';
         }
 
         this.setColor('#60b5bc');
         this.addField('Items Looted', lootString);
         this.addField('Offspec Items Looted', offspecLootString);
-        this.addField('Other Items (no value - rolled, existing, etc.)', otherLootString);
+
+        if (otherLootString.length > 0) {
+            this.addField('Existing Items', otherLootString);
+        }
     }
 }

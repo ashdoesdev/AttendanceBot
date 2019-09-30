@@ -11,7 +11,7 @@ export class LootLogService {
     private _dataHelper: LootScoreDataHelper = new LootScoreDataHelper();
     private _messages: MessagesHelper = new MessagesHelper();
 
-    public awardItem(message: Message, lootLogChannel: TextChannel, lootLogReadableChannel: TextChannel, item: ItemScore, member: GuildMember, offspec = false, noValue = false, flags: string[]): void {
+    public awardItem(message: Message, lootLogChannel: TextChannel, lootLogReadableChannel: TextChannel, item: ItemScore, member: GuildMember, offspec = false, existing = false, flags: string[]): void {
         let awardedItem = new AwardedItem();
         awardedItem.member = new MinimalMember();
         awardedItem.member.displayName = member.displayName;
@@ -19,8 +19,9 @@ export class LootLogService {
         awardedItem.item = item;
         awardedItem.offspec = offspec;
         awardedItem.flags = flags;
+        awardedItem.existing = existing;
 
-        if (noValue) {
+        if (existing) {
             awardedItem.item.score = 0;
         }
 
@@ -31,12 +32,10 @@ export class LootLogService {
 
         let extras = '';
 
-        if (offspec) {
+        if (existing) {
+            extras = ' (existing)';
+        } else if (offspec) {
             extras = ' (offspec)';
-        }
-
-        if (flags.length > 0) {
-            extras = ` (${flags[0]})`;
         }
 
         message.channel.send(`Awarded ${member.displayName} **${item.displayName}**${extras}.`);

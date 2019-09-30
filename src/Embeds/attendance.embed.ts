@@ -1,9 +1,6 @@
-import { RichEmbed, GuildMember } from "discord.js";
-import { TimestampHelper } from "../Helpers/timestamp.helper";
+import { RichEmbed } from "discord.js";
 
 export class AttendanceEmbed extends RichEmbed {
-    private _timestampHelper: TimestampHelper = new TimestampHelper();
-
     constructor(private attendanceMap: Map<string, number>) {
         super();
 
@@ -15,6 +12,6 @@ export class AttendanceEmbed extends RichEmbed {
 
         this.setColor('#60b5bc');
         this.setDescription(attendanceLines);
-        this.setFooter(`Attendance Log | ${this._timestampHelper.monthDayYearFormatted}`);
+        this.setFooter(`Attendance Log | ${new Date().toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: '2-digit' })}`);
     }
 }

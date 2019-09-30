@@ -21,10 +21,6 @@ export class SeniorityEmbed extends RichEmbed {
             return 'Raider';
         } else if (member.roles.array().find((x) => x.id === this._appSettings['applicant'])) {
             return 'Applicant';
-        } else if (member.roles.array().find((x) => x.id === this._appSettings['reserve'])) {
-            return 'Reserve';
-        } else if (member.roles.array().find((x) => x.id === this._appSettings['community'])) {
-            return 'Community';
         } else {
             return 'Role not set'
         }

@@ -5,7 +5,7 @@ class LastRaidLootEmbed extends discord_js_1.RichEmbed {
     constructor(itemsLooted, first, last) {
         super();
         this.itemsLooted = itemsLooted;
-        let raidDate = new Date(itemsLooted[0].signature.timestamp).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: '2-digit' });
+        let raidDate = new Date(itemsLooted[0].signature.timestamp).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: '2-digit' });
         let itemLines = '';
         let itemTop = '╔══════════════════════════════════╦═══════════════════╗\n';
         let itemSeparator = '╠══════════════════════════════════╬═══════════════════╣\n';

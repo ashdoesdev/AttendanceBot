@@ -20,7 +20,7 @@ class LootLogService {
         this._dataHelper = new loot_score_data_helper_1.LootScoreDataHelper();
         this._messages = new messages_helper_1.MessagesHelper();
     }
-    awardItem(message, lootLogChannel, lootLogReadableChannel, item, member, offspec = false, noValue = false, flags) {
+    awardItem(message, lootLogChannel, lootLogReadableChannel, item, member, offspec = false, existing = false, flags) {
         let awardedItem = new item_score_model_1.AwardedItem();
         awardedItem.member = new loot_score_model_1.MinimalMember();
         awardedItem.member.displayName = member.displayName;
@@ -28,18 +28,19 @@ class LootLogService {
         awardedItem.item = item;
         awardedItem.offspec = offspec;
         awardedItem.flags = flags;
-        if (noValue) {
+        awardedItem.existing = existing;
+        if (existing) {
             awardedItem.item.score = 0;
         }
         let lootScoreData = this._dataHelper.createLootScoreData(awardedItem, message);
         lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
         lootLogReadableChannel.send(new loot_log_embed_1.LootLogEmbed(lootScoreData));
         let extras = '';
-        if (offspec) {
-            extras = ' (offspec)';
+        if (existing) {
+            extras = ' (existing)';
         }
-        if (flags.length > 0) {
-            extras = ` (${flags[0]})`;
+        else if (offspec) {
+            extras = ' (offspec)';
         }
         message.channel.send(`Awarded ${member.displayName} **${item.displayName}**${extras}.`);
     }

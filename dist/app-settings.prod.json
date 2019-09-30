@@ -7,8 +7,8 @@
     "attendanceLogChannel": "608143203773841418",
     "lootLogDataChannel": "608132466619711489",
     "lootLogChannel": "608143088472293376",
-    "itemScoresChannel": "608132606848008192",
-    "lootScoreDailyDumpChannel": "608144703489310721",
+    "itemScoresChannel": "625023123032375317",
+    "lootScoreDailyDumpChannel": "625455965277388820",
     "adminChannel": "608130639543140362",
     "feedChannel": "608144827095187466",
     "server": "562783503045885962",
@@ -16,5 +16,6 @@
     "leadership": "562857347865903114",
     "raider": "562857204277837854",
     "applicant": "562857835780636672",
+    "reserve": "618881019054915664",
     "community": "562858345288040448"
 }
