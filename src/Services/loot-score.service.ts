@@ -142,7 +142,10 @@ export class LootScoreService {
             memberScore.itemScoreTotal = total;
             memberScore.itemScoreOffspecTotal = offspecTotal;
             memberScore.lastLootDate = new Date(entry[1][0].signature.timestamp).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: '2-digit' });
-            lootScoreMap.set(entry[0], memberScore);
+
+            if (entry[0]) {
+                lootScoreMap.set(entry[0], memberScore);
+            }
         }
 
         return lootScoreMap;

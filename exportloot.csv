@@ -1,0 +1,13 @@
+player, date, time, item, itemID, itemString, response, votes, class, instance, boss, gear1, gear2, responseID, isAwardReason, rollType, subType, equipLoc, note, owner
+Pixlols-BloodsailBuccaneers,10/08/19,18:17:56,[Lawbringer Legplates],16855,item:16855::::::::60,Personal Loot - Non tradeable,nil,PALADIN,Molten Core-40 Player,Magmadar,,,PL,false,normal,Plate,Legs,,Pixlols-BloodsailBuccaneers
+Turkeybrah-BloodsailBuccaneers,10/08/19,18:14:04,[Arcanist Boots],16800,item:16800::::::::60,Best in slot,4,MAGE,Molten Core-40 Player,Lucifron,[Omnicast Boots],,1,false,normal,Cloth,Feet,,Lucifron
+Zhoss-BloodsailBuccaneers,10/08/19,18:40:00,[Circlet of Prophecy],16813,item:16813::::::::60,Major upgrade,4,PRIEST,Molten Core-40 Player,Garr,[Councillor's Circlet of Healing],,2,false,normal,Cloth,Head,,Garr
+Jenos-BloodsailBuccaneers,10/08/19,18:20:04,[Eskhandar's Right Claw],18203,item:18203::::::::60,Major upgrade,3,WARRIOR,Molten Core-40 Player,Magmadar,[Mirah's Song],,2,false,normal,Fist Weapons,Main Hand,,Magmadar
+Jenos-BloodsailBuccaneers,10/08/19,18:40:22,[Drillborer Disk],17066,item:17066::::::::60,Best in slot,4,WARRIOR,Molten Core-40 Player,Garr,[Draconian Deflector],,1,false,normal,Shields,Off Hand,,Garr
+Halt-BloodsailBuccaneers,10/08/19,18:13:25,[Flamewaker Legplates],18861,item:18861::::::::60,Minor upgrade,5,WARRIOR,Molten Core-40 Player,Lucifron,[Devilsaur Leggings],,3,false,normal,Plate,Legs,For tanking,Lucifron
+Niche-BloodsailBuccaneers,10/08/19,18:27:16,[Manastorm Leggings],18872,item:18872::::::::60,Minor upgrade,3,PALADIN,Molten Core-40 Player,Gehennas,[Senior Designer's Pantaloons],,3,false,normal,Cloth,Legs,dispel set,Gehennas
+Nayr-BloodsailBuccaneers,10/08/19,18:20:13,[Lawbringer Legplates],16855,item:16855::::::::60,Minor upgrade,3,PALADIN,Molten Core-40 Player,Magmadar,[Councillor's Pants of Healing],,3,false,normal,Plate,Legs,,Magmadar
+Ael-BloodsailBuccaneers,10/08/19,20:26:05,[Onyxia Hide Backpack],17966,item:17966::::::::60,Best in slot,0,WARRIOR,Onyxia's Lair-40 Player,Onyxia,,,1,false,normal,Bag,Bag,,Onyxia
+Paper-BloodsailBuccaneers,10/08/19,18:40:19,[Mana Igniting Cord],19136,item:19136::::::::60,Best in slot,4,MAGE,Molten Core-40 Player,Garr,[Ban'thok Sash],,1,false,normal,Cloth,Waist,,Garr
+Rayne-BloodsailBuccaneers,10/08/19,18:20:33,[Striker's Mark],17069,item:17069::::::::60,Best in slot,3,ROGUE,Molten Core-40 Player,Magmadar,[Riphook],,1,false,normal,Bows,Ranged,,Magmadar
+Rayne-BloodsailBuccaneers,10/08/19,18:25:52,[Nightslayer Gloves],16826,item:16826::::::::60,Best in slot,3,ROGUE,Molten Core-40 Player,Gehennas,[Devilsaur Gauntlets],,1,false,normal,Leather,Hands,,Gehennas
