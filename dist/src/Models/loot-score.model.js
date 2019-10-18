@@ -7,7 +7,6 @@ class MemberScore {
     constructor() {
         this.attendancePercentage = 0;
         this.seniorityPercentage = 0;
-        this.attendanceTotal = 0;
         this.itemScoreTotal = 0;
         this.itemScoreOffspecTotal = 0;
         this.lastLootDate = 'N/A';

@@ -21,7 +21,6 @@ class LootScoreService {
     getAttendanceMap(attendanceLogChannel) {
         return __awaiter(this, void 0, void 0, function* () {
             let entries = yield this._messages.getMessages(attendanceLogChannel);
-            this.totalRaids = entries.length;
             let allEntries = new Map();
             for (let entry of entries) {
                 let endIndex = entry.content.length - 4;
@@ -63,31 +62,17 @@ class LootScoreService {
             return seniorityMap;
         });
     }
-    getAttendancePercentageMap(attendanceMap) {
-        let percentageMap = new Map();
-        for (let entry of attendanceMap) {
-            let sum = entry[1].reduce(function (a, b) { return a + b; });
-            let avg = sum / entry[1].length;
-            percentageMap.set(entry[0], avg);
-        }
-        return percentageMap;
-    }
-    createLootScoreMap(attendanceMap, attendancePercentageMap, seniorityMap, lootLogMap) {
+    createLootScoreMap(attendanceMap, seniorityMap, lootLogMap) {
         let lootScoreMap = new Map();
-        for (let entry of attendancePercentageMap) {
-            let memberScore = lootScoreMap.get(entry[0]);
-            if (!memberScore) {
-                memberScore = new loot_score_model_1.MemberScore();
-            }
-            memberScore.attendancePercentage = Math.ceil(entry[1]);
-            lootScoreMap.set(entry[0], memberScore);
-        }
         for (let entry of attendanceMap) {
             let memberScore = lootScoreMap.get(entry[0]);
             if (!memberScore) {
                 memberScore = new loot_score_model_1.MemberScore();
             }
-            memberScore.attendanceTotal = entry[1].length;
+            let raidCountExpected = seniorityMap.get(entry[0]);
+            let sum = entry[1].reduce(function (a, b) { return a + b; });
+            let avg = sum / raidCountExpected;
+            memberScore.attendancePercentage = Math.round(avg);
             lootScoreMap.set(entry[0], memberScore);
         }
         let highestValue = 1;

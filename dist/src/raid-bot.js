@@ -212,89 +212,99 @@ class RaidBot {
                 }
                 orderString += orderByOffspecItemScore ? '**offspec ItemScore**' : orderByLastLootDate ? '**last loot date**' : orderByName ? '**name**' : orderByAttendance ? '**attendance**' : orderBySeniority ? '**seniority**' : '**ItemScore**';
                 if (message.content.startsWith('/report has')) {
-                    let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
-                    let itemScores = yield this._lootLogService.getItemScores(this._itemScoresChannel);
-                    let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
-                    if (item) {
-                        this.sendHasEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
-                    }
-                    else {
-                        let relatedItems = new Array();
-                        itemScores.forEach((item) => {
-                            var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
-                            var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
-                            if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
-                                relatedItems.push(item);
-                            }
-                        });
-                        let relatedString = '';
-                        if (relatedItems.length > 0) {
-                            if (relatedItems.length === 1) {
-                                this.sendHasEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
-                            }
-                            else {
-                                for (let i = 0; i < relatedItems.length; i++) {
-                                    if (i === relatedItems.length - 1) {
-                                        if (i === 0) {
-                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                        }
-                                        else {
-                                            relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                        }
-                                    }
-                                    else {
-                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
-                                    }
-                                }
-                                message.channel.send(`Did you mean ${relatedString}?`);
-                            }
+                    if (message.content.match(/"((?:\\.|[^"\\])*)"/)) {
+                        let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
+                        let itemScores = yield this._lootLogService.getItemScores(this._itemScoresChannel);
+                        let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
+                        if (item) {
+                            this.sendHasEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
                         }
                         else {
-                            message.channel.send('Item does not exist.');
+                            let relatedItems = new Array();
+                            itemScores.forEach((item) => {
+                                var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
+                                var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
+                                if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                                    relatedItems.push(item);
+                                }
+                            });
+                            let relatedString = '';
+                            if (relatedItems.length > 0) {
+                                if (relatedItems.length === 1) {
+                                    this.sendHasEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
+                                }
+                                else {
+                                    for (let i = 0; i < relatedItems.length; i++) {
+                                        if (i === relatedItems.length - 1) {
+                                            if (i === 0) {
+                                                relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                            }
+                                            else {
+                                                relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                            }
+                                        }
+                                        else {
+                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
+                                        }
+                                    }
+                                    message.channel.send(`Did you mean ${relatedString}?`);
+                                }
+                            }
+                            else {
+                                message.channel.send('Item does not exist.');
+                            }
                         }
+                    }
+                    else {
+                        message.channel.send('Invalid query. Ensure the item name is in quotes.');
                     }
                 }
                 else if (message.content.startsWith('/report eligible')) {
-                    let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
-                    let itemScores = yield this._lootLogService.getItemScores(this._itemScoresChannel);
-                    let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
-                    if (item) {
-                        this.sendEligibleEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
-                    }
-                    else {
-                        let relatedItems = new Array();
-                        itemScores.forEach((item) => {
-                            var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
-                            var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
-                            if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
-                                relatedItems.push(item);
-                            }
-                        });
-                        let relatedString = '';
-                        if (relatedItems.length > 0) {
-                            if (relatedItems.length === 1) {
-                                this.sendEligibleEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
-                            }
-                            else {
-                                for (let i = 0; i < relatedItems.length; i++) {
-                                    if (i === relatedItems.length - 1) {
-                                        if (i === 0) {
-                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                        }
-                                        else {
-                                            relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                        }
-                                    }
-                                    else {
-                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
-                                    }
-                                }
-                                message.channel.send(`Did you mean ${relatedString}?`);
-                            }
+                    if (message.content.match(/"((?:\\.|[^"\\])*)"/)) {
+                        let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
+                        let itemScores = yield this._lootLogService.getItemScores(this._itemScoresChannel);
+                        let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
+                        if (item) {
+                            this.sendEligibleEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
                         }
                         else {
-                            message.channel.send('Item does not exist.');
+                            let relatedItems = new Array();
+                            itemScores.forEach((item) => {
+                                var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
+                                var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
+                                if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                                    relatedItems.push(item);
+                                }
+                            });
+                            let relatedString = '';
+                            if (relatedItems.length > 0) {
+                                if (relatedItems.length === 1) {
+                                    this.sendEligibleEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
+                                }
+                                else {
+                                    for (let i = 0; i < relatedItems.length; i++) {
+                                        if (i === relatedItems.length - 1) {
+                                            if (i === 0) {
+                                                relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                            }
+                                            else {
+                                                relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                            }
+                                        }
+                                        else {
+                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
+                                        }
+                                    }
+                                    message.channel.send(`Did you mean ${relatedString}?`);
+                                }
+                            }
+                            else {
+                                message.channel.send('Item does not exist.');
+                            }
                         }
+                    }
+                    else {
+                        message.channel.send('Invalid query. Ensure the item name is in quotes.');
                     }
                 }
                 else if (message.content.startsWith('/report "')) {
@@ -621,7 +631,7 @@ class RaidBot {
                 }
             }
             else {
-                message.channel.send('No members need this item.');
+                message.channel.send(`No members need **${item.displayName}**.`);
             }
         });
     }
@@ -630,13 +640,12 @@ class RaidBot {
         this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
             const attendanceMapId = value;
             this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-            this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
             this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
                 const seniorityMapId = value;
                 this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
                 this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                     this._lootLogMap = value;
-                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
                     const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
                     this._lootScoreDailyDumpChannel.fetchMessages({ limit: 100 })
                         .then(messages => this._lootScoreDailyDumpChannel.bulkDelete(messages));
@@ -723,11 +732,10 @@ class RaidBot {
             }
             let attendanceMapId = yield this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel);
             this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-            this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
             let seniorityMapId = yield this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel);
             this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
             this._lootLogMap = yield this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers);
-            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
         });
     }
     chunk(arr, chunkSize) {

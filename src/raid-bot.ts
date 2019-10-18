@@ -46,7 +46,6 @@ export class RaidBot {
 
     private _seniorityMap: Map<GuildMember, number>;
     private _attendanceMap: Map<GuildMember, number[]>;
-    private _attendancePercentageMap: Map<GuildMember, number>;
     private _lootScoreMap: Map<GuildMember, MemberScore>;
     private _lootLogMap: Map<GuildMember, LootScoreData<AwardedItem>[]>;
 
@@ -248,95 +247,101 @@ export class RaidBot {
                 orderString += orderByOffspecItemScore ? '**offspec ItemScore**' : orderByLastLootDate ? '**last loot date**' : orderByName ? '**name**' : orderByAttendance ? '**attendance**' : orderBySeniority ? '**seniority**' : '**ItemScore**';
 
                 if (message.content.startsWith('/report has')) {
-                    let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
-                    let itemScores = await this._lootLogService.getItemScores(this._itemScoresChannel);
-                    let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
+                    if (message.content.match(/"((?:\\.|[^"\\])*)"/)) {
+                        let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
+                        let itemScores = await this._lootLogService.getItemScores(this._itemScoresChannel);
+                        let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
 
-                    if (item) {
-                        this.sendHasEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
-                    } else {
-                        let relatedItems = new Array<ItemScore>();
-
-                        itemScores.forEach((item) => {
-                            var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
-                            var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
-
-                            if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
-                                relatedItems.push(item);
-                            }
-                        });
-
-                        let relatedString = '';
-
-                        if (relatedItems.length > 0) {
-                            if (relatedItems.length === 1) {
-                                this.sendHasEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
-                            } else {
-                                for (let i = 0; i < relatedItems.length; i++) {
-                                    if (i === relatedItems.length - 1) {
-                                        if (i === 0) {
-                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                        } else {
-                                            relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                        }
-                                    } else {
-                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
-                                    }
-                                }
-
-                                message.channel.send(`Did you mean ${relatedString}?`);
-                            }
+                        if (item) {
+                            this.sendHasEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
                         } else {
-                            message.channel.send('Item does not exist.');
-                        }
-                    }
+                            let relatedItems = new Array<ItemScore>();
 
+                            itemScores.forEach((item) => {
+                                var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
+                                var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
+
+                                if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                                    relatedItems.push(item);
+                                }
+                            });
+
+                            let relatedString = '';
+
+                            if (relatedItems.length > 0) {
+                                if (relatedItems.length === 1) {
+                                    this.sendHasEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
+                                } else {
+                                    for (let i = 0; i < relatedItems.length; i++) {
+                                        if (i === relatedItems.length - 1) {
+                                            if (i === 0) {
+                                                relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                            } else {
+                                                relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                            }
+                                        } else {
+                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
+                                        }
+                                    }
+
+                                    message.channel.send(`Did you mean ${relatedString}?`);
+                                }
+                            } else {
+                                message.channel.send('Item does not exist.');
+                            }
+                        }
+                    } else {
+                        message.channel.send('Invalid query. Ensure the item name is in quotes.');
+                    }
                 }
                 
                 else if (message.content.startsWith('/report eligible')) {
-                    let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
-                    let itemScores = await this._lootLogService.getItemScores(this._itemScoresChannel);
-                    let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
+                    if (message.content.match(/"((?:\\.|[^"\\])*)"/)) {
+                        let query = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
+                        let itemScores = await this._lootLogService.getItemScores(this._itemScoresChannel);
+                        let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
 
-                    if (item) {
-                        this.sendEligibleEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
-                    } else {
-                        let relatedItems = new Array<ItemScore>();
-
-                        itemScores.forEach((item) => {
-                            var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
-                            var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
-
-                            if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
-                                relatedItems.push(item);
-                            }
-                        });
-
-                        let relatedString = '';
-
-                        if (relatedItems.length > 0) {
-                            if (relatedItems.length === 1) {
-                                this.sendEligibleEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
-                            } else {
-                                for (let i = 0; i < relatedItems.length; i++) {
-                                    if (i === relatedItems.length - 1) {
-                                        if (i === 0) {
-                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                        } else {
-                                            relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
-                                        }
-                                    } else {
-                                        relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
-                                    }
-                                }
-
-                                message.channel.send(`Did you mean ${relatedString}?`);
-                            }
+                        if (item) {
+                            this.sendEligibleEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
                         } else {
-                            message.channel.send('Item does not exist.');
-                        }
-                    }
+                            let relatedItems = new Array<ItemScore>();
 
+                            itemScores.forEach((item) => {
+                                var shorthandSimilarity = stringSimilarity.compareTwoStrings(query, item.shorthand);
+                                var displayNameSimilarity = stringSimilarity.compareTwoStrings(query, item.displayName);
+
+                                if (shorthandSimilarity > .5 || displayNameSimilarity > .5 || item.displayName.includes(query) || item.shorthand.includes(query)) {
+                                    relatedItems.push(item);
+                                }
+                            });
+
+                            let relatedString = '';
+
+                            if (relatedItems.length > 0) {
+                                if (relatedItems.length === 1) {
+                                    this.sendEligibleEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
+                                } else {
+                                    for (let i = 0; i < relatedItems.length; i++) {
+                                        if (i === relatedItems.length - 1) {
+                                            if (i === 0) {
+                                                relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                            } else {
+                                                relatedString += `or **${relatedItems[i].shorthand}** (${relatedItems[i].displayName})`;
+                                            }
+                                        } else {
+                                            relatedString += `**${relatedItems[i].shorthand}** (${relatedItems[i].displayName}), `;
+                                        }
+                                    }
+
+                                    message.channel.send(`Did you mean ${relatedString}?`);
+                                }
+                            } else {
+                                message.channel.send('Item does not exist.');
+                            }
+                        }
+                    } else {
+                        message.channel.send('Invalid query. Ensure the item name is in quotes.');
+                    }
                 }
 
                 else if (message.content.startsWith('/report "')) {
@@ -725,7 +730,7 @@ export class RaidBot {
                 message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
             }
         } else {
-            message.channel.send('No members need this item.');
+            message.channel.send(`No members need **${item.displayName}**.`);
         }
     }
 
@@ -735,7 +740,6 @@ export class RaidBot {
         this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
             const attendanceMapId = value;
             this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-            this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
             this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
                 const seniorityMapId = value;
                 this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
@@ -743,7 +747,7 @@ export class RaidBot {
                 this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
                     this._lootLogMap = value;
 
-                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
 
                     const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
 
@@ -850,13 +854,12 @@ export class RaidBot {
 
         let attendanceMapId = await this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel);
         this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-        this._attendancePercentageMap = this._lootScoreService.getAttendancePercentageMap(this._attendanceMap);
 
         let seniorityMapId = await this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel);
         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
 
         this._lootLogMap = await this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers);
-        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._attendancePercentageMap, this._seniorityMap, this._lootLogMap);
+        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
     }
 
     public chunk(arr, chunkSize) {

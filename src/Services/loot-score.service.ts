@@ -10,11 +10,8 @@ export class LootScoreService {
     private _messages: MessagesHelper = new MessagesHelper();
     private _timestampHelper: TimestampHelper = new TimestampHelper();
 
-    public totalRaids: number;
-
     public async getAttendanceMap(attendanceLogChannel: TextChannel): Promise<Map<string, number[]>> {
         let entries = await this._messages.getMessages(attendanceLogChannel);
-        this.totalRaids = entries.length;
 
         let allEntries = new Map<string, number[]>();
 
@@ -63,32 +60,9 @@ export class LootScoreService {
         return seniorityMap;
     }
 
-    public getAttendancePercentageMap(attendanceMap: Map<GuildMember, number[]>): Map<GuildMember, number> {
-        let percentageMap = new Map<GuildMember, number>();
-
-        for (let entry of attendanceMap) {
-            let sum = entry[1].reduce(function (a, b) { return a + b; });
-            let avg = sum / entry[1].length;
-            percentageMap.set(entry[0], avg);
-        }
-
-        return percentageMap;
-    }
-
-    public createLootScoreMap(attendanceMap: Map<GuildMember, number[]>, attendancePercentageMap: Map<GuildMember, number>, seniorityMap: Map<GuildMember, number>, lootLogMap: Map<GuildMember, LootScoreData<AwardedItem>[]>): Map<GuildMember, MemberScore> {
+    public createLootScoreMap(attendanceMap: Map<GuildMember, number[]>, seniorityMap: Map<GuildMember, number>, lootLogMap: Map<GuildMember, LootScoreData<AwardedItem>[]>): Map<GuildMember, MemberScore> {
         let lootScoreMap = new Map<GuildMember, MemberScore>();
 
-        for (let entry of attendancePercentageMap) {
-            let memberScore = lootScoreMap.get(entry[0]);
-
-            if (!memberScore) {
-                memberScore = new MemberScore();
-            }
-
-            memberScore.attendancePercentage = Math.ceil(entry[1]);
-            lootScoreMap.set(entry[0], memberScore);
-        }
-
         for (let entry of attendanceMap) {
             let memberScore = lootScoreMap.get(entry[0]);
 
@@ -96,7 +70,11 @@ export class LootScoreService {
                 memberScore = new MemberScore();
             }
 
-            memberScore.attendanceTotal = entry[1].length;
+            let raidCountExpected = seniorityMap.get(entry[0]);
+            let sum = entry[1].reduce(function (a, b) { return a + b; });
+            let avg = sum / raidCountExpected;
+
+            memberScore.attendancePercentage = Math.round(avg);
             lootScoreMap.set(entry[0], memberScore);
         }
 

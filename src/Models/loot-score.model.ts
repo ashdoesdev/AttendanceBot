@@ -7,7 +7,6 @@ export class LootScore {
 export class MemberScore {
     public attendancePercentage: number = 0;
     public seniorityPercentage: number = 0;
-    public attendanceTotal: number = 0;
     public itemScoreTotal: number = 0;
     public itemScoreOffspecTotal: number = 0;
     public lastLootDate: string = 'N/A';
