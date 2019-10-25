@@ -11,6 +11,6 @@
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\src\\index.ts",
+  "SelectedNode": "\\src\\Services\\loot-score.service.ts",
   "PreviewInSolutionExplorer": false
 }

@@ -170,7 +170,7 @@ class RaidBot {
                 let sortedMap = new Map();
                 let modifiers = message.content.split(' ').filter((x) => x.startsWith('--'));
                 modifiers.forEach((modifier, i) => {
-                    modifiers[i] = modifier.slice(2);
+                    modifiers[i] = modifier.slice(2).toLowerCase();
                 });
                 let classModifiers = modifiers.filter((modifier) => exports.classes.includes(modifier));
                 let orderByName = message.content.includes('--name');
@@ -530,8 +530,8 @@ class RaidBot {
                     message.channel.send(`**${messages.length}** total raids`);
                 });
             }
-            if (message.content === '/hi' && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                message.channel.send('I\'m here');
+            if (message.content === '/test' && (this.isAdminChannel(message) || message.channel.type === 'dm')) {
+                message.channel.send('Bot running.');
             }
             if (message.content.startsWith('/edit --attendance ') && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 let query = message.content.replace('/edit --attendance ', '');
@@ -561,10 +561,6 @@ class RaidBot {
     }
     isFeedChannel(message) {
         return message.channel.id === this._feedChannel.id;
-    }
-    manageDailyJobs() {
-        this.sendLootScoreDailyDump();
-        this.backUpValues();
     }
     manageAwardMessage(message, member, item, offspec, existing, flags = new Array()) {
         let extras = '';

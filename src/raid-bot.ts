@@ -196,7 +196,7 @@ export class RaidBot {
                 let modifiers = message.content.split(' ').filter((x) => x.startsWith('--'));
 
                 modifiers.forEach((modifier, i) => {
-                    modifiers[i] = modifier.slice(2);
+                    modifiers[i] = modifier.slice(2).toLowerCase();
                 });
 
                 let classModifiers = modifiers.filter((modifier) => classes.includes(modifier));
@@ -609,8 +609,8 @@ export class RaidBot {
                 });
             }
 
-            if (message.content === '/hi' && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                message.channel.send('I\'m here');
+            if (message.content === '/test' && (this.isAdminChannel(message) || message.channel.type === 'dm')) {
+                message.channel.send('Bot running.');
             }
 
             if (message.content.startsWith('/edit --attendance ') && this.canUseCommands(message) && this.isAdminChannel(message)) {
@@ -649,11 +649,6 @@ export class RaidBot {
     
     private isFeedChannel(message: Message): boolean {
         return message.channel.id === this._feedChannel.id;
-    }
-
-    public manageDailyJobs(): void {
-        this.sendLootScoreDailyDump();
-        this.backUpValues();
     }
 
     private manageAwardMessage(message: Message, member: GuildMember, item: ItemScore, offspec: boolean, existing: boolean, flags = new Array<string>()): void {
