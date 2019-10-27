@@ -9,7 +9,7 @@ class MemberScore {
         this.seniorityPercentage = 0;
         this.itemScoreTotal = 0;
         this.itemScoreOffspecTotal = 0;
-        this.lastLootDate = 'N/A';
+        this.lastLootDate = '---';
     }
 }
 exports.MemberScore = MemberScore;

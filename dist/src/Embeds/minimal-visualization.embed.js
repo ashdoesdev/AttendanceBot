@@ -13,8 +13,14 @@ class MinimalVisualizationEmbed extends discord_js_1.RichEmbed {
         for (let member of lootScoreMap) {
             memberLines += separator;
             let name = member[0].displayName.slice(0, 12).padEnd(12, ' ');
-            let attendance = `${member[1].attendancePercentage}%`.padEnd(4, ' ');
-            let seniority = `${member[1].seniorityPercentage}%`.padEnd(4, ' ');
+            let attendance = "---".padEnd(4, ' ');
+            let seniority = "---".padEnd(4, ' ');
+            if (member[1].attendancePercentage > 0) {
+                attendance = `${member[1].attendancePercentage}%`.padEnd(4, ' ');
+            }
+            if (member[1].seniorityPercentage > 0) {
+                seniority = `${member[1].seniorityPercentage}%`.padEnd(4, ' ');
+            }
             let main = member[1].itemScoreTotal.toString().slice(0, 4).padEnd(4, ' ');
             let offspec = member[1].itemScoreOffspecTotal.toString().slice(0, 4).padEnd(4, ' ');
             let lastLootDate = member[1].lastLootDate.padEnd(9, ' ');

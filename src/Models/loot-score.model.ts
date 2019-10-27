@@ -9,7 +9,7 @@ export class MemberScore {
     public seniorityPercentage: number = 0;
     public itemScoreTotal: number = 0;
     public itemScoreOffspecTotal: number = 0;
-    public lastLootDate: string = 'N/A';
+    public lastLootDate: string = '---';
 }
 
 export class LootScoreData<T> {

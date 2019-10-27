@@ -124,31 +124,10 @@ export class RaidBot {
                         (sentMessage as Message).awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                             .then((collected) => {
                                 if (collected.first().emoji.name === '✅') {
-                                    this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel, true, this.sendLootScoreDailyDump.bind(this));
-                                } else {
-                                    message.channel.send('Request to end logging aborted. Logging will continue.');
-                                }
-                            })
-                            .catch((err) => {
-                                console.log(err);
-                                message.channel.send('No reply received. Request to end logging aborted. Logging will continue.');
-                            });
+                                    message.channel.send('*Saving attendance . . .*');
+                                    this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
 
-                    });
-                } else {
-                    message.channel.send(`Did you mean to start attendance first? (Hint: !ls s)`);
-                }
-            }
-
-            if ((message.content === '/end --noseniority' || message.content === '/e --noseniority') && this.canUseCommands(message) && this.isFeedChannel(message)) {
-                if (this._attendanceService.loggingInProgress) {
-                    message.channel.send('Are you ready to end logging? This command will end logging and submit all values except seniority.').then((sentMessage) => {
-                        const filter = this.setReactionFilter(sentMessage as Message, message);
-
-                        (sentMessage as Message).awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
-                            .then((collected) => {
-                                if (collected.first().emoji.name === '✅') {
-                                    this._attendanceService.endLogging(message, null, this._attendanceLogDataChannel, this._attendanceLogChannel, true, this.sendLootScoreDailyDump.bind(this));
+                                    this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel, this._guildMembers, this._appSettings, true, this.sendLootScoreDailyDump.bind(this));
                                 } else {
                                     message.channel.send('Request to end logging aborted. Logging will continue.');
                                 }
@@ -173,7 +152,8 @@ export class RaidBot {
                             .then((collected) => {
                                 if (collected.first().emoji.name === '✅') {
                                     message.channel.send('Logging successfully ended. No records saved from this session.');
-                                    this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel, false);
+
+                                    this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel, this._guildMembers, this._appSettings, false);
                                 } else {
                                     message.channel.send('Request to end logging aborted. Logging will continue.');
                                 }

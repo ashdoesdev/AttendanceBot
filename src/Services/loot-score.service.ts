@@ -72,7 +72,7 @@ export class LootScoreService {
 
             let raidCountExpected = seniorityMap.get(entry[0]);
             let sum = entry[1].reduce(function (a, b) { return a + b; });
-            let avg = sum / raidCountExpected;
+            let avg = sum / raidCountExpected || 0;
 
             memberScore.attendancePercentage = Math.round(avg);
             lootScoreMap.set(entry[0], memberScore);
