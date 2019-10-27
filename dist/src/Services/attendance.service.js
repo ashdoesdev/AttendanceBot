@@ -61,8 +61,13 @@ class AttendanceService {
             let seniorityMap = yield this._lootScoreService.getSeniorityMap(seniorityLogChannel);
             for (let entry of seniorityMap) {
                 let member = this._memberMatcher.matchMemberFromId(guildMembers, entry[0]);
-                if (this.memberShouldBeTracked(member, appSettings)) {
-                    seniorityMap.set(entry[0], seniorityMap.get(entry[0]) + 1);
+                if (member) {
+                    if (this.memberShouldBeTracked(member, appSettings)) {
+                        seniorityMap.set(entry[0], seniorityMap.get(entry[0]) + 1);
+                    }
+                    else {
+                        seniorityMap.delete(entry[0]);
+                    }
                 }
                 else {
                     seniorityMap.delete(entry[0]);
@@ -103,12 +108,6 @@ class AttendanceService {
     endLogging(message, seniorityLogChannel, attendanceLogChannel, attendanceLogReadableChannel, guildMembers, appSettings, saveValues, updateDump) {
         return __awaiter(this, void 0, void 0, function* () {
             if (saveValues) {
-                if (this._tick === 1) {
-                    message.channel.send(`Attendance saved. Total duration: ${this._tick} minute`);
-                }
-                else {
-                    message.channel.send(`Attendance saved. Total duration: ${this._tick} minutes`);
-                }
                 let attendanceArray = Array.from(this.attendanceLog.entries());
                 if (attendanceArray.length > 10) {
                     attendanceArray = attendanceArray.slice(5, attendanceArray.length - 5);
@@ -121,14 +120,20 @@ class AttendanceService {
                 const readableMinifiedAttendanceMap = this.createReadableMinifiedAttendanceMap(modifiedAttendanceLog);
                 const minifiedAttendanceArray = Array.from(minifiedAttendanceMap.entries());
                 let attendanceLootScoreData = this._dataHelper.createLootScoreData(minifiedAttendanceArray, message);
+                attendanceLogChannel.send(this.codeBlockify(JSON.stringify(attendanceLootScoreData)));
+                attendanceLogReadableChannel.send(new attendance_embed_1.AttendanceEmbed(readableMinifiedAttendanceMap));
                 if (seniorityLogChannel) {
                     const minifiedSeniorityMap = yield this.createMinifiedSeniorityMap(minifiedAttendanceMap, seniorityLogChannel, guildMembers, appSettings);
                     const minifiedSeniorityArray = Array.from(minifiedSeniorityMap.entries());
                     let seniorityLootScoreData = this._dataHelper.createLootScoreData(minifiedSeniorityArray, message);
                     seniorityLogChannel.send(this.codeBlockify(JSON.stringify(seniorityLootScoreData)));
                 }
-                attendanceLogChannel.send(this.codeBlockify(JSON.stringify(attendanceLootScoreData)));
-                attendanceLogReadableChannel.send(new attendance_embed_1.AttendanceEmbed(readableMinifiedAttendanceMap));
+                if (this._tick === 1) {
+                    message.channel.send(`Attendance saved. Total duration: ${this._tick} minute`);
+                }
+                else {
+                    message.channel.send(`Attendance saved. Total duration: ${this._tick} minutes`);
+                }
                 if (updateDump) {
                     updateDump();
                 }

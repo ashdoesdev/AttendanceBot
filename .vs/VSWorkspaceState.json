@@ -11,6 +11,6 @@
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\dist\\src\\index.js",
+  "SelectedNode": "\\src\\Services\\attendance.service.ts",
   "PreviewInSolutionExplorer": false
 }

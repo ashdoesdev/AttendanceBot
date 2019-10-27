@@ -121,12 +121,6 @@ export class AttendanceService {
 
     public async endLogging(message: Message, seniorityLogChannel: TextChannel, attendanceLogChannel: TextChannel, attendanceLogReadableChannel: TextChannel, guildMembers: GuildMember[], appSettings: any, saveValues: boolean, updateDump?): Promise<void> {
         if (saveValues) {
-            if (this._tick === 1) {
-                message.channel.send(`Attendance saved. Total duration: ${this._tick} minute`);
-            } else {
-                message.channel.send(`Attendance saved. Total duration: ${this._tick} minutes`);
-            }
-
             let attendanceArray = Array.from(this.attendanceLog.entries());
             if (attendanceArray.length > 10) {
                 attendanceArray = attendanceArray.slice(5, attendanceArray.length - 5);
@@ -142,6 +136,9 @@ export class AttendanceService {
             const minifiedAttendanceArray = Array.from(minifiedAttendanceMap.entries());
             let attendanceLootScoreData = this._dataHelper.createLootScoreData(minifiedAttendanceArray, message);
 
+            attendanceLogChannel.send(this.codeBlockify(JSON.stringify(attendanceLootScoreData)));
+            attendanceLogReadableChannel.send(new AttendanceEmbed(readableMinifiedAttendanceMap));
+
             if (seniorityLogChannel) {
                 const minifiedSeniorityMap = await this.createMinifiedSeniorityMap(minifiedAttendanceMap, seniorityLogChannel, guildMembers, appSettings);
                 const minifiedSeniorityArray = Array.from(minifiedSeniorityMap.entries());
@@ -149,8 +146,11 @@ export class AttendanceService {
                 seniorityLogChannel.send(this.codeBlockify(JSON.stringify(seniorityLootScoreData)));
             }
 
-            attendanceLogChannel.send(this.codeBlockify(JSON.stringify(attendanceLootScoreData)));
-            attendanceLogReadableChannel.send(new AttendanceEmbed(readableMinifiedAttendanceMap));
+            if (this._tick === 1) {
+                message.channel.send(`Attendance saved. Total duration: ${this._tick} minute`);
+            } else {
+                message.channel.send(`Attendance saved. Total duration: ${this._tick} minutes`);
+            }
 
             if (updateDump) {
                 updateDump();

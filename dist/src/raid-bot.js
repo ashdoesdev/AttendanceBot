@@ -562,7 +562,7 @@ class RaidBot {
             })
                 .catch((err) => {
                 console.log(err);
-                message.channel.send('No reply received. Request to award item aborted.');
+                message.channel.send(`No reply received. Request to award ${member.displayName} **${item.displayName}**${extras} aborted.`);
             });
         });
     }
