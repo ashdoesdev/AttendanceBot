@@ -169,9 +169,8 @@ export class RaidBot {
             }
 
             if ((message.content.startsWith('/report') && this.canUseCommands(message) && this.isAdminChannel(message))) {
-                await this.refreshDataMaps();
-
-                let sortedMap = new Map<GuildMember, MemberScore>();
+                await this.ensureHasDataMaps();
+                await this.refreshLootScoreMap();
 
                 let modifiers = message.content.split(' ').filter((x) => x.startsWith('--'));
 
@@ -394,7 +393,7 @@ export class RaidBot {
             }
 
             if (message.content === '/lastraid' && (this.isAdminChannel(message) || message.channel.type === 'dm')) {
-                await this.refreshDataMaps();
+                await this.ensureHasDataMaps();
 
                 let lastAttendance = await this._messages.getLast(this._attendanceLogDataChannel);
 
@@ -436,7 +435,8 @@ export class RaidBot {
             }
 
             if (message.content === '/stats' && message.channel.type === 'dm') {
-                await this.refreshDataMaps();
+                await this.ensureHasDataMaps();
+                await this.refreshLootScoreMap();
 
                 let filteredMap = this._mapSort.filterMembers(this._lootScoreMap, [message.author.id]);
                 let member = this._memberMatcher.matchMemberFromId(this._guildMembers, message.author.id);
@@ -666,6 +666,7 @@ export class RaidBot {
                 .then((collected) => {
                     if (collected.first().emoji.name === '✅') {
                         this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, existing, flags);
+                        this.refreshLootLogMap();
                     } else {
                         message.channel.send('Request to award item aborted.');
                     }
@@ -899,20 +900,45 @@ export class RaidBot {
             return (reaction.emoji.name === '✅' || reaction.emoji.name === '❌') && user.id === message.author.id;
         };
     }
-
-    public async refreshDataMaps(): Promise<void> {
+        
+    public async refreshLootLogMap(): Promise<void> {
         if (!this._guildMembers) {
             this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
         }
 
-        let attendanceMapId = await this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel);
-        this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-
-        let seniorityMapId = await this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel);
-        this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
-
         this._lootLogMap = await this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers);
+    }
+        
+    public async refreshLootScoreMap(): Promise<void> {
+        if (!this._guildMembers) {
+            this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+        }
+
         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
+    }
+
+    public async ensureHasDataMaps(): Promise<void> {
+        if (!this._guildMembers) {
+            this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+        }
+
+        if (!this._attendanceMap) {
+            let attendanceMapId = await this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel);
+            this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
+        }
+
+        if (!this._seniorityMap) {
+            let seniorityMapId = await this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel);
+            this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+        }
+
+        if (!this._lootLogMap) {
+            this._lootLogMap = await this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers);
+        }
+
+        if (!this._lootScoreMap) {
+            this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
+        }
     }
 
     public chunk(arr, chunkSize) {
