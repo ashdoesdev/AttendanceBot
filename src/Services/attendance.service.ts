@@ -170,7 +170,7 @@ export class AttendanceService {
         return '```' + string + '```';
     }
 
-    private memberShouldBeTracked(member: GuildMember, appSettings: any): boolean {
+    public memberShouldBeTracked(member: GuildMember, appSettings: any): boolean {
         if (member.roles.array().length > 0) {
             if (member.roles.array().find((x) => x.id === appSettings['applicant']) || member.roles.array().find((x) => x.id === appSettings['raider']) || member.roles.array().find((x) => x.id === appSettings['leadership'])) {
                 return true;

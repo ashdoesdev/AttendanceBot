@@ -186,6 +186,7 @@ export class RaidBot {
                 let orderBySeniority = message.content.includes('--seniority');
                 let orderByOffspecItemScore = message.content.includes('--offspec');
                 let orderByLastLootDate = message.content.includes('--lastloot');
+                let shouldShowInactive = message.content.includes('--inactive');
 
                 let orderString = 'ordered by ';
                 let classString = '';
@@ -224,6 +225,16 @@ export class RaidBot {
                     }
                 }
 
+                let activeMembers = new Array<string>();
+
+                if (!shouldShowInactive) {
+                    let members = this._guildMembers.filter((member) => this._attendanceService.memberShouldBeTracked(member, this._appSettings));
+
+                    members.forEach((member) => {
+                        activeMembers.push(member.id);
+                    })
+                }
+
                 orderString += orderByOffspecItemScore ? '**offspec ItemScore**' : orderByLastLootDate ? '**last loot date**' : orderByName ? '**name**' : orderByAttendance ? '**attendance**' : orderBySeniority ? '**seniority**' : '**ItemScore**';
 
                 if (message.content.startsWith('/report has')) {
@@ -233,7 +244,7 @@ export class RaidBot {
                         let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
 
                         if (item) {
-                            this.sendHasEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
+                            this.sendHasEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message, activeMembers);
                         } else {
                             let relatedItems = new Array<ItemScore>();
 
@@ -250,7 +261,7 @@ export class RaidBot {
 
                             if (relatedItems.length > 0) {
                                 if (relatedItems.length === 1) {
-                                    this.sendHasEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
+                                    this.sendHasEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message, activeMembers);
                                 } else {
                                     for (let i = 0; i < relatedItems.length; i++) {
                                         if (i === relatedItems.length - 1) {
@@ -282,7 +293,7 @@ export class RaidBot {
                         let item = itemScores.find((x) => x.shorthand.toLowerCase() === query.toLowerCase() || x.displayName.toLowerCase() === query.toLowerCase());
 
                         if (item) {
-                            this.sendEligibleEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
+                            this.sendEligibleEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message, activeMembers);
                         } else {
                             let relatedItems = new Array<ItemScore>();
 
@@ -299,7 +310,7 @@ export class RaidBot {
 
                             if (relatedItems.length > 0) {
                                 if (relatedItems.length === 1) {
-                                    this.sendEligibleEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message);
+                                    this.sendEligibleEmbed(relatedItems[0], orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message, activeMembers);
                                 } else {
                                     for (let i = 0; i < relatedItems.length; i++) {
                                         if (i === relatedItems.length - 1) {
@@ -349,27 +360,29 @@ export class RaidBot {
 
                 else {
                     let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
-                    let title = `Overview ${orderString} ${classString}`;
+                    let title = `Overview of all members (including inactive) ${orderString} ${classString}`;
 
                     if (membersOfClass.length > 0) {
-                        const filteredMap = this._mapSort.filterMembers(sortedMap, membersOfClass);
-                        let mapChunked = this.chunk(Array.from(filteredMap), 15);
-
-                        for (let i = 0; i < mapChunked.length; i++) {
-                            let first = i === 0;
-                            let last = i === mapChunked.length - 1;
-                            message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
-                        }
-                    } else {
-                        let mapChunked = this.chunk(Array.from(sortedMap), 15);
-
-                        for (let i = 0; i < mapChunked.length; i++) {
-                            let first = i === 0;
-                            let last = i === mapChunked.length - 1;
-                            message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
-                        }
+                        sortedMap = this._mapSort.filterMembers(sortedMap, membersOfClass);
                     }
 
+                    if (activeMembers.length > 0) {
+                        sortedMap = this._mapSort.filterMembers(sortedMap, activeMembers);
+
+                        title = `Overview ${orderString} ${classString}`;
+                    }
+
+                    let mapChunked = this.chunk(Array.from(sortedMap), 15);
+
+                    for (let i = 0; i < mapChunked.length; i++) {
+                        let first = i === 0;
+                        let last = i === mapChunked.length - 1;
+                        message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                    }
+
+                    if (mapChunked.length === 0) {
+                        message.channel.send('No members found matching query.');
+                    }
                 }
 
             }
@@ -658,18 +671,24 @@ export class RaidBot {
         });
     }
 
-    private async sendHasEmbed(item: ItemScore, orderByName: boolean, orderByAttendance: boolean, orderBySeniority: boolean, orderByOffspecItemScore: boolean, orderByLastLootDate: boolean, membersOfClass: string[], orderString: string, classString: string, message: Message): Promise<void> {
+    private async sendHasEmbed(item: ItemScore, orderByName: boolean, orderByAttendance: boolean, orderBySeniority: boolean, orderByOffspecItemScore: boolean, orderByLastLootDate: boolean, membersOfClass: string[], orderString: string, classString: string, message: Message, activeMembers: string[]): Promise<void> {
         let membersWhoHave = await this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
 
         if (membersWhoHave.length > 0) {
             let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
             let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
+            let title = '';
 
             if (membersOfClass.length > 0) {
                 filteredMap = this._mapSort.filterMembers(filteredMap, membersOfClass);
             }
 
-            let title = `Members who have **${item.displayName}** ${orderString} ${classString}`;
+            if (activeMembers.length > 0) {
+                filteredMap = this._mapSort.filterMembers(filteredMap, activeMembers);
+                title = `Members who have **${item.displayName}** ${orderString} ${classString}`;
+            } else {
+                title = `Members (including inactive) who have **${item.displayName}** ${orderString} ${classString}`;
+            }
 
             let mapChunked = this.chunk(Array.from(filteredMap), 15);
 
@@ -677,6 +696,10 @@ export class RaidBot {
                 let first = i === 0;
                 let last = i === mapChunked.length - 1;
                 message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+            }
+
+            if (mapChunked.length === 0) {
+                message.channel.send('No members found matching query.');
             }
 
         } else {
@@ -684,18 +707,24 @@ export class RaidBot {
         }
     }
 
-    private async sendEligibleEmbed(item: ItemScore, orderByName: boolean, orderByAttendance: boolean, orderBySeniority: boolean, orderByOffspecItemScore: boolean, orderByLastLootDate: boolean, membersOfClass: string[], orderString: string, classString: string, message: Message): Promise<void> {
+    private async sendEligibleEmbed(item: ItemScore, orderByName: boolean, orderByAttendance: boolean, orderBySeniority: boolean, orderByOffspecItemScore: boolean, orderByLastLootDate: boolean, membersOfClass: string[], orderString: string, classString: string, message: Message, activeMembers: string[]): Promise<void> {
         let membersWhoNeed = await this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers)
 
         if (membersWhoNeed.length > 0) {
             let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
             let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
+            let title = '';
 
             if (membersOfClass.length > 0) {
                 filteredMap = this._mapSort.filterMembers(filteredMap, membersOfClass);
             }
 
-            let title = `Members who need **${item.displayName}** ${orderString} ${classString}`;
+            if (activeMembers.length > 0) {
+                filteredMap = this._mapSort.filterMembers(filteredMap, activeMembers);
+                title = `Members who need **${item.displayName}** ${orderString} ${classString}`;
+            } else {
+                title = `Members (including inactive) who need **${item.displayName}** ${orderString} ${classString}`;
+            }
 
             let mapChunked = this.chunk(Array.from(filteredMap), 15);
 
@@ -703,6 +732,10 @@ export class RaidBot {
                 let first = i === 0;
                 let last = i === mapChunked.length - 1;
                 message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+            }
+
+            if (mapChunked.length === 0) {
+                message.channel.send('No members found matching query.');
             }
         } else {
             message.channel.send(`No members need **${item.displayName}**.`);
