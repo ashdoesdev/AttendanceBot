@@ -64,8 +64,8 @@ export class LootLogService {
         return scores;
     }
 
-    public async getEligibleMembers(item: ItemScore, lootLogChannel: TextChannel, presentMembers: GuildMember[]): Promise<string[]> {
-        let lootLogMap = await this.createLootLogMap(lootLogChannel, presentMembers);
+    public async getEligibleMembers(item: ItemScore, lootLogChannel: TextChannel, members: GuildMember[]): Promise<string[]> {
+        let lootLogMap = await this.createLootLogMap(lootLogChannel, members);
         let memberLootHistory = new Array<string>();
         let eligibleMembers = new Array<string>();
 
@@ -81,7 +81,7 @@ export class LootLogService {
             }
         });
 
-        presentMembers.forEach((member) => {
+        members.forEach((member) => {
             if (!memberLootHistory.find((x) => x === member.id)) {
                 let roles = new Array<string>();
 
@@ -91,7 +91,7 @@ export class LootLogService {
 
                 if (item) {
                     if (item.eligibleClasses) {
-                        if (roles.filter((x) => item.eligibleClasses.includes(x)).length > 0) {
+                        if (roles.filter((x) => item.eligibleClasses.map(item => item.toLowerCase()).includes(x)).length > 0) {
                             if (member) {
                                 eligibleMembers.push(member.id);
                             }
@@ -104,8 +104,8 @@ export class LootLogService {
         return eligibleMembers;
     }
     
-    public async getHasLooted(item: ItemScore, lootLogChannel: TextChannel, presentMembers: GuildMember[]): Promise<string[]> {
-        let lootLogMap = await this.createLootLogMap(lootLogChannel, presentMembers);
+    public async getHasLooted(item: ItemScore, lootLogChannel: TextChannel, members: GuildMember[]): Promise<string[]> {
+        let lootLogMap = await this.createLootLogMap(lootLogChannel, members);
         let memberLootHistory = new Array<string>();
         let hasLooted = new Array<string>();
 
@@ -121,7 +121,7 @@ export class LootLogService {
             }
         });
 
-        presentMembers.forEach((member) => {
+        members.forEach((member) => {
             if (memberLootHistory.find((x) => x === member.id)) {
                 if (member) {
                     hasLooted.push(member.id);

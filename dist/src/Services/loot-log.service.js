@@ -63,9 +63,9 @@ class LootLogService {
             return scores;
         });
     }
-    getEligibleMembers(item, lootLogChannel, presentMembers) {
+    getEligibleMembers(item, lootLogChannel, members) {
         return __awaiter(this, void 0, void 0, function* () {
-            let lootLogMap = yield this.createLootLogMap(lootLogChannel, presentMembers);
+            let lootLogMap = yield this.createLootLogMap(lootLogChannel, members);
             let memberLootHistory = new Array();
             let eligibleMembers = new Array();
             lootLogMap.forEach((key, value) => {
@@ -79,7 +79,7 @@ class LootLogService {
                     }
                 }
             });
-            presentMembers.forEach((member) => {
+            members.forEach((member) => {
                 if (!memberLootHistory.find((x) => x === member.id)) {
                     let roles = new Array();
                     for (let role of member.roles.array()) {
@@ -87,7 +87,7 @@ class LootLogService {
                     }
                     if (item) {
                         if (item.eligibleClasses) {
-                            if (roles.filter((x) => item.eligibleClasses.includes(x)).length > 0) {
+                            if (roles.filter((x) => item.eligibleClasses.map(item => item.toLowerCase()).includes(x)).length > 0) {
                                 if (member) {
                                     eligibleMembers.push(member.id);
                                 }
@@ -99,9 +99,9 @@ class LootLogService {
             return eligibleMembers;
         });
     }
-    getHasLooted(item, lootLogChannel, presentMembers) {
+    getHasLooted(item, lootLogChannel, members) {
         return __awaiter(this, void 0, void 0, function* () {
-            let lootLogMap = yield this.createLootLogMap(lootLogChannel, presentMembers);
+            let lootLogMap = yield this.createLootLogMap(lootLogChannel, members);
             let memberLootHistory = new Array();
             let hasLooted = new Array();
             lootLogMap.forEach((key, value) => {
@@ -115,7 +115,7 @@ class LootLogService {
                     }
                 }
             });
-            presentMembers.forEach((member) => {
+            members.forEach((member) => {
                 if (memberLootHistory.find((x) => x === member.id)) {
                     if (member) {
                         hasLooted.push(member.id);
