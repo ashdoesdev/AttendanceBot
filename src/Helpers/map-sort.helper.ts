@@ -48,6 +48,12 @@ export class MapSortHelper {
         return new Map(filteredArray);
     }
 
+    public filterOutMembers(lootScoreMap: Map<GuildMember, MemberScore>, members: string[]): Map<GuildMember, MemberScore> {
+        const array = Array.from(lootScoreMap);
+        let filteredArray = array.filter((value) => !members.includes(value[0].id));
+        return new Map(filteredArray);
+    }
+
     public sortByFlag(lootScoreMap: Map<GuildMember, MemberScore>, orderByName: boolean, orderByAttendance: boolean, orderBySeniority: boolean, orderByOffspecItemScore: boolean, orderByLastLootDate: boolean): Map<GuildMember, MemberScore> {
         if (orderByName) {
             return this.sortByName(lootScoreMap);

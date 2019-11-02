@@ -40,6 +40,11 @@ class MapSortHelper {
         let filteredArray = array.filter((value) => members.includes(value[0].id));
         return new Map(filteredArray);
     }
+    filterOutMembers(lootScoreMap, members) {
+        const array = Array.from(lootScoreMap);
+        let filteredArray = array.filter((value) => !members.includes(value[0].id));
+        return new Map(filteredArray);
+    }
     sortByFlag(lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate) {
         if (orderByName) {
             return this.sortByName(lootScoreMap);

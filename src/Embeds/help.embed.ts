@@ -8,8 +8,7 @@ export class HelpEmbed extends RichEmbed {
 
         this.addField('Input Channel Commands', `<#${appSettings['feedChannel']}>`);
         this.addBlankField();
-        this.addField('Start attendance', '```\n/start```');
-        this.addField('End attendance', '```\n/end```');
+        this.addField('Start/end attendance', '```\n/start, /end```');
         this.addField('End attendance without logging (in case of accidental start)', '```\n/end --nolog```');
         this.addField('Award item', '```\n/g (or /give) @name itemname```');
         this.addField('Award offspec item', '```\n/g (or /give) @name itemname --offspec```');
@@ -24,7 +23,8 @@ export class HelpEmbed extends RichEmbed {
         this.addBlankField();
         this.addField('Report Modifiers', `Add to any of the report commands above to modify`);
         this.addBlankField();
-        this.addField('Filter by certain class (or classes)', '```\n--classname```')
+        this.addField('Filter by certain class (or classes)', '```\n--classname```');
+        this.addField('Show inactive members', '```\n--inactive, --all for all```');
         this.addField('Order by ItemScore', '```\nDefault. No modifier needed```');
         this.addField('Order by offspec ItemScore', '```\n--offspec```');
         this.addField('Order by last loot date', '```\n--lastloot```');
