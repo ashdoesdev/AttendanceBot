@@ -92,9 +92,8 @@ class AttendanceService {
                 if (Array.from(raidChannel2.members.values()).length > 0) {
                     var memberArray = Array.from(raidChannel1.members.values())
                         .concat(Array.from(raidChannel2.members.values())).filter((member) => this.memberShouldBeTracked(member, appSettings));
-                    var uniqueArray = new Set(memberArray);
-                    var finalMemberArray = [...uniqueArray];
-                    this.attendanceLog.set(this._tick, finalMemberArray);
+                    var uniqueArray = memberArray.filter((member, index, self) => index === self.findIndex((m) => (m.id === member.id)));
+                    this.attendanceLog.set(this._tick, uniqueArray);
                 }
                 else {
                     this.attendanceLog.set(this._tick, Array.from(raidChannel1.members.values()).filter((member) => this.memberShouldBeTracked(member, appSettings)));
