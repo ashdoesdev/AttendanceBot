@@ -85,7 +85,7 @@ export class RaidBot {
             }
 
             if (message.content === '/refresh' && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                this.sendLootScoreDailyDump();
+                this.updateAttendanceChart();
             }
             
             if (message.content === '/refreshmembers' && this.canUseCommands(message) && this.isAdminChannel(message)) {
@@ -127,7 +127,7 @@ export class RaidBot {
                                     message.channel.send('*Saving attendance . . .*');
                                     this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
 
-                                    this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel, this._guildMembers, this._appSettings, true, this.sendLootScoreDailyDump.bind(this));
+                                    this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel, this._guildMembers, this._appSettings, true, this.updateAttendanceChart.bind(this));
                                 } else {
                                     message.channel.send('Request to end logging aborted. Logging will continue.');
                                 }
@@ -788,37 +788,23 @@ export class RaidBot {
         }
     }
 
-    public sendLootScoreDailyDump(): void {
-        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+    public async updateAttendanceChart(): Promise<void> {
+        await this.refreshDataMaps();
 
-        this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel).then((value) => {
-            const attendanceMapId = value;
-            this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
-            this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel).then(value => {
-                const seniorityMapId = value;
-                this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+        const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
 
-                this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers).then((value) => {
-                    this._lootLogMap = value;
+        this._lootScoreDailyDumpChannel.fetchMessages({ limit: 100 })
+            .then(messages => this._lootScoreDailyDumpChannel.bulkDelete(messages));
 
-                    this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
+        this._lootScoreDailyDumpChannel.send(new HeadingEmbed('Member', 'Attendance', 'Seniority'));
 
-                    const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
+        for (let entry of sortedMap) {
+            if (entry[0].roles.array().find((x) => x.id === this._appSettings['leadership'] || x.id === this._appSettings['raider'] || x.id === this._appSettings['applicant'])) {
+                this._lootScoreDailyDumpChannel.send(new SeniorityEmbed(sortedMap, entry, this._appSettings));
+            }
+        }
 
-                    this._lootScoreDailyDumpChannel.fetchMessages({ limit: 100 })
-                        .then(messages => this._lootScoreDailyDumpChannel.bulkDelete(messages));
-
-                    this._lootScoreDailyDumpChannel.send(new HeadingEmbed('Member', 'Attendance', 'Seniority'));
-
-                    for (let entry of sortedMap) {
-                        if (entry[0].roles.array().find((x) => x.id === this._appSettings['leadership'] || x.id === this._appSettings['raider'] || x.id === this._appSettings['applicant'])) {
-                            this._lootScoreDailyDumpChannel.send(new SeniorityEmbed(sortedMap, entry, this._appSettings));
-                        }
-                    }
-                });
-            });
-        });
-
+        this.backUpValues();
     }
 
     public editMessage(message: Message, channel: TextChannel, query: string) {
@@ -914,6 +900,16 @@ export class RaidBot {
             this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
         }
 
+        this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
+    }
+
+    public async refreshDataMaps(): Promise<void> {
+        this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+        let attendanceMapId = await this._lootScoreService.getAttendanceMap(this._attendanceLogDataChannel);
+        this._attendanceMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, attendanceMapId);
+        let seniorityMapId = await this._lootScoreService.getSeniorityMap(this._seniorityLogDataChannel);
+        this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
+        this._lootLogMap = await this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers);
         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
     }
 
