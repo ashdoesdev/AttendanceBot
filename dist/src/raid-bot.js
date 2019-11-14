@@ -60,6 +60,7 @@ class RaidBot {
                 this.backUpValues();
             }, null, true, 'America/Los_Angeles');
             job.start();
+            this.refreshDataMaps();
         });
         this._client.on('message', (message) => __awaiter(this, void 0, void 0, function* () {
             if (message.content === '/help' && this.canUseCommands(message) && this.isAdminChannel(message)) {
@@ -681,6 +682,7 @@ class RaidBot {
                     sentMessage.channel.awaitMessages(filter, { maxMatches: 1, time: 1800000, errors: ['time'] }).then((collected) => {
                         matchingMessages[0].edit(Array.from(collected.entries())[0][1].cleanContent).then(() => {
                             message.channel.send('Message update successful.');
+                            this.refreshDataMaps();
                         }).catch((err) => {
                             console.log(err);
                             message.channel.send('Message update failed. Try again.');

@@ -77,6 +77,8 @@ export class RaidBot {
             }, null, true, 'America/Los_Angeles');
 
             job.start();
+
+            this.refreshDataMaps();
         });
 
         this._client.on('message', async message => {
@@ -826,6 +828,7 @@ export class RaidBot {
                     (sentMessage as Message).channel.awaitMessages(filter, { maxMatches: 1, time: 1800000, errors: ['time'] }).then((collected) => {
                         matchingMessages[0].edit(Array.from(collected.entries())[0][1].cleanContent).then(() => {
                             message.channel.send('Message update successful.');
+                            this.refreshDataMaps();
                         }).catch((err) => {
                             console.log(err);
                             message.channel.send('Message update failed. Try again.');
