@@ -62,7 +62,7 @@ export class AttendanceService {
         for (let entry of seniorityMap) {
             let member = this._memberMatcher.matchMemberFromId(guildMembers, entry[0]);
 
-            if (member) {
+            if (member && member instanceof GuildMember) {
                 if (this.memberShouldBeTracked(member, appSettings)) {
                     seniorityMap.set(entry[0], seniorityMap.get(entry[0]) + 1);
                 } else {

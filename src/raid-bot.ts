@@ -50,6 +50,7 @@ export class RaidBot {
     private _lootLogMap: Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>;
 
     private _guildMembers: GuildMember[];
+    private _unfoundMembers: MinimalMember[];
     private _appSettings;
 
     public start(appSettings): void {
@@ -92,6 +93,7 @@ export class RaidBot {
             
             if (message.content === '/refreshmembers' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                this._unfoundMembers = this.getUnfoundMembers(this._lootLogMap);
                 message.channel.send('Refreshed guild members.');
             }
 
@@ -128,6 +130,7 @@ export class RaidBot {
                                 if (collected.first().emoji.name === '✅') {
                                     message.channel.send('*Saving attendance . . .*');
                                     this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                                    this._unfoundMembers = this.getUnfoundMembers(this._lootLogMap);
 
                                     this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel, this._guildMembers, this._appSettings, true, this.updateAttendanceChart.bind(this));
                                 } else {
@@ -338,7 +341,10 @@ export class RaidBot {
                 else if (message.content.startsWith('/report "')) {
                     let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
 
-                    let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
+                    let memberArray = new Array<GuildMember | MinimalMember>();
+                    memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
+
+                    let member = this._memberMatcher.matchMemberFromName(memberArray, memberName);
 
                     if (member) {
                         let itemsLooted = await this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers);
@@ -465,7 +471,7 @@ export class RaidBot {
                     }
 
                     let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
-                    member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
+                    member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName) as GuildMember;
                     query = message.content.replace('/give ', '').replace('/g', '').replace(memberName, '').replace(/"/g, '').replace('--offspec', '').replace('--existing', '').replace('<', '').trim();
                 }
 
@@ -695,7 +701,10 @@ export class RaidBot {
         showInactiveOnly: boolean,
         showAll: boolean): Promise<void> {
 
-        let membersWhoHave = await this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
+        let memberArray = new Array<GuildMember | MinimalMember>();
+        memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
+
+        let membersWhoHave = await this._lootLogService.getHasLooted(item, this._lootLogDataChannel, memberArray);
 
         if (membersWhoHave.length > 0) {
             let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
@@ -750,7 +759,11 @@ export class RaidBot {
         activeMembers: string[],
         showInactiveOnly: boolean,
         showAll: boolean): Promise<void> {
-        let membersWhoNeed = await this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers)
+
+        let memberArray = new Array<GuildMember | MinimalMember>();
+        memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
+
+        let membersWhoNeed = await this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, memberArray)
 
         if (membersWhoNeed.length > 0) {
             let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
@@ -914,6 +927,7 @@ export class RaidBot {
         this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
         this._lootLogMap = await this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers);
         this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
+        this._unfoundMembers = this.getUnfoundMembers(this._lootLogMap);
     }
 
     public async ensureHasDataMaps(): Promise<void> {
@@ -938,6 +952,10 @@ export class RaidBot {
         if (!this._lootScoreMap) {
             this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
         }
+
+        if (!this._unfoundMembers) {
+            this._unfoundMembers = this.getUnfoundMembers(this._lootLogMap);
+        }
     }
 
     public chunk(arr, chunkSize) {
@@ -945,6 +963,18 @@ export class RaidBot {
         for (var i = 0, len = arr.length; i < len; i += chunkSize)
             R.push(arr.slice(i, i + chunkSize));
         return R;
+    }
+
+    private getUnfoundMembers(lootLogMap: Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>): MinimalMember[] {
+        let unfoundMembers = new Array<MinimalMember>();
+
+        for (let entry of Array.from(lootLogMap)) {
+            if (entry[0] instanceof MinimalMember) {
+                unfoundMembers.push(entry[0] as MinimalMember);
+            }
+        }
+
+        return unfoundMembers;
     }
 }
 

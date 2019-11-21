@@ -1,4 +1,5 @@
 import { GuildMember } from "discord.js";
+import { MinimalMember } from "../Models/loot-score.model";
 
 export class MemberMatchHelper {
     public replaceMemberIdWithMember(members: GuildMember[], map: Map<any, any>): Map<GuildMember, any> {
@@ -14,11 +15,11 @@ export class MemberMatchHelper {
         return memberMap;
     }
 
-    public matchMemberFromId(members: GuildMember[], memberId: string): GuildMember {
+    public matchMemberFromId(members: Array<GuildMember | MinimalMember>, memberId: string): GuildMember | MinimalMember {
         return members.find((x) => x.id === memberId);
     }
 
-    public matchMemberFromName(members: GuildMember[], displayName: string): GuildMember {
+    public matchMemberFromName(members: Array<GuildMember | MinimalMember>, displayName: string): GuildMember | MinimalMember {
         return members.find((x) => x.displayName.toLowerCase() === displayName.toLowerCase());
     }
 }

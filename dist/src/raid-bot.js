@@ -19,6 +19,7 @@ const public_attendance_embed_1 = require("./Embeds/public-attendance.embed");
 const map_sort_helper_1 = require("./Helpers/map-sort.helper");
 const member_match_helper_1 = require("./Helpers/member-match.helper");
 const messages_helper_1 = require("./Helpers/messages.helper");
+const loot_score_model_1 = require("./Models/loot-score.model");
 const attendance_service_1 = require("./Services/attendance.service");
 const loot_log_service_1 = require("./Services/loot-log.service");
 const loot_score_service_1 = require("./Services/loot-score.service");
@@ -70,6 +71,7 @@ class RaidBot {
             }
             if (message.content === '/refreshmembers' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                this._unfoundMembers = this.getUnfoundMembers(this._lootLogMap);
                 message.channel.send('Refreshed guild members.');
             }
             if ((message.content === '/s' || message.content === '/start') && this.canUseCommands(message) && this.isFeedChannel(message)) {
@@ -104,6 +106,7 @@ class RaidBot {
                             if (collected.first().emoji.name === '✅') {
                                 message.channel.send('*Saving attendance . . .*');
                                 this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+                                this._unfoundMembers = this.getUnfoundMembers(this._lootLogMap);
                                 this._attendanceService.endLogging(message, this._seniorityLogDataChannel, this._attendanceLogDataChannel, this._attendanceLogChannel, this._guildMembers, this._appSettings, true, this.updateAttendanceChart.bind(this));
                             }
                             else {
@@ -295,7 +298,9 @@ class RaidBot {
                 }
                 else if (message.content.startsWith('/report "')) {
                     let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
-                    let member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName);
+                    let memberArray = new Array();
+                    memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
+                    let member = this._memberMatcher.matchMemberFromName(memberArray, memberName);
                     if (member) {
                         let itemsLooted = yield this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers);
                         const filteredMap = this._mapSort.filterMembers(this._lootScoreMap, [member.id]);
@@ -582,7 +587,9 @@ class RaidBot {
     }
     sendHasEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message, activeMembers, showInactiveOnly, showAll) {
         return __awaiter(this, void 0, void 0, function* () {
-            let membersWhoHave = yield this._lootLogService.getHasLooted(item, this._lootLogDataChannel, this._guildMembers);
+            let memberArray = new Array();
+            memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
+            let membersWhoHave = yield this._lootLogService.getHasLooted(item, this._lootLogDataChannel, memberArray);
             if (membersWhoHave.length > 0) {
                 let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
                 let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
@@ -617,7 +624,9 @@ class RaidBot {
     }
     sendEligibleEmbed(item, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate, membersOfClass, orderString, classString, message, activeMembers, showInactiveOnly, showAll) {
         return __awaiter(this, void 0, void 0, function* () {
-            let membersWhoNeed = yield this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, this._guildMembers);
+            let memberArray = new Array();
+            memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
+            let membersWhoNeed = yield this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, memberArray);
             if (membersWhoNeed.length > 0) {
                 let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
                 let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
@@ -758,6 +767,7 @@ class RaidBot {
             this._seniorityMap = this._memberMatcher.replaceMemberIdWithMember(this._guildMembers, seniorityMapId);
             this._lootLogMap = yield this._lootLogService.createLootLogMap(this._lootLogDataChannel, this._guildMembers);
             this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
+            this._unfoundMembers = this.getUnfoundMembers(this._lootLogMap);
         });
     }
     ensureHasDataMaps() {
@@ -779,6 +789,9 @@ class RaidBot {
             if (!this._lootScoreMap) {
                 this._lootScoreMap = this._lootScoreService.createLootScoreMap(this._attendanceMap, this._seniorityMap, this._lootLogMap);
             }
+            if (!this._unfoundMembers) {
+                this._unfoundMembers = this.getUnfoundMembers(this._lootLogMap);
+            }
         });
     }
     chunk(arr, chunkSize) {
@@ -786,6 +799,15 @@ class RaidBot {
         for (var i = 0, len = arr.length; i < len; i += chunkSize)
             R.push(arr.slice(i, i + chunkSize));
         return R;
+    }
+    getUnfoundMembers(lootLogMap) {
+        let unfoundMembers = new Array();
+        for (let entry of Array.from(lootLogMap)) {
+            if (entry[0] instanceof loot_score_model_1.MinimalMember) {
+                unfoundMembers.push(entry[0]);
+            }
+        }
+        return unfoundMembers;
     }
 }
 exports.RaidBot = RaidBot;

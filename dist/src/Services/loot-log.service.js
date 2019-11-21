@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const discord_js_1 = require("discord.js");
 const item_score_model_1 = require("../Models/item-score.model");
 const loot_log_embed_1 = require("../Embeds/loot-log.embed");
 const loot_score_model_1 = require("../Models/loot-score.model");
@@ -80,16 +81,18 @@ class LootLogService {
                 }
             });
             members.forEach((member) => {
-                if (!memberLootHistory.find((x) => x === member.id)) {
-                    let roles = new Array();
-                    for (let role of member.roles.array()) {
-                        roles.push(role.name.toLowerCase());
-                    }
-                    if (item) {
-                        if (item.eligibleClasses) {
-                            if (roles.filter((x) => item.eligibleClasses.map(item => item.toLowerCase()).includes(x)).length > 0) {
-                                if (member) {
-                                    eligibleMembers.push(member.id);
+                if (member instanceof discord_js_1.GuildMember) {
+                    if (!memberLootHistory.find((x) => x === member.id)) {
+                        let roles = new Array();
+                        for (let role of member.roles.array()) {
+                            roles.push(role.name.toLowerCase());
+                        }
+                        if (item) {
+                            if (item.eligibleClasses) {
+                                if (roles.filter((x) => item.eligibleClasses.map(item => item.toLowerCase()).includes(x)).length > 0) {
+                                    if (member) {
+                                        eligibleMembers.push(member.id);
+                                    }
                                 }
                             }
                         }
@@ -144,11 +147,11 @@ class LootLogService {
                             minimalMember.displayName = lootLogEntry.member.displayName;
                             minimalMember.id = lootLogEntry.member.id;
                             const getMapValue = (m, key) => {
-                                return m.get(Array.from(m.keys()).find((k) => JSON.stringify(k) === JSON.stringify(key)));
+                                return m.get(Array.from(m.keys()).filter((entry) => !(entry instanceof discord_js_1.GuildMember)).find((k) => JSON.stringify(k) === JSON.stringify(key)));
                             };
                             entries = getMapValue(lootLogMap, minimalMember);
                             if (entries) {
-                                const getMapKey = Array.from(lootLogMap.keys()).find((key) => JSON.stringify(key) === JSON.stringify(minimalMember));
+                                const getMapKey = Array.from(lootLogMap.keys()).filter((entry) => !(entry instanceof discord_js_1.GuildMember)).find((key) => JSON.stringify(key) === JSON.stringify(minimalMember));
                                 existingKey = getMapKey;
                             }
                         }
@@ -180,7 +183,15 @@ class LootLogService {
     getLootHistory(member, lootLogChannel, members) {
         return __awaiter(this, void 0, void 0, function* () {
             let lootLogMap = yield this.createLootLogMap(lootLogChannel, members);
-            return lootLogMap.get(member);
+            if (member instanceof discord_js_1.GuildMember) {
+                return lootLogMap.get(member);
+            }
+            else {
+                const getMapValue = (m, key) => {
+                    return m.get(Array.from(m.keys()).filter((entry) => !(entry instanceof discord_js_1.GuildMember)).find((k) => JSON.stringify(k) === JSON.stringify(key)));
+                };
+                return getMapValue(lootLogMap, member);
+            }
         });
     }
     convertStringPipesToArray(string) {

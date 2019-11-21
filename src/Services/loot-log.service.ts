@@ -64,7 +64,7 @@ export class LootLogService {
         return scores;
     }
 
-    public async getEligibleMembers(item: ItemScore, lootLogChannel: TextChannel, members: GuildMember[]): Promise<string[]> {
+    public async getEligibleMembers(item: ItemScore, lootLogChannel: TextChannel, members: Array<GuildMember | MinimalMember>): Promise<string[]> {
         let lootLogMap = await this.createLootLogMap(lootLogChannel, members);
         let memberLootHistory = new Array<string>();
         let eligibleMembers = new Array<string>();
@@ -82,18 +82,20 @@ export class LootLogService {
         });
 
         members.forEach((member) => {
-            if (!memberLootHistory.find((x) => x === member.id)) {
-                let roles = new Array<string>();
+            if (member instanceof GuildMember) {
+                if (!memberLootHistory.find((x) => x === member.id)) {
+                    let roles = new Array<string>();
 
-                for (let role of member.roles.array()) {
-                    roles.push(role.name.toLowerCase());
-                }
+                    for (let role of member.roles.array()) {
+                        roles.push(role.name.toLowerCase());
+                    }
 
-                if (item) {
-                    if (item.eligibleClasses) {
-                        if (roles.filter((x) => item.eligibleClasses.map(item => item.toLowerCase()).includes(x)).length > 0) {
-                            if (member) {
-                                eligibleMembers.push(member.id);
+                    if (item) {
+                        if (item.eligibleClasses) {
+                            if (roles.filter((x) => item.eligibleClasses.map(item => item.toLowerCase()).includes(x)).length > 0) {
+                                if (member) {
+                                    eligibleMembers.push(member.id);
+                                }
                             }
                         }
                     }
@@ -103,8 +105,8 @@ export class LootLogService {
 
         return eligibleMembers;
     }
-    
-    public async getHasLooted(item: ItemScore, lootLogChannel: TextChannel, members: GuildMember[]): Promise<string[]> {
+
+    public async getHasLooted(item: ItemScore, lootLogChannel: TextChannel, members: Array<GuildMember | MinimalMember>): Promise<string[]> {
         let lootLogMap = await this.createLootLogMap(lootLogChannel, members);
         let memberLootHistory = new Array<string>();
         let hasLooted = new Array<string>();
@@ -132,7 +134,7 @@ export class LootLogService {
         return hasLooted;
     }
 
-    public async createLootLogMap(lootLogChannel: TextChannel, members: GuildMember[]): Promise<Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>> {
+    public async createLootLogMap(lootLogChannel: TextChannel, members: Array<GuildMember | MinimalMember>): Promise<Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>> {
         let messageEntries = await this._messages.getMessages(lootLogChannel);
         let lootLogMap = new Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>();
 
@@ -140,7 +142,7 @@ export class LootLogService {
             let cleanString = entry.content.replace(/`/g, '');
             let lootScoreData: LootScoreData<AwardedItem> = JSON.parse(cleanString);
             let lootLogEntry: AwardedItem = lootScoreData.value;
-            let member: GuildMember;
+            let member: GuildMember | MinimalMember;
             let minimalMember = new MinimalMember();
             let entries: LootScoreData<AwardedItem>[];
             let existingKey: MinimalMember;
@@ -154,13 +156,13 @@ export class LootLogService {
                         minimalMember.id = lootLogEntry.member.id;
 
                         const getMapValue = (m, key) => {
-                            return m.get(Array.from(m.keys()).find((k) => JSON.stringify(k) === JSON.stringify(key)));
+                            return m.get(Array.from(m.keys()).filter((entry) => !(entry instanceof GuildMember)).find((k) => JSON.stringify(k) === JSON.stringify(key)));
                         }
 
                         entries = getMapValue(lootLogMap, minimalMember);
 
                         if (entries) {
-                            const getMapKey = Array.from(lootLogMap.keys()).find((key) => JSON.stringify(key) === JSON.stringify(minimalMember));
+                            const getMapKey = Array.from(lootLogMap.keys()).filter((entry) => !(entry instanceof GuildMember)).find((key) => JSON.stringify(key) === JSON.stringify(minimalMember));
                             existingKey = getMapKey as MinimalMember;
                         }
                     } else {
@@ -187,9 +189,18 @@ export class LootLogService {
         return lootLogMap;
     }
 
-    public async getLootHistory(member: GuildMember, lootLogChannel: TextChannel, members: GuildMember[]): Promise<LootScoreData<AwardedItem>[]> {
+    public async getLootHistory(member: GuildMember | MinimalMember, lootLogChannel: TextChannel, members: GuildMember[]): Promise<LootScoreData<AwardedItem>[]> {
         let lootLogMap = await this.createLootLogMap(lootLogChannel, members);
-        return lootLogMap.get(member);
+
+        if (member instanceof GuildMember) {
+            return lootLogMap.get(member);
+        } else {
+            const getMapValue = (m, key) => {
+                return m.get(Array.from(m.keys()).filter((entry) => !(entry instanceof GuildMember)).find((k) => JSON.stringify(k) === JSON.stringify(key)));
+            }
+
+            return getMapValue(lootLogMap, member);
+        }
     }
 
     private convertStringPipesToArray(string: string): string[] {

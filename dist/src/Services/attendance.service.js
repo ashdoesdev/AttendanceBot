@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const discord_js_1 = require("discord.js");
 const rxjs_1 = require("rxjs");
 const attendance_embed_1 = require("../Embeds/attendance.embed");
 const loot_score_data_helper_1 = require("../Helpers/loot-score-data.helper");
@@ -61,7 +62,7 @@ class AttendanceService {
             let seniorityMap = yield this._lootScoreService.getSeniorityMap(seniorityLogChannel);
             for (let entry of seniorityMap) {
                 let member = this._memberMatcher.matchMemberFromId(guildMembers, entry[0]);
-                if (member) {
+                if (member && member instanceof discord_js_1.GuildMember) {
                     if (this.memberShouldBeTracked(member, appSettings)) {
                         seniorityMap.set(entry[0], seniorityMap.get(entry[0]) + 1);
                     }
