@@ -140,19 +140,47 @@ export class LootLogService {
             let cleanString = entry.content.replace(/`/g, '');
             let lootScoreData: LootScoreData<AwardedItem> = JSON.parse(cleanString);
             let lootLogEntry: AwardedItem = lootScoreData.value;
-            let member;
-            let entries;
+            let member: GuildMember;
+            let minimalMember = new MinimalMember();
+            let entries: LootScoreData<AwardedItem>[];
+            let existingKey: MinimalMember;
+
             if (lootLogEntry.member) {
                 if (lootLogEntry.member.id) {
-                    member = this._memberMatcher.matchMemberFromId(members, lootLogEntry.member.id) || lootLogEntry.member;
-                    entries = lootLogMap.get(member);
+                    member = this._memberMatcher.matchMemberFromId(members, lootLogEntry.member.id);
+
+                    if (!member) {
+                        minimalMember.displayName = lootLogEntry.member.displayName;
+                        minimalMember.id = lootLogEntry.member.id;
+
+                        const getMapValue = (m, key) => {
+                            return m.get(Array.from(m.keys()).find((k) => JSON.stringify(k) === JSON.stringify(key)));
+                        }
+
+                        entries = getMapValue(lootLogMap, minimalMember);
+
+                        if (entries) {
+                            const getMapKey = Array.from(lootLogMap.keys()).find((key) => JSON.stringify(key) === JSON.stringify(minimalMember));
+                            existingKey = getMapKey as MinimalMember;
+                        }
+                    } else {
+                        entries = lootLogMap.get(member);
+                    }
                 }
             }
 
             if (entries) {
-                lootLogMap.set(member, entries.concat(lootScoreData));
+                if (member) {
+                    lootLogMap.set(member, entries.concat(lootScoreData));
+                } else if (minimalMember) {
+                    lootLogMap.set(existingKey, entries.concat(lootScoreData));
+                }
             } else {
-                lootLogMap.set(member, [lootScoreData]);
+                if (member) {
+                    lootLogMap.set(member, [lootScoreData]);
+                } else if (minimalMember) {
+                    lootLogMap.set(minimalMember, [lootScoreData]);
+                }
             }
         }
 
