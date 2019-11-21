@@ -1,8 +1,8 @@
 ﻿import { GuildMember, RichEmbed } from "discord.js";
-import { MemberScore } from "../Models/loot-score.model";
+import { MemberScore, MinimalMember } from "../Models/loot-score.model";
 
 export class StatsEmbed extends RichEmbed {
-    constructor(private lootScore: [GuildMember, MemberScore]) {
+    constructor(private lootScore: [GuildMember | MinimalMember, MemberScore]) {
         super();
 
         this.setColor('#60b5bc');

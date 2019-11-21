@@ -6,12 +6,12 @@ import { HeadingEmbed } from './Embeds/heading.embed';
 import { HelpEmbed } from './Embeds/help.embed';
 import { ItemsLootedEmbed } from './Embeds/items-looted.embed';
 import { MinimalVisualizationEmbed } from './Embeds/minimal-visualization.embed';
-import { SeniorityEmbed } from './Embeds/seniority.embed';
+import { PublicAttendanceEmbed } from './Embeds/public-attendance.embed';
 import { MapSortHelper } from './Helpers/map-sort.helper';
 import { MemberMatchHelper } from './Helpers/member-match.helper';
 import { MessagesHelper } from './Helpers/messages.helper';
 import { ItemScore, AwardedItem } from './Models/item-score.model';
-import { MemberScore, LootScoreData, LootScore } from './Models/loot-score.model';
+import { MemberScore, LootScoreData, LootScore, MinimalMember } from './Models/loot-score.model';
 import { AttendanceService } from './Services/attendance.service';
 import { LootLogService } from './Services/loot-log.service';
 import { LootScoreService } from './Services/loot-score.service';
@@ -46,8 +46,8 @@ export class RaidBot {
 
     private _seniorityMap: Map<GuildMember, number>;
     private _attendanceMap: Map<GuildMember, number[]>;
-    private _lootScoreMap: Map<GuildMember, MemberScore>;
-    private _lootLogMap: Map<GuildMember, LootScoreData<AwardedItem>[]>;
+    private _lootScoreMap: Map<GuildMember | MinimalMember, MemberScore>;
+    private _lootLogMap: Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>;
 
     private _guildMembers: GuildMember[];
     private _appSettings;
@@ -798,11 +798,11 @@ export class RaidBot {
         this._lootScoreDailyDumpChannel.fetchMessages({ limit: 100 })
             .then(messages => this._lootScoreDailyDumpChannel.bulkDelete(messages));
 
-        this._lootScoreDailyDumpChannel.send(new HeadingEmbed('Member', 'Attendance', 'Seniority'));
-
         for (let entry of sortedMap) {
-            if (entry[0].roles.array().find((x) => x.id === this._appSettings['leadership'] || x.id === this._appSettings['raider'] || x.id === this._appSettings['applicant'])) {
-                this._lootScoreDailyDumpChannel.send(new SeniorityEmbed(sortedMap, entry, this._appSettings));
+            if (entry[0] instanceof GuildMember) {
+                if (entry[0].roles.array().find((x) => x.id === this._appSettings['leadership'] || x.id === this._appSettings['raider'] || x.id === this._appSettings['applicant'])) {
+                    this._lootScoreDailyDumpChannel.send(new PublicAttendanceEmbed(entry, this._appSettings));
+                }
             }
         }
 

@@ -12,11 +12,10 @@ const csv = require("csv-parser");
 const discord_js_1 = require("discord.js");
 const fs = require("fs");
 const stringSimilarity = require("string-similarity");
-const heading_embed_1 = require("./Embeds/heading.embed");
 const help_embed_1 = require("./Embeds/help.embed");
 const items_looted_embed_1 = require("./Embeds/items-looted.embed");
 const minimal_visualization_embed_1 = require("./Embeds/minimal-visualization.embed");
-const seniority_embed_1 = require("./Embeds/seniority.embed");
+const public_attendance_embed_1 = require("./Embeds/public-attendance.embed");
 const map_sort_helper_1 = require("./Helpers/map-sort.helper");
 const member_match_helper_1 = require("./Helpers/member-match.helper");
 const messages_helper_1 = require("./Helpers/messages.helper");
@@ -657,10 +656,11 @@ class RaidBot {
             const sortedMap = this._mapSort.sortByName(this._lootScoreMap);
             this._lootScoreDailyDumpChannel.fetchMessages({ limit: 100 })
                 .then(messages => this._lootScoreDailyDumpChannel.bulkDelete(messages));
-            this._lootScoreDailyDumpChannel.send(new heading_embed_1.HeadingEmbed('Member', 'Attendance', 'Seniority'));
             for (let entry of sortedMap) {
-                if (entry[0].roles.array().find((x) => x.id === this._appSettings['leadership'] || x.id === this._appSettings['raider'] || x.id === this._appSettings['applicant'])) {
-                    this._lootScoreDailyDumpChannel.send(new seniority_embed_1.SeniorityEmbed(sortedMap, entry, this._appSettings));
+                if (entry[0] instanceof discord_js_1.GuildMember) {
+                    if (entry[0].roles.array().find((x) => x.id === this._appSettings['leadership'] || x.id === this._appSettings['raider'] || x.id === this._appSettings['applicant'])) {
+                        this._lootScoreDailyDumpChannel.send(new public_attendance_embed_1.PublicAttendanceEmbed(entry, this._appSettings));
+                    }
                 }
             }
             this.backUpValues();

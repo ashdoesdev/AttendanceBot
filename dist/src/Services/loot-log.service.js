@@ -137,7 +137,7 @@ class LootLogService {
                 let entries;
                 if (lootLogEntry.member) {
                     if (lootLogEntry.member.id) {
-                        member = this._memberMatcher.matchMemberFromId(members, lootLogEntry.member.id);
+                        member = this._memberMatcher.matchMemberFromId(members, lootLogEntry.member.id) || lootLogEntry.member;
                         entries = lootLogMap.get(member);
                     }
                 }

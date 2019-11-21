@@ -132,9 +132,9 @@ export class LootLogService {
         return hasLooted;
     }
 
-    public async createLootLogMap(lootLogChannel: TextChannel, members: GuildMember[]): Promise<Map<GuildMember, LootScoreData<AwardedItem>[]>> {
+    public async createLootLogMap(lootLogChannel: TextChannel, members: GuildMember[]): Promise<Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>> {
         let messageEntries = await this._messages.getMessages(lootLogChannel);
-        let lootLogMap = new Map<GuildMember, LootScoreData<AwardedItem>[]>();
+        let lootLogMap = new Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>();
 
         for (let entry of messageEntries) {
             let cleanString = entry.content.replace(/`/g, '');
@@ -144,7 +144,7 @@ export class LootLogService {
             let entries;
             if (lootLogEntry.member) {
                 if (lootLogEntry.member.id) {
-                    member = this._memberMatcher.matchMemberFromId(members, lootLogEntry.member.id);
+                    member = this._memberMatcher.matchMemberFromId(members, lootLogEntry.member.id) || lootLogEntry.member;
                     entries = lootLogMap.get(member);
                 }
             }

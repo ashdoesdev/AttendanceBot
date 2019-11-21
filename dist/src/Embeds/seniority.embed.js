@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
 const embed_helper_1 = require("../Helpers/embed.helper");
 class SeniorityEmbed extends discord_js_1.RichEmbed {
-    constructor(lootScoreMap, memberEntry, appSettings) {
+    constructor(memberEntry, appSettings) {
         super();
         this._embedHelper = new embed_helper_1.EmbedHelper();
         this._appSettings = appSettings;

@@ -1,9 +1,9 @@
 ﻿import { RichEmbed, GuildMember } from "discord.js";
 import { TimestampHelper } from "../Helpers/timestamp.helper";
-import { MemberScore } from "../Models/loot-score.model";
+import { MemberScore, MinimalMember } from "../Models/loot-score.model";
 
 export class MinimalVisualizationEmbed extends RichEmbed {
-    constructor(private lootScoreMap: Map<GuildMember, MemberScore>, title: string, first?: boolean, last?: boolean) {
+    constructor(private lootScoreMap: Map<GuildMember | MinimalMember, MemberScore>, title: string, first?: boolean, last?: boolean) {
         super();
 
         let memberLines: string = '';

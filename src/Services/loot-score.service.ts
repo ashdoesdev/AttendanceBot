@@ -1,7 +1,7 @@
 import { GuildMember, Message, TextChannel } from "discord.js";
 import { MapSortHelper } from "../Helpers/map-sort.helper";
 import { ItemScore, AwardedItem } from "../Models/item-score.model";
-import { LootScoreData, MemberScore } from "../Models/loot-score.model";
+import { LootScoreData, MemberScore, MinimalMember } from "../Models/loot-score.model";
 import { MessagesHelper } from "../Helpers/messages.helper";
 import { TimestampHelper } from "../Helpers/timestamp.helper";
 
@@ -60,8 +60,8 @@ export class LootScoreService {
         return seniorityMap;
     }
 
-    public createLootScoreMap(attendanceMap: Map<GuildMember, number[]>, seniorityMap: Map<GuildMember, number>, lootLogMap: Map<GuildMember, LootScoreData<AwardedItem>[]>): Map<GuildMember, MemberScore> {
-        let lootScoreMap = new Map<GuildMember, MemberScore>();
+    public createLootScoreMap(attendanceMap: Map<GuildMember, number[]>, seniorityMap: Map<GuildMember, number>, lootLogMap: Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>): Map<GuildMember | MinimalMember, MemberScore> {
+        let lootScoreMap = new Map<GuildMember | MinimalMember, MemberScore>();
 
         for (let entry of attendanceMap) {
             let memberScore = lootScoreMap.get(entry[0]);

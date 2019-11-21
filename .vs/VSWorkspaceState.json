@@ -11,6 +11,6 @@
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\app-settings.prod.json",
+  "SelectedNode": "\\src\\Embeds\\stats.embed.ts",
   "PreviewInSolutionExplorer": false
 }
