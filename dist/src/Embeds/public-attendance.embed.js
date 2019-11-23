@@ -26,7 +26,11 @@ class PublicAttendanceEmbed extends discord_js_1.RichEmbed {
     addMember(member) {
         this.setColor('#60b5bc');
         this.setAuthor(member[0].displayName, member[0].user.avatarURL);
-        this.setDescription(member[0].roles.array().filter((x) => x.id !== this._appSettings['everyone']).join(' '));
+        this.setDescription(member[0].roles.array().filter((x) => x.id !== this._appSettings['everyone'] &&
+            x.id !== this._appSettings['announcements'] &&
+            x.id !== this._appSettings['bossman'] &&
+            x.id !== this._appSettings['botadmin'] &&
+            x.id !== this._appSettings['discordadmin']).join(' '));
         this.addField(`**${member[1].attendancePercentage || 0}%** attendance`, this._embedHelper.getBar(member[1].attendancePercentage || 0), true);
         this.addField(`**${member[1].seniorityPercentage || 0}%** seniority`, this._embedHelper.getBar(member[1].seniorityPercentage || 0), true);
     }

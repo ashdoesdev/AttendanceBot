@@ -29,7 +29,12 @@ export class PublicAttendanceEmbed extends RichEmbed {
     private addMember(member: [GuildMember | MinimalMember, MemberScore]): void {
         this.setColor('#60b5bc');
         this.setAuthor(member[0].displayName, (member[0] as GuildMember).user.avatarURL);
-        this.setDescription((member[0] as GuildMember).roles.array().filter((x) => x.id !== this._appSettings['everyone']).join(' '));
+        this.setDescription((member[0] as GuildMember).roles.array().filter((x) =>
+            x.id !== this._appSettings['everyone'] &&
+            x.id !== this._appSettings['announcements'] &&
+            x.id !== this._appSettings['bossman'] &&
+            x.id !== this._appSettings['botadmin'] &&
+            x.id !== this._appSettings['discordadmin']).join(' '));
         this.addField(`**${member[1].attendancePercentage || 0}%** attendance`, this._embedHelper.getBar(member[1].attendancePercentage || 0), true);
         this.addField(`**${member[1].seniorityPercentage || 0}%** seniority`, this._embedHelper.getBar(member[1].seniorityPercentage || 0), true);
     }
