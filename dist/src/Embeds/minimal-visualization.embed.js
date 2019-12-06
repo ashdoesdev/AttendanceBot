@@ -3,9 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
 const loot_score_service_1 = require("../Services/loot-score.service");
 class MinimalVisualizationEmbed extends discord_js_1.RichEmbed {
-    constructor(lootLogMap, lootScoreMap, title, first, last, item) {
+    constructor(lootScoreMap, title, first, last, item) {
         super();
-        this.lootLogMap = lootLogMap;
         this.lootScoreMap = lootScoreMap;
         this._lootScoreService = new loot_score_service_1.LootScoreService();
         let memberLines = '';
@@ -32,13 +31,7 @@ class MinimalVisualizationEmbed extends discord_js_1.RichEmbed {
             }
             let main = member[1].itemScoreTotal.toString().slice(0, 4).padEnd(4, ' ');
             let offspec = member[1].itemScoreOffspecTotal.toString().slice(0, 4).padEnd(4, ' ');
-            let lastLootDate;
-            if (item) {
-                lastLootDate = this._lootScoreService.getLastLootDateForItem(lootLogMap, item, member[0]).padEnd(9, ' ');
-            }
-            else {
-                lastLootDate = member[1].lastLootDate.padEnd(9, ' ');
-            }
+            let lastLootDate = member[1].lastLootDate.padEnd(9, ' ');
             memberLines += `║ ${name} ║ ${attendance} ║ ${seniority} ║ ${main} ║ ${offspec} ║ ${lastLootDate} ║\n`;
         }
         this.setColor('#60b5bc');

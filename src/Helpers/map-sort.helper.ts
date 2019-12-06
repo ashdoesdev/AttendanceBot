@@ -25,7 +25,14 @@ export class MapSortHelper {
         array.sort((a, b) => {
             var dateA = new Date(a[1].lastLootDate).getTime();
             var dateB = new Date(b[1].lastLootDate).getTime();
-            return dateA - dateB;
+
+            if (a[1].lastLootDate === '---') {
+                return -1;
+            } else if (b[1].lastLootDate === '---') {
+                return 1;
+            } else {
+                return dateA - dateB;
+            }
         });
         return new Map(array);
     }

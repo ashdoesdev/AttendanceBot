@@ -6,7 +6,7 @@ import { LootScoreService } from "../Services/loot-score.service";
 export class MinimalVisualizationEmbed extends RichEmbed {
     private _lootScoreService: LootScoreService = new LootScoreService();
 
-    constructor(private lootLogMap: Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>, private lootScoreMap: Map<GuildMember | MinimalMember, MemberScore>, title: string, first?: boolean, last?: boolean, item?: ItemScore) {
+    constructor(private lootScoreMap: Map<GuildMember | MinimalMember, MemberScore>, title: string, first?: boolean, last?: boolean, item?: ItemScore) {
         super();
 
         let memberLines: string = '';
@@ -38,13 +38,7 @@ export class MinimalVisualizationEmbed extends RichEmbed {
 
             let main = member[1].itemScoreTotal.toString().slice(0, 4).padEnd(4, ' ');
             let offspec = member[1].itemScoreOffspecTotal.toString().slice(0, 4).padEnd(4, ' ');
-            let lastLootDate;
-
-            if (item) {
-                lastLootDate = this._lootScoreService.getLastLootDateForItem(lootLogMap, item, member[0]).padEnd(9, ' ');
-            } else {
-                lastLootDate = member[1].lastLootDate.padEnd(9, ' ');
-            }
+            let lastLootDate = member[1].lastLootDate.padEnd(9, ' ');
 
             memberLines += `║ ${name} ║ ${attendance} ║ ${seniority} ║ ${main} ║ ${offspec} ║ ${lastLootDate} ║\n`;
         }

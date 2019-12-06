@@ -354,7 +354,7 @@ export class RaidBot {
                         if (Array.from(filteredMap).length > 0) {
                             let title = `Single Member Overview`;
 
-                            message.channel.send(new MinimalVisualizationEmbed(this._lootLogMap, filteredMap, title, true, true));
+                            message.channel.send(new MinimalVisualizationEmbed(filteredMap, title, true, true));
                             message.channel.send(new ItemsLootedExpandedEmbed(itemsLooted));
                         } else {
                             message.channel.send(`No history found for **${member.displayName}**`);
@@ -390,7 +390,7 @@ export class RaidBot {
                     for (let i = 0; i < mapChunked.length; i++) {
                         let first = i === 0;
                         let last = i === mapChunked.length - 1;
-                        message.channel.send(new MinimalVisualizationEmbed(this._lootLogMap, mapChunked[i], title, first, last));
+                        message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
                     }
 
                     if (mapChunked.length === 0) {
@@ -707,7 +707,13 @@ export class RaidBot {
         let membersWhoHave = await this._lootLogService.getHasLooted(item, this._lootLogDataChannel, memberArray);
 
         if (membersWhoHave.length > 0) {
-            let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
+            let lootScoreHasMap = this._lootScoreMap;
+
+            for (let entry of lootScoreHasMap) {
+                entry[1].lastLootDate = this._lootScoreService.getLastLootDateForItem(this._lootLogMap, item, entry[0]) || '---';
+            }
+
+            let sortedMap = this._mapSort.sortByFlag(lootScoreHasMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
             let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoHave);
             let title = `Active members who have **${item.displayName}** ${orderString} ${classString}`;
 
@@ -733,7 +739,7 @@ export class RaidBot {
             for (let i = 0; i < mapChunked.length; i++) {
                 let first = i === 0;
                 let last = i === mapChunked.length - 1;
-                message.channel.send(new MinimalVisualizationEmbed(this._lootLogMap, mapChunked[i], title, first, last, item));
+                message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last, item));
             }
 
             if (mapChunked.length === 0) {
@@ -792,7 +798,7 @@ export class RaidBot {
             for (let i = 0; i < mapChunked.length; i++) {
                 let first = i === 0;
                 let last = i === mapChunked.length - 1;
-                message.channel.send(new MinimalVisualizationEmbed(this._lootLogMap, mapChunked[i], title, first, last));
+                message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
             }
 
             if (mapChunked.length === 0) {
