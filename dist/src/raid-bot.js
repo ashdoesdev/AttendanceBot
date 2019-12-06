@@ -306,7 +306,7 @@ class RaidBot {
                         const filteredMap = this._mapSort.filterMembers(this._lootScoreMap, [member.id]);
                         if (Array.from(filteredMap).length > 0) {
                             let title = `Single Member Overview`;
-                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title, true, true));
+                            message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(this._lootLogMap, filteredMap, title, true, true));
                             message.channel.send(new items_looted_expanded_embed_1.ItemsLootedExpandedEmbed(itemsLooted));
                         }
                         else {
@@ -337,7 +337,7 @@ class RaidBot {
                     for (let i = 0; i < mapChunked.length; i++) {
                         let first = i === 0;
                         let last = i === mapChunked.length - 1;
-                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                        message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(this._lootLogMap, mapChunked[i], title, first, last));
                     }
                     if (mapChunked.length === 0) {
                         message.channel.send('No members found matching query.');
@@ -611,7 +611,7 @@ class RaidBot {
                 for (let i = 0; i < mapChunked.length; i++) {
                     let first = i === 0;
                     let last = i === mapChunked.length - 1;
-                    message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                    message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(this._lootLogMap, mapChunked[i], title, first, last, item));
                 }
                 if (mapChunked.length === 0) {
                     message.channel.send('No members found matching query.');
@@ -648,7 +648,7 @@ class RaidBot {
                 for (let i = 0; i < mapChunked.length; i++) {
                     let first = i === 0;
                     let last = i === mapChunked.length - 1;
-                    message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                    message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(this._lootLogMap, mapChunked[i], title, first, last));
                 }
                 if (mapChunked.length === 0) {
                     message.channel.send('No members found matching query.');

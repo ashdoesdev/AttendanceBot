@@ -108,17 +108,27 @@ class LootScoreService {
             }
             memberScore.itemScoreTotal = total;
             memberScore.itemScoreOffspecTotal = offspecTotal;
-            if (entry[1][0].signature.timestamp.endsWith('Z')) {
-                memberScore.lastLootDate = new Date(entry[1][0].signature.timestamp).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: '2-digit' });
-            }
-            else {
-                memberScore.lastLootDate = entry[1][0].signature.timestamp;
+            const mostRecentMainSpecItem = entry[1].find((item) => item.value.offspec === false);
+            if (mostRecentMainSpecItem) {
+                if (entry[1][0].signature.timestamp.endsWith('Z')) {
+                    memberScore.lastLootDate = new Date(mostRecentMainSpecItem.signature.timestamp).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: '2-digit' });
+                }
+                else {
+                    memberScore.lastLootDate = mostRecentMainSpecItem.signature.timestamp;
+                }
             }
             if (entry[0]) {
                 lootScoreMap.set(entry[0], memberScore);
             }
         }
         return lootScoreMap;
+    }
+    getLastLootDateForItem(lootLogMap, item, member) {
+        if (lootLogMap.get(member)) {
+            if (lootLogMap.get(member).find((x) => x.value.item.displayName === item.displayName)) {
+                return new Date(lootLogMap.get(member).find((x) => x.value.item.displayName === item.displayName).signature.timestamp).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: '2-digit' });
+            }
+        }
     }
 }
 exports.LootScoreService = LootScoreService;

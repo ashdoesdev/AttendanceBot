@@ -354,7 +354,7 @@ export class RaidBot {
                         if (Array.from(filteredMap).length > 0) {
                             let title = `Single Member Overview`;
 
-                            message.channel.send(new MinimalVisualizationEmbed(filteredMap, title, true, true));
+                            message.channel.send(new MinimalVisualizationEmbed(this._lootLogMap, filteredMap, title, true, true));
                             message.channel.send(new ItemsLootedExpandedEmbed(itemsLooted));
                         } else {
                             message.channel.send(`No history found for **${member.displayName}**`);
@@ -390,7 +390,7 @@ export class RaidBot {
                     for (let i = 0; i < mapChunked.length; i++) {
                         let first = i === 0;
                         let last = i === mapChunked.length - 1;
-                        message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                        message.channel.send(new MinimalVisualizationEmbed(this._lootLogMap, mapChunked[i], title, first, last));
                     }
 
                     if (mapChunked.length === 0) {
@@ -733,7 +733,7 @@ export class RaidBot {
             for (let i = 0; i < mapChunked.length; i++) {
                 let first = i === 0;
                 let last = i === mapChunked.length - 1;
-                message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                message.channel.send(new MinimalVisualizationEmbed(this._lootLogMap, mapChunked[i], title, first, last, item));
             }
 
             if (mapChunked.length === 0) {
@@ -792,7 +792,7 @@ export class RaidBot {
             for (let i = 0; i < mapChunked.length; i++) {
                 let first = i === 0;
                 let last = i === mapChunked.length - 1;
-                message.channel.send(new MinimalVisualizationEmbed(mapChunked[i], title, first, last));
+                message.channel.send(new MinimalVisualizationEmbed(this._lootLogMap, mapChunked[i], title, first, last));
             }
 
             if (mapChunked.length === 0) {

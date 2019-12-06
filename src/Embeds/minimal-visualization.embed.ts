@@ -1,16 +1,25 @@
-﻿import { RichEmbed, GuildMember } from "discord.js";
-import { TimestampHelper } from "../Helpers/timestamp.helper";
-import { MemberScore, MinimalMember } from "../Models/loot-score.model";
+﻿import { GuildMember, RichEmbed } from "discord.js";
+import { ItemScore, AwardedItem } from "../Models/item-score.model";
+import { MemberScore, MinimalMember, LootScoreData } from "../Models/loot-score.model";
+import { LootScoreService } from "../Services/loot-score.service";
 
 export class MinimalVisualizationEmbed extends RichEmbed {
-    constructor(private lootScoreMap: Map<GuildMember | MinimalMember, MemberScore>, title: string, first?: boolean, last?: boolean) {
+    private _lootScoreService: LootScoreService = new LootScoreService();
+
+    constructor(private lootLogMap: Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>, private lootScoreMap: Map<GuildMember | MinimalMember, MemberScore>, title: string, first?: boolean, last?: boolean, item?: ItemScore) {
         super();
 
         let memberLines: string = '';
         let topSeparator = '╔══════════════╦══════╦══════╦══════╦══════╦═══════════╗\n';
         let separator = '╠══════════════╬══════╬══════╬══════╬══════╬═══════════╣\n';
         let bottomSeparator = '╚══════════════╩══════╩══════╩══════╩══════╩═══════════╝\n';
-        let header = '║ Name         ║ Att. ║ Sen. ║ Main ║ O/S  ║ Last Loot ║\n';
+        let header;
+
+        if (item) {
+            header = '║ Name         ║ Att. ║ Sen. ║ Main ║ O/S  ║ Loot Date ║\n';
+        } else {
+            header = '║ Name         ║ Att. ║ Sen. ║ Main ║ O/S  ║ Last Main ║\n';
+        }
 
         for (let member of lootScoreMap) {
             memberLines += separator;
@@ -29,7 +38,13 @@ export class MinimalVisualizationEmbed extends RichEmbed {
 
             let main = member[1].itemScoreTotal.toString().slice(0, 4).padEnd(4, ' ');
             let offspec = member[1].itemScoreOffspecTotal.toString().slice(0, 4).padEnd(4, ' ');
-            let lastLootDate = member[1].lastLootDate.padEnd(9, ' ');
+            let lastLootDate;
+
+            if (item) {
+                lastLootDate = this._lootScoreService.getLastLootDateForItem(lootLogMap, item, member[0]).padEnd(9, ' ');
+            } else {
+                lastLootDate = member[1].lastLootDate.padEnd(9, ' ');
+            }
 
             memberLines += `║ ${name} ║ ${attendance} ║ ${seniority} ║ ${main} ║ ${offspec} ║ ${lastLootDate} ║\n`;
         }
