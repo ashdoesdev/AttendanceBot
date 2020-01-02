@@ -87,8 +87,13 @@ export class RaidBot {
                 message.author.send(new HelpEmbed(this._appSettings));
             }
 
-            if (message.content === '/refresh' && this.canUseCommands(message) && this.isAdminChannel(message)) {
+            if (message.content === '/refreshpublic' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 this.updateAttendanceChart();
+            }
+            
+            if (message.content === '/refreshinternal' && this.canUseCommands(message) && this.isAdminChannel(message)) {
+                await this.refreshDataMaps();
+                message.channel.send('Refreshed data.');
             }
             
             if (message.content === '/refreshmembers' && this.canUseCommands(message) && this.isAdminChannel(message)) {
@@ -635,6 +640,39 @@ export class RaidBot {
                 this.editMessage(message, this._lootLogDataChannel, query);                
             }
 
+            if (message.content.startsWith('/clear --attendance') && this.canUseCommands(message) && this.isAdminChannel(message)) {
+                let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
+
+                let memberArray = new Array<GuildMember | MinimalMember>();
+                memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
+
+                let member = this._memberMatcher.matchMemberFromName(memberArray, memberName);
+
+                if (member) {
+                    message.channel.send(`Are you sure you want to clear attendance/seniority for **${member.displayName}**? This request is not (easily) reversible.`).then((sentMessage) => {
+                        const filter = this.setReactionFilter(sentMessage as Message, message);
+
+                        (sentMessage as Message).awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
+                            .then((collected) => {
+                                if (collected.first().emoji.name === '✅') {
+                                    message.channel.send(`Clearing past entries for **${member.displayName}**. This could take a while . . .`);
+
+                                    this.clearPastAttendance(member, message);
+                                } else {
+                                    message.channel.send('Request to clear attendance aborted.');
+                                }
+                            })
+                            .catch((err) => {
+                                console.log(err);
+                                message.channel.send('No reply received. Request to clear attendance aborted.');
+                            });
+                    });
+
+                } else {
+                    message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
+                }
+            }
+
         });
     }
 
@@ -861,6 +899,25 @@ export class RaidBot {
                 matchingMessages.length === 0 ? message.channel.send('No matching message found. If you aren\'t already, try including the full timestamp.') : message.channel.send('Too many matching messages found. Try entering the full message body.');
             }
         });
+    }
+
+    public async clearPastAttendance(member: GuildMember | MinimalMember, message: Message): Promise<void> {
+        let seniorityLog: Message[] = await this._messages.getMessages(this._seniorityLogDataChannel);
+        let attendanceLog: Message[] = await this._messages.getMessages(this._attendanceLogDataChannel);
+
+        for (let message of seniorityLog) {
+            let editedMessage = message.content.replace(`["${member.id}"`, `["CLEARED-${member.id}"`);
+            await message.edit(editedMessage);
+        }
+
+        for (let message of attendanceLog) {
+            let editedMessage = message.content.replace(`["${member.id}"`, `["CLEARED-${member.id}"`);
+            await message.edit(editedMessage);
+        }
+
+        message.channel.send('Attendance successfully cleared.');
+
+        this.refreshDataMaps();
     }
 
     public async backUpValues(): Promise<void> {

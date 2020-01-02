@@ -66,8 +66,12 @@ class RaidBot {
             if (message.content === '/help' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 message.author.send(new help_embed_1.HelpEmbed(this._appSettings));
             }
-            if (message.content === '/refresh' && this.canUseCommands(message) && this.isAdminChannel(message)) {
+            if (message.content === '/refreshpublic' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 this.updateAttendanceChart();
+            }
+            if (message.content === '/refreshinternal' && this.canUseCommands(message) && this.isAdminChannel(message)) {
+                yield this.refreshDataMaps();
+                message.channel.send('Refreshed data.');
             }
             if (message.content === '/refreshmembers' && this.canUseCommands(message) && this.isAdminChannel(message)) {
                 this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
@@ -542,6 +546,34 @@ class RaidBot {
                 let query = message.content.replace('/edit --loot ', '');
                 this.editMessage(message, this._lootLogDataChannel, query);
             }
+            if (message.content.startsWith('/clear --attendance') && this.canUseCommands(message) && this.isAdminChannel(message)) {
+                let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
+                let memberArray = new Array();
+                memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
+                let member = this._memberMatcher.matchMemberFromName(memberArray, memberName);
+                if (member) {
+                    message.channel.send(`Are you sure you want to clear attendance/seniority for **${member.displayName}**? This request is not (easily) reversible.`).then((sentMessage) => {
+                        const filter = this.setReactionFilter(sentMessage, message);
+                        sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
+                            .then((collected) => {
+                            if (collected.first().emoji.name === '✅') {
+                                message.channel.send(`Clearing past entries for **${member.displayName}**. This could take a while . . .`);
+                                this.clearPastAttendance(member, message);
+                            }
+                            else {
+                                message.channel.send('Request to clear attendance aborted.');
+                            }
+                        })
+                            .catch((err) => {
+                            console.log(err);
+                            message.channel.send('No reply received. Request to clear attendance aborted.');
+                        });
+                    });
+                }
+                else {
+                    message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
+                }
+            }
         }));
     }
     get presentMembers() {
@@ -709,6 +741,22 @@ class RaidBot {
             else {
                 matchingMessages.length === 0 ? message.channel.send('No matching message found. If you aren\'t already, try including the full timestamp.') : message.channel.send('Too many matching messages found. Try entering the full message body.');
             }
+        });
+    }
+    clearPastAttendance(member, message) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let seniorityLog = yield this._messages.getMessages(this._seniorityLogDataChannel);
+            let attendanceLog = yield this._messages.getMessages(this._attendanceLogDataChannel);
+            for (let message of seniorityLog) {
+                let editedMessage = message.content.replace(`["${member.id}"`, `["CLEARED-${member.id}"`);
+                yield message.edit(editedMessage);
+            }
+            for (let message of attendanceLog) {
+                let editedMessage = message.content.replace(`["${member.id}"`, `["CLEARED-${member.id}"`);
+                yield message.edit(editedMessage);
+            }
+            message.channel.send('Attendance successfully cleared.');
+            this.refreshDataMaps();
         });
     }
     backUpValues() {

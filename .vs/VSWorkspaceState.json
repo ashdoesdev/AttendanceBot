@@ -3,7 +3,7 @@
     "",
     "\\dist",
     "\\dist\\src",
-    "\\dist\\src\\Models",
+    "\\dist\\src\\Helpers",
     "\\dist\\src\\Services",
     "\\src",
     "\\src\\Embeds",
@@ -11,6 +11,6 @@
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\src\\raid-bot.ts",
+  "SelectedNode": "\\src\\Services\\loot-score.service.ts",
   "PreviewInSolutionExplorer": false
 }
