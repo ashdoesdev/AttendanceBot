@@ -467,7 +467,7 @@ export class RaidBot {
 
                 if (this.isFeedChannel(message)) {
                     member = message.mentions.members.array()[0];
-                    query = message.content.replace('/give ', '').replace('/g', '').replace(/(@\S+)/, '').replace('--offspec', '').replace('--existing', '').replace('<', '').trim();
+                    query = message.content.replace('/give ', '').replace('/g', '').replace(/(@\S+)/, '').replace('--offspec', '').replace('--os', '').replace('--existing', '').replace('<', '').trim();
                 }
 
                 if (this.isAdminChannel(message)) {
@@ -477,10 +477,10 @@ export class RaidBot {
 
                     let memberName = message.content.match(/"((?:\\.|[^"\\])*)"/)[0].replace(/"/g, '');
                     member = this._memberMatcher.matchMemberFromName(this._guildMembers, memberName) as GuildMember;
-                    query = message.content.replace('/give ', '').replace('/g', '').replace(memberName, '').replace(/"/g, '').replace('--offspec', '').replace('--existing', '').replace('<', '').trim();
+                    query = message.content.replace('/give ', '').replace('/g', '').replace(memberName, '').replace(/"/g, '').replace('--offspec', '').replace('--os', '').replace('--existing', '').replace('<', '').trim();
                 }
 
-                let offspec = message.content.includes('--offspec');
+                let offspec = message.content.includes('--offspec') || message.content.includes('--os');
                 let existing = message.content.includes('--existing');
 
                 if (member) {
