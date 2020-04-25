@@ -7,7 +7,7 @@
   "attendanceLogChannel": "608143203773841418",
   "lootLogDataChannel": "608132466619711489",
   "lootLogChannel": "608143088472293376",
-  "itemScoresChannel": "625023123032375317",
+  "itemScoresChannel": "701573095265140816",
   "lootScoreDailyDumpChannel": "625455965277388820",
   "adminChannel": "608130639543140362",
   "feedChannel": "608144827095187466",
@@ -21,6 +21,9 @@
   "everyone": "562783503045885962",
   "announcements": "562859996434661377",
   "bossman": "562904899373891584",
+  "strategist": "687813130306322456",
+  "lolers": "693958332012036167",
+  "booster": "651295076756226052",
   "botadmin": "614921056544882698",
   "discordadmin": "602598857032990751"
 }

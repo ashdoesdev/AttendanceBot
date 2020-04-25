@@ -11,6 +11,6 @@
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\app-settings.dev.json",
+  "SelectedNode": "\\app-settings.prod.json",
   "PreviewInSolutionExplorer": false
 }
