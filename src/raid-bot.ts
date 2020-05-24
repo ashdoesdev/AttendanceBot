@@ -711,7 +711,7 @@ export class RaidBot {
             (sentMessage as Message).awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                 .then((collected) => {
                     if (collected.first().emoji.name === '✅') {
-                        this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, existing, flags);
+                        this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, existing, flags, this.addItemToLootLogMap.bind(this, member));
                         this.refreshLootLogMap();
                     } else {
                         message.channel.send('Request to award item aborted.');
@@ -964,6 +964,17 @@ export class RaidBot {
         return (reaction, user) => {
             return (reaction.emoji.name === '✅' || reaction.emoji.name === '❌') && user.id === message.author.id;
         };
+    }
+
+    public async addItemToLootLogMap(member: GuildMember, lootScoreData: LootScoreData<any>): Promise<void> {
+        if (!this._guildMembers) {
+            this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+        }
+
+        let memberLootScoreData = this._lootLogMap.get(member);
+        memberLootScoreData.push(lootScoreData);
+
+        this._lootLogMap.set(member, memberLootScoreData);
     }
         
     public async refreshLootLogMap(): Promise<void> {

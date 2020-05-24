@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -21,7 +22,7 @@ class LootLogService {
         this._dataHelper = new loot_score_data_helper_1.LootScoreDataHelper();
         this._messages = new messages_helper_1.MessagesHelper();
     }
-    awardItem(message, lootLogChannel, lootLogReadableChannel, item, member, offspec = false, existing = false, flags) {
+    awardItem(message, lootLogChannel, lootLogReadableChannel, item, member, offspec = false, existing = false, flags, callback) {
         let awardedItem = new item_score_model_1.AwardedItem();
         awardedItem.member = new loot_score_model_1.MinimalMember();
         awardedItem.member.displayName = member.displayName;
@@ -36,6 +37,7 @@ class LootLogService {
         let lootScoreData = this._dataHelper.createLootScoreData(awardedItem, message);
         lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
         lootLogReadableChannel.send(new loot_log_embed_1.LootLogEmbed(lootScoreData));
+        callback(lootScoreData);
         let extras = '';
         if (existing) {
             extras = ' (existing)';

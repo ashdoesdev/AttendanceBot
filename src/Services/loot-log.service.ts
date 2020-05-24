@@ -11,7 +11,17 @@ export class LootLogService {
     private _dataHelper: LootScoreDataHelper = new LootScoreDataHelper();
     private _messages: MessagesHelper = new MessagesHelper();
 
-    public awardItem(message: Message, lootLogChannel: TextChannel, lootLogReadableChannel: TextChannel, item: ItemScore, member: GuildMember, offspec = false, existing = false, flags: string[]): void {
+    public awardItem(
+        message: Message,
+        lootLogChannel: TextChannel,
+        lootLogReadableChannel: TextChannel,
+        item: ItemScore,
+        member: GuildMember,
+        offspec = false,
+        existing = false,
+        flags: string[],
+        callback): void {
+
         let awardedItem = new AwardedItem();
         awardedItem.member = new MinimalMember();
         awardedItem.member.displayName = member.displayName;
@@ -29,6 +39,8 @@ export class LootLogService {
 
         lootLogChannel.send(this.codeBlockify(JSON.stringify(lootScoreData)));
         lootLogReadableChannel.send(new LootLogEmbed(lootScoreData));
+
+        callback(lootScoreData);
 
         let extras = '';
 

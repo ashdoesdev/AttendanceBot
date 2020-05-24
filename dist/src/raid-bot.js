@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -604,7 +605,7 @@ class RaidBot {
             sentMessage.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
                 .then((collected) => {
                 if (collected.first().emoji.name === '✅') {
-                    this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, existing, flags);
+                    this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, existing, flags, this.addItemToLootLogMap.bind(this, member));
                     this.refreshLootLogMap();
                 }
                 else {
@@ -793,6 +794,16 @@ class RaidBot {
         return (reaction, user) => {
             return (reaction.emoji.name === '✅' || reaction.emoji.name === '❌') && user.id === message.author.id;
         };
+    }
+    addItemToLootLogMap(member, lootScoreData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this._guildMembers) {
+                this._guildMembers = this._client.guilds.get(this._appSettings['server']).members.array();
+            }
+            let memberLootScoreData = this._lootLogMap.get(member);
+            memberLootScoreData.push(lootScoreData);
+            this._lootLogMap.set(member, memberLootScoreData);
+        });
     }
     refreshLootLogMap() {
         return __awaiter(this, void 0, void 0, function* () {
