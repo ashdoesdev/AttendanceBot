@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class MapSortHelper {
+    sortFrequenciesMap(frequenciesMap) {
+        const array = Array.from(frequenciesMap);
+        array.sort((a, b) => b[1] - a[1]);
+        return new Map(array);
+    }
     sortByAttendance(lootScoreMap) {
         const array = Array.from(lootScoreMap);
         array.sort((a, b) => b[1].attendancePercentage - a[1].attendancePercentage);

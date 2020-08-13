@@ -2,6 +2,12 @@ import { GuildMember } from "discord.js";
 import { MemberScore, MinimalMember } from "Models/loot-score.model";
 
 export class MapSortHelper {
+    public sortFrequenciesMap(frequenciesMap: Map<string, number>): Map<string, number> {
+        const array = Array.from(frequenciesMap);
+        array.sort((a, b) => b[1] - a[1]);
+        return new Map(array);
+    }
+
     public sortByAttendance(lootScoreMap: Map<GuildMember | MinimalMember, MemberScore>): Map<GuildMember | MinimalMember, MemberScore> {
         const array = Array.from(lootScoreMap);
         array.sort((a, b) => b[1].attendancePercentage - a[1].attendancePercentage);

@@ -20,6 +20,7 @@ import { StatsEmbed } from './Embeds/stats.embed';
 import { LastRaidLootEmbed } from './Embeds/last-raid-loot.embed';
 import { LastRaidAttendanceEmbed } from './Embeds/last-raid-attendance.embed';
 import { ItemsLootedExpandedEmbed } from './Embeds/items-looted-expanded.embed';
+import { StatsHelper } from './Helpers/stats.helper';
 
 export class RaidBot {
     private _client = new Client();
@@ -43,6 +44,7 @@ export class RaidBot {
     private _mapSort: MapSortHelper = new MapSortHelper();
     private _messages: MessagesHelper = new MessagesHelper();
     private _timestamp: TimestampHelper = new TimestampHelper();
+    private _statsHelper: StatsHelper = new StatsHelper();
 
     private _seniorityMap: Map<GuildMember, number>;
     private _attendanceMap: Map<GuildMember, number[]>;
@@ -369,6 +371,12 @@ export class RaidBot {
                     }
                 }
 
+                else if (message.content.startsWith('/report stats')) {
+                    let itemCountMap = await this._statsHelper.orderLootedItemsByCount(this._lootScoreMap, this._lootLogDataChannel, members);
+
+                    message.channel.send(new StatsEmbed(this._lootScoreMap, this._lootLogDataChannel, this._guildMembers, activeMembers, itemCountMap));
+                }
+
                 else {
                     let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
                     let title = `Overview of active members ${orderString} ${classString}`;
@@ -402,7 +410,6 @@ export class RaidBot {
                         message.channel.send('No members found matching query.');
                     }
                 }
-
             }
 
             if (message.content === '/lastraid' && (this.isAdminChannel(message) || message.channel.type === 'dm')) {
@@ -444,20 +451,6 @@ export class RaidBot {
                     }
                 } else {
                     message.channel.send('Raid not found.');
-                }
-            }
-
-            if (message.content === '/stats' && message.channel.type === 'dm') {
-                await this.ensureHasDataMaps();
-                await this.refreshLootScoreMap();
-
-                let filteredMap = this._mapSort.filterMembers(this._lootScoreMap, [message.author.id]);
-                let member = this._memberMatcher.matchMemberFromId(this._guildMembers, message.author.id);
-                let itemsLooted = await this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers);
-
-                if (Array.from(filteredMap.entries()).length > 0) {
-                    message.channel.send(new StatsEmbed(Array.from(filteredMap.entries())[0]));
-                    message.channel.send(new ItemsLootedEmbed(itemsLooted));
                 }
             }
 

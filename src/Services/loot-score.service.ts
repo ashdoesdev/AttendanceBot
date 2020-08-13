@@ -33,7 +33,6 @@ export class LootScoreService {
                     }
                 }
             }
-
         }
 
         return allEntries;

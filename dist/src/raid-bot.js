@@ -14,7 +14,6 @@ const discord_js_1 = require("discord.js");
 const fs = require("fs");
 const stringSimilarity = require("string-similarity");
 const help_embed_1 = require("./Embeds/help.embed");
-const items_looted_embed_1 = require("./Embeds/items-looted.embed");
 const minimal_visualization_embed_1 = require("./Embeds/minimal-visualization.embed");
 const public_attendance_embed_1 = require("./Embeds/public-attendance.embed");
 const map_sort_helper_1 = require("./Helpers/map-sort.helper");
@@ -29,6 +28,7 @@ const stats_embed_1 = require("./Embeds/stats.embed");
 const last_raid_loot_embed_1 = require("./Embeds/last-raid-loot.embed");
 const last_raid_attendance_embed_1 = require("./Embeds/last-raid-attendance.embed");
 const items_looted_expanded_embed_1 = require("./Embeds/items-looted-expanded.embed");
+const stats_helper_1 = require("./Helpers/stats.helper");
 class RaidBot {
     constructor() {
         this._client = new discord_js_1.Client();
@@ -39,6 +39,7 @@ class RaidBot {
         this._mapSort = new map_sort_helper_1.MapSortHelper();
         this._messages = new messages_helper_1.MessagesHelper();
         this._timestamp = new timestamp_helper_1.TimestampHelper();
+        this._statsHelper = new stats_helper_1.StatsHelper();
     }
     start(appSettings) {
         this._appSettings = appSettings;
@@ -322,6 +323,10 @@ class RaidBot {
                         message.channel.send('Could not find member. Be sure to type the full display name (not case-sensitive).');
                     }
                 }
+                else if (message.content.startsWith('/report stats')) {
+                    let itemCountMap = yield this._statsHelper.orderLootedItemsByCount(this._lootScoreMap, this._lootLogDataChannel, members);
+                    message.channel.send(new stats_embed_1.StatsEmbed(this._lootScoreMap, this._lootLogDataChannel, this._guildMembers, activeMembers, itemCountMap));
+                }
                 else {
                     let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
                     let title = `Overview of active members ${orderString} ${classString}`;
@@ -381,17 +386,6 @@ class RaidBot {
                 }
                 else {
                     message.channel.send('Raid not found.');
-                }
-            }
-            if (message.content === '/stats' && message.channel.type === 'dm') {
-                yield this.ensureHasDataMaps();
-                yield this.refreshLootScoreMap();
-                let filteredMap = this._mapSort.filterMembers(this._lootScoreMap, [message.author.id]);
-                let member = this._memberMatcher.matchMemberFromId(this._guildMembers, message.author.id);
-                let itemsLooted = yield this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers);
-                if (Array.from(filteredMap.entries()).length > 0) {
-                    message.channel.send(new stats_embed_1.StatsEmbed(Array.from(filteredMap.entries())[0]));
-                    message.channel.send(new items_looted_embed_1.ItemsLootedEmbed(itemsLooted));
                 }
             }
             if ((message.content.startsWith('/g ') || message.content.startsWith('/give')) && this.canUseCommands(message)) {
