@@ -374,7 +374,23 @@ export class RaidBot {
                 else if (message.content.startsWith('/report stats')) {
                     let itemCountMap = await this._statsHelper.orderLootedItemsByCount(this._lootScoreMap, this._lootLogDataChannel, members);
 
-                    message.channel.send(new StatsEmbed(this._lootScoreMap, this._lootLogDataChannel, this._guildMembers, activeMembers, itemCountMap));
+                    await message.channel.send(new StatsEmbed(this._lootScoreMap, this._lootLogDataChannel, this._guildMembers, activeMembers, itemCountMap));
+
+                    if (message.content.includes('--all')) {
+                        for (let item of itemCountMap) {
+                            message.channel.send(`**${item[0]}** - ${item[1]}`);
+                        }
+                    } else {
+                        let fixed = Array.from(itemCountMap);
+                        fixed = fixed.splice(0, 20);
+                        
+                        for (let item of fixed) {
+                            message.channel.send(`**${item[0]}** - ${item[1]}`);
+                        }
+
+                        message.channel.send('*Top 20 items reported. Include --all to see all.*')
+                    }
+
                 }
 
                 else {

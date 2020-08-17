@@ -35,17 +35,11 @@ export class StatsHelper {
     }
 
     public async orderLootedItemsByCount(lootScoreMap: Map<GuildMember | MinimalMember, MemberScore>, lootLogChannel: TextChannel, members: GuildMember[]): Promise<Map<string, number>> {
-        let allItemsAwarded = new Array<LootScoreData<AwardedItem>>();
-
-        for (let entry of lootScoreMap) {
-            let itemsLooted = await this._lootLogService.getLootHistory(entry[0], lootLogChannel, members);
-
-            allItemsAwarded.push(...itemsLooted);
-        }
+        let allItemsLooted = await this._lootLogService.getFullLootHistory(lootLogChannel, members);
 
         let simplifiedItems = new Array<string>();
 
-        for (let item of allItemsAwarded) {
+        for (let item of allItemsLooted) {
             simplifiedItems.push(item.value.item.displayName);
         }
 

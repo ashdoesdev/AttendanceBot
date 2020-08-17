@@ -38,13 +38,9 @@ class StatsHelper {
     }
     orderLootedItemsByCount(lootScoreMap, lootLogChannel, members) {
         return __awaiter(this, void 0, void 0, function* () {
-            let allItemsAwarded = new Array();
-            for (let entry of lootScoreMap) {
-                let itemsLooted = yield this._lootLogService.getLootHistory(entry[0], lootLogChannel, members);
-                allItemsAwarded.push(...itemsLooted);
-            }
+            let allItemsLooted = yield this._lootLogService.getFullLootHistory(lootLogChannel, members);
             let simplifiedItems = new Array();
-            for (let item of allItemsAwarded) {
+            for (let item of allItemsLooted) {
                 simplifiedItems.push(item.value.item.displayName);
             }
             let frequenciesMap = this.getFrequenciesMap(simplifiedItems);

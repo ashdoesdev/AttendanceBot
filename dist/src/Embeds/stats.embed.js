@@ -12,17 +12,7 @@ class StatsEmbed extends discord_js_1.RichEmbed {
         let averageSeniority = this._statsHelper.getAverageSeniority(lootScoreMap, activeMembers);
         this.addField('Average Attendance', averageAttendance);
         this.addField('Average Seniority', averageSeniority);
-        this.addField('Items Looted', this.formatItemCount(itemCountMap));
-    }
-    formatItemCount(map) {
-        let itemCountFormatted = '';
-        for (let entry of map) {
-            itemCountFormatted += entry[0] + " - " + entry[1] + "\n";
-        }
-        return itemCountFormatted;
-    }
-    codeBlockify(string) {
-        return '```' + string + '```';
+        this.addField('Items Looted', 'Output below. May take a moment.');
     }
 }
 exports.StatsEmbed = StatsEmbed;

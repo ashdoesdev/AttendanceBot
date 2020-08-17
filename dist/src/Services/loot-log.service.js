@@ -196,6 +196,18 @@ class LootLogService {
             }
         });
     }
+    getFullLootHistory(lootLogChannel, members) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let lootLogMap = yield this.createLootLogMap(lootLogChannel, members);
+            let allItemsLooted = new Array();
+            for (let entry of lootLogMap) {
+                if (entry[1]) {
+                    allItemsLooted.push(...entry[1]);
+                }
+            }
+            return allItemsLooted;
+        });
+    }
     convertStringPipesToArray(string) {
         let array = string.split('|');
         let trimmedArray = array.map(s => s.trim());

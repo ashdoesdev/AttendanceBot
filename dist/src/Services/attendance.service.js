@@ -91,7 +91,7 @@ class AttendanceService {
         this._timerSubscription = rxjs_1.timer(0, 60000).subscribe(() => {
             this._tick++;
             if (Array.from(raidChannel1.members.values())) {
-                if (Array.from(raidChannel2.members.values()).length > 0) {
+                if (raidChannel2 && raidChannel2.members && Array.from(raidChannel2.members.values()).length > 0) {
                     var memberArray = Array.from(raidChannel1.members.values())
                         .concat(Array.from(raidChannel2.members.values())).filter((member) => this.memberShouldBeTracked(member, appSettings));
                     var uniqueArray = memberArray.filter((member, index, self) => index === self.findIndex((m) => (m.id === member.id)));

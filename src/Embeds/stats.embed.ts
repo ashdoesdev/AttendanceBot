@@ -17,21 +17,7 @@ export class StatsEmbed extends RichEmbed {
 
         this.addField('Average Attendance', averageAttendance);
         this.addField('Average Seniority', averageSeniority);
-        this.addField('Items Looted', this.formatItemCount(itemCountMap));
-    }
-
-    private formatItemCount(map: Map<string, number>): string {
-        let itemCountFormatted = '';
-
-        for (let entry of map) {
-            itemCountFormatted += entry[0] + " - " + entry[1] + "\n";
-        }
-
-        return itemCountFormatted;
-    }
-
-    private codeBlockify(string: string): string {
-        return '```' + string + '```';
+        this.addField('Items Looted', 'Output below. May take a moment.');
     }
 }
 

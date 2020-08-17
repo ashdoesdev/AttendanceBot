@@ -215,6 +215,18 @@ export class LootLogService {
         }
     }
 
+    public async getFullLootHistory(lootLogChannel: TextChannel, members: GuildMember[]): Promise<LootScoreData<AwardedItem>[]> {
+        let lootLogMap = await this.createLootLogMap(lootLogChannel, members);
+        let allItemsLooted = new Array<LootScoreData<AwardedItem>>();
+
+        for (let entry of lootLogMap) {
+            if (entry[1]) {
+                allItemsLooted.push(...entry[1]);
+            }
+        }
+        return allItemsLooted;
+    }
+
     private convertStringPipesToArray(string: string): string[] {
         let array = string.split('|');
         let trimmedArray = array.map(s => s.trim());

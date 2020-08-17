@@ -3,7 +3,7 @@
     "",
     "\\dist",
     "\\dist\\src",
-    "\\dist\\src\\Helpers",
+    "\\dist\\src\\Models",
     "\\dist\\src\\Services",
     "\\src",
     "\\src\\Embeds",
@@ -11,6 +11,6 @@
     "\\src\\Models",
     "\\src\\Services"
   ],
-  "SelectedNode": "\\app-settings.prod.json",
+  "SelectedNode": "\\src\\Services\\attendance.service.ts",
   "PreviewInSolutionExplorer": false
 }
