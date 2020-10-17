@@ -76,8 +76,7 @@ export class LootLogService {
         return scores;
     }
 
-    public async getEligibleMembers(item: ItemScore, lootLogChannel: TextChannel, members: Array<GuildMember | MinimalMember>): Promise<string[]> {
-        let lootLogMap = await this.createLootLogMap(lootLogChannel, members);
+    public async getEligibleMembers(item: ItemScore, lootLogMap: Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>, members: Array<GuildMember | MinimalMember>): Promise<string[]> {
         let memberLootHistory = new Array<string>();
         let eligibleMembers = new Array<string>();
 
@@ -118,8 +117,7 @@ export class LootLogService {
         return eligibleMembers;
     }
 
-    public async getHasLooted(item: ItemScore, lootLogChannel: TextChannel, members: Array<GuildMember | MinimalMember>): Promise<string[]> {
-        let lootLogMap = await this.createLootLogMap(lootLogChannel, members);
+    public async getHasLooted(item: ItemScore, lootLogMap: Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>, members: Array<GuildMember | MinimalMember>): Promise<string[]> {
         let memberLootHistory = new Array<string>();
         let hasLooted = new Array<string>();
 
@@ -201,9 +199,7 @@ export class LootLogService {
         return lootLogMap;
     }
 
-    public async getLootHistory(member: GuildMember | MinimalMember, lootLogChannel: TextChannel, members: GuildMember[]): Promise<LootScoreData<AwardedItem>[]> {
-        let lootLogMap = await this.createLootLogMap(lootLogChannel, members);
-
+    public async getLootHistory(member: GuildMember | MinimalMember, lootLogMap: Map<GuildMember | MinimalMember, LootScoreData<AwardedItem>[]>, members: GuildMember[]): Promise<LootScoreData<AwardedItem>[]> {
         if (member instanceof GuildMember) {
             return lootLogMap.get(member);
         } else {

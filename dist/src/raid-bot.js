@@ -155,7 +155,6 @@ class RaidBot {
             }
             if ((message.content.startsWith('/report') && this.canUseCommands(message) && this.isAdminChannel(message))) {
                 yield this.ensureHasDataMaps();
-                yield this.refreshLootScoreMap();
                 let modifiers = message.content.split(' ').filter((x) => x.startsWith('--'));
                 modifiers.forEach((modifier, i) => {
                     modifiers[i] = modifier.slice(2).toLowerCase();
@@ -308,7 +307,7 @@ class RaidBot {
                     memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
                     let member = this._memberMatcher.matchMemberFromName(memberArray, memberName);
                     if (member) {
-                        let itemsLooted = yield this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers);
+                        let itemsLooted = yield this._lootLogService.getLootHistory(member, this._lootLogMap, this._guildMembers);
                         const filteredMap = this._mapSort.filterMembers(this._lootScoreMap, [member.id]);
                         if (Array.from(filteredMap).length > 0) {
                             let title = `Single Member Overview`;
@@ -531,7 +530,7 @@ class RaidBot {
                 });
             }
             if (message.content === '/backup' && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                this.backUpValues();
+                yield this.backUpValues();
                 message.channel.send('Backed up data.');
             }
             if (message.content === '/totalraids' && this.canUseCommands(message) && this.isAdminChannel(message)) {
@@ -613,7 +612,7 @@ class RaidBot {
                 .then((collected) => {
                 if (collected.first().emoji.name === '✅') {
                     this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, existing, flags, this.addItemToLootLogMap.bind(this, member));
-                    this.refreshLootLogMap();
+                    this.refreshLootScoreMap();
                 }
                 else {
                     message.channel.send('Request to award item aborted.');
@@ -629,7 +628,7 @@ class RaidBot {
         return __awaiter(this, void 0, void 0, function* () {
             let memberArray = new Array();
             memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
-            let membersWhoHave = yield this._lootLogService.getHasLooted(item, this._lootLogDataChannel, memberArray);
+            let membersWhoHave = yield this._lootLogService.getHasLooted(item, this._lootLogMap, memberArray);
             if (membersWhoHave.length > 0) {
                 let lootScoreHasMap = this._lootScoreMap;
                 for (let entry of lootScoreHasMap) {
@@ -670,7 +669,7 @@ class RaidBot {
         return __awaiter(this, void 0, void 0, function* () {
             let memberArray = new Array();
             memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
-            let membersWhoNeed = yield this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, memberArray);
+            let membersWhoNeed = yield this._lootLogService.getEligibleMembers(item, this._lootLogMap, memberArray);
             if (membersWhoNeed.length > 0) {
                 let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
                 let filteredMap = this._mapSort.filterMembers(sortedMap, membersWhoNeed);
@@ -769,6 +768,7 @@ class RaidBot {
     }
     backUpValues() {
         return __awaiter(this, void 0, void 0, function* () {
+            yield this.refreshDataMaps();
             let lootLog = yield this._messages.getMessages(this._lootLogDataChannel);
             let cleanLootLogMessages = new Array();
             for (let message of lootLog) {
@@ -809,7 +809,7 @@ class RaidBot {
             }
             let memberLootScoreData = this._lootLogMap.get(member);
             memberLootScoreData.push(lootScoreData);
-            this._lootLogMap.set(member, memberLootScoreData);
+            this._lootLogMap = this._lootLogMap.set(member, memberLootScoreData);
         });
     }
     refreshLootLogMap() {

@@ -66,9 +66,8 @@ class LootLogService {
             return scores;
         });
     }
-    getEligibleMembers(item, lootLogChannel, members) {
+    getEligibleMembers(item, lootLogMap, members) {
         return __awaiter(this, void 0, void 0, function* () {
-            let lootLogMap = yield this.createLootLogMap(lootLogChannel, members);
             let memberLootHistory = new Array();
             let eligibleMembers = new Array();
             lootLogMap.forEach((key, value) => {
@@ -104,9 +103,8 @@ class LootLogService {
             return eligibleMembers;
         });
     }
-    getHasLooted(item, lootLogChannel, members) {
+    getHasLooted(item, lootLogMap, members) {
         return __awaiter(this, void 0, void 0, function* () {
-            let lootLogMap = yield this.createLootLogMap(lootLogChannel, members);
             let memberLootHistory = new Array();
             let hasLooted = new Array();
             lootLogMap.forEach((key, value) => {
@@ -182,9 +180,8 @@ class LootLogService {
             return lootLogMap;
         });
     }
-    getLootHistory(member, lootLogChannel, members) {
+    getLootHistory(member, lootLogMap, members) {
         return __awaiter(this, void 0, void 0, function* () {
-            let lootLogMap = yield this.createLootLogMap(lootLogChannel, members);
             if (member instanceof discord_js_1.GuildMember) {
                 return lootLogMap.get(member);
             }

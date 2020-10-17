@@ -182,7 +182,6 @@ export class RaidBot {
 
             if ((message.content.startsWith('/report') && this.canUseCommands(message) && this.isAdminChannel(message))) {
                 await this.ensureHasDataMaps();
-                await this.refreshLootScoreMap();
 
                 let modifiers = message.content.split(' ').filter((x) => x.startsWith('--'));
 
@@ -354,7 +353,7 @@ export class RaidBot {
                     let member = this._memberMatcher.matchMemberFromName(memberArray, memberName);
 
                     if (member) {
-                        let itemsLooted = await this._lootLogService.getLootHistory(member, this._lootLogDataChannel, this._guildMembers);
+                        let itemsLooted = await this._lootLogService.getLootHistory(member, this._lootLogMap, this._guildMembers);
 
                         const filteredMap = this._mapSort.filterMembers(this._lootScoreMap, [member.id]);
 
@@ -620,7 +619,7 @@ export class RaidBot {
             }
 
             if (message.content === '/backup' && this.canUseCommands(message) && this.isAdminChannel(message)) {
-                this.backUpValues();
+                await this.backUpValues();
                 message.channel.send('Backed up data.');
             }
              
@@ -721,7 +720,7 @@ export class RaidBot {
                 .then((collected) => {
                     if (collected.first().emoji.name === '✅') {
                         this._lootLogService.awardItem(message, this._lootLogDataChannel, this._lootLogChannel, item, member, offspec, existing, flags, this.addItemToLootLogMap.bind(this, member));
-                        this.refreshLootLogMap();
+                        this.refreshLootScoreMap();
                     } else {
                         message.channel.send('Request to award item aborted.');
                     }
@@ -751,7 +750,7 @@ export class RaidBot {
         let memberArray = new Array<GuildMember | MinimalMember>();
         memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
 
-        let membersWhoHave = await this._lootLogService.getHasLooted(item, this._lootLogDataChannel, memberArray);
+        let membersWhoHave = await this._lootLogService.getHasLooted(item, this._lootLogMap, memberArray);
 
         if (membersWhoHave.length > 0) {
             let lootScoreHasMap = this._lootScoreMap;
@@ -816,7 +815,7 @@ export class RaidBot {
         let memberArray = new Array<GuildMember | MinimalMember>();
         memberArray = memberArray.concat(this._guildMembers).concat(this._unfoundMembers);
 
-        let membersWhoNeed = await this._lootLogService.getEligibleMembers(item, this._lootLogDataChannel, memberArray)
+        let membersWhoNeed = await this._lootLogService.getEligibleMembers(item, this._lootLogMap, memberArray)
 
         if (membersWhoNeed.length > 0) {
             let sortedMap = this._mapSort.sortByFlag(this._lootScoreMap, orderByName, orderByAttendance, orderBySeniority, orderByOffspecItemScore, orderByLastLootDate);
@@ -930,6 +929,8 @@ export class RaidBot {
     }
 
     public async backUpValues(): Promise<void> {
+        await this.refreshDataMaps();
+
         let lootLog: Message[] = await this._messages.getMessages(this._lootLogDataChannel);
         let cleanLootLogMessages = new Array<string>();
 
@@ -983,7 +984,7 @@ export class RaidBot {
         let memberLootScoreData = this._lootLogMap.get(member);
         memberLootScoreData.push(lootScoreData);
 
-        this._lootLogMap.set(member, memberLootScoreData);
+        this._lootLogMap = this._lootLogMap.set(member, memberLootScoreData);
     }
         
     public async refreshLootLogMap(): Promise<void> {
