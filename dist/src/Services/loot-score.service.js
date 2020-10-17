@@ -87,7 +87,11 @@ class LootScoreService {
             if (!memberScore) {
                 memberScore = new loot_score_model_1.MemberScore();
             }
-            memberScore.seniorityPercentage = Math.round((entry[1] / highestValue) * 100);
+            var seniority = Math.round((entry[1] / 50) * 100);
+            if (seniority > 100) {
+                seniority = 100;
+            }
+            memberScore.seniorityPercentage = seniority;
             lootScoreMap.set(entry[0], memberScore);
         }
         for (let entry of lootLogMap) {

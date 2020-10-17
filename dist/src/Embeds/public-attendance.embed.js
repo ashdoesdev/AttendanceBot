@@ -32,6 +32,8 @@ class PublicAttendanceEmbed extends discord_js_1.RichEmbed {
             x.id !== this._appSettings['lolers'] &&
             x.id !== this._appSettings['bossman'] &&
             x.id !== this._appSettings['booster'] &&
+            x.id !== this._appSettings['boostie'] &&
+            x.id !== this._appSettings['newrole'] &&
             x.id !== this._appSettings['botadmin'] &&
             x.id !== this._appSettings['discordadmin']).join(' '));
         this.addField(`**${member[1].attendancePercentage || 0}%** attendance`, this._embedHelper.getBar(member[1].attendancePercentage || 0), true);
