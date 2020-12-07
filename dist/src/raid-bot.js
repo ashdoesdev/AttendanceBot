@@ -312,7 +312,16 @@ class RaidBot {
                         if (Array.from(filteredMap).length > 0) {
                             let title = `Single Member Overview`;
                             message.channel.send(new minimal_visualization_embed_1.MinimalVisualizationEmbed(filteredMap, title, true, true));
-                            message.channel.send(new items_looted_expanded_embed_1.ItemsLootedExpandedEmbed(itemsLooted));
+                            let mainItemsLooted = itemsLooted.filter((item) => !item.value.offspec);
+                            let offspecItemsLooted = itemsLooted.filter((item) => item.value.offspec === true);
+                            let mainItemsLootedChunked = this.chunk(mainItemsLooted, 30);
+                            let offspecItemsLootedChunked = this.chunk(offspecItemsLooted, 30);
+                            for (let i = 0; i < mainItemsLootedChunked.length; i++) {
+                                message.channel.send(new items_looted_expanded_embed_1.ItemsLootedExpandedEmbed(mainItemsLootedChunked[i], false, i > 0));
+                            }
+                            for (let i = 0; i < offspecItemsLootedChunked.length; i++) {
+                                message.channel.send(new items_looted_expanded_embed_1.ItemsLootedExpandedEmbed(offspecItemsLootedChunked[i], true, i > 0));
+                            }
                         }
                         else {
                             message.channel.send(`No history found for **${member.displayName}**`);
@@ -587,7 +596,13 @@ class RaidBot {
         return Array.from(this._raidChannel1.members.values()).concat(Array.from(this._raidChannel2.members.values()));
     }
     canUseCommands(message) {
-        return message.member.roles.some((role) => role.id === this._appSettings['leadership'] || message.author.id === this._appSettings['admin']);
+        return __awaiter(this, void 0, void 0, function* () {
+            let member = message.member;
+            if (!member) {
+                member = yield message.guild.fetchMember(message.author.id);
+            }
+            return member.roles.some((role) => role.id === this._appSettings['leadership'] || message.author.id === this._appSettings['admin']);
+        });
     }
     isAdminChannel(message) {
         return message.channel.id === this._adminChannel.id;

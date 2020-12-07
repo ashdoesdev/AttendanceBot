@@ -361,7 +361,20 @@ export class RaidBot {
                             let title = `Single Member Overview`;
 
                             message.channel.send(new MinimalVisualizationEmbed(filteredMap, title, true, true));
-                            message.channel.send(new ItemsLootedExpandedEmbed(itemsLooted));
+
+                            let mainItemsLooted = itemsLooted.filter((item) => !item.value.offspec);
+                            let offspecItemsLooted = itemsLooted.filter((item) => item.value.offspec === true);
+
+                            let mainItemsLootedChunked = this.chunk(mainItemsLooted, 30);
+                            let offspecItemsLootedChunked = this.chunk(offspecItemsLooted, 30);
+
+                            for (let i = 0; i < mainItemsLootedChunked.length; i++) {
+                                message.channel.send(new ItemsLootedExpandedEmbed(mainItemsLootedChunked[i], false, i > 0));
+                            }
+
+                            for (let i = 0; i < offspecItemsLootedChunked.length; i++) {
+                                message.channel.send(new ItemsLootedExpandedEmbed(offspecItemsLootedChunked[i], true, i > 0));
+                            }
                         } else {
                             message.channel.send(`No history found for **${member.displayName}**`);
                         }
@@ -688,8 +701,12 @@ export class RaidBot {
         return Array.from(this._raidChannel1.members.values()).concat(Array.from(this._raidChannel2.members.values()));
     }
 
-    private canUseCommands(message: Message): boolean {
-        return message.member.roles.some((role) => role.id === this._appSettings['leadership'] || message.author.id === this._appSettings['admin']);
+    private async canUseCommands(message: Message): Promise<boolean> {
+        let member = message.member;
+        if (!member) {
+            member = await message.guild.fetchMember(message.author.id);
+        }
+        return member.roles.some((role) => role.id === this._appSettings['leadership'] || message.author.id === this._appSettings['admin']);
     }
 
     private isAdminChannel(message: Message): boolean {

@@ -2,15 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
 class ItemsLootedEmbed extends discord_js_1.RichEmbed {
-    constructor(itemsLooted) {
+    constructor(itemsLooted, offspec = false, continued = false) {
         super();
         let lootString = '';
-        let offspecLootString = '';
         if (itemsLooted) {
-            let mainItemsLooted = itemsLooted.filter((item) => !item.value.offspec);
-            let mainT1 = mainItemsLooted.filter((item => item.value.item.shorthand === 't1'));
-            let mainT2 = mainItemsLooted.filter((item => item.value.item.shorthand === 't2'));
-            let mainNonTierLooted = mainItemsLooted.filter((item) => item.value.item.shorthand !== 't1' && item.value.item.shorthand !== 't2');
+            let mainT1 = itemsLooted.filter((item => item.value.item.shorthand === 't1'));
+            let mainT2 = itemsLooted.filter((item => item.value.item.shorthand === 't2'));
+            let mainNonTierLooted = itemsLooted.filter((item) => item.value.item.shorthand !== 't1' && item.value.item.shorthand !== 't2');
             let mainItemsArray = new Array();
             if (mainT1.length > 0) {
                 mainItemsArray.push(`T1 Set (${mainT1.length})`);
@@ -28,7 +26,7 @@ class ItemsLootedEmbed extends discord_js_1.RichEmbed {
                             lootString += `**${mainItemsArray[i]}**`;
                         }
                         else {
-                            lootString += `and **${mainItemsArray[i]}**`;
+                            lootString += `, **${mainItemsArray[i]}**`;
                         }
                     }
                     else if (i === mainItemsArray.length - 2) {
@@ -40,51 +38,25 @@ class ItemsLootedEmbed extends discord_js_1.RichEmbed {
                 }
             }
             else {
-                lootString = 'No items looted.';
-            }
-            let offspecItemsLooted = itemsLooted.filter((item) => item.value.offspec === true);
-            let offspecT1 = offspecItemsLooted.filter((item => item.value.item.shorthand === 't1'));
-            let offspecT2 = offspecItemsLooted.filter((item => item.value.item.shorthand === 't2'));
-            let offspecNonTierLooted = offspecItemsLooted.filter((item) => item.value.item.shorthand !== 't1' && item.value.item.shorthand !== 't2');
-            let offspecItemsArray = new Array();
-            if (offspecT1.length > 0) {
-                offspecItemsArray.push(`T1 Set (${offspecT1.length})`);
-            }
-            if (offspecT2.length > 0) {
-                offspecItemsArray.push(`T2 Set (${offspecT2.length})`);
-            }
-            offspecNonTierLooted.forEach((item) => {
-                offspecItemsArray.push(item.value.item.displayName);
-            });
-            if (offspecItemsArray.length > 0) {
-                for (let i = 0; i < offspecItemsArray.length; i++) {
-                    if (i === offspecItemsArray.length - 1) {
-                        if (i === 0) {
-                            offspecLootString += `**${offspecItemsArray[i]}**`;
-                        }
-                        else {
-                            offspecLootString += `and **${offspecItemsArray[i]}**`;
-                        }
-                    }
-                    else if (i === offspecItemsArray.length - 2) {
-                        offspecLootString += `**${offspecItemsArray[i]}** `;
-                    }
-                    else {
-                        offspecLootString += `**${offspecItemsArray[i]}**, `;
-                    }
-                }
-            }
-            else {
-                offspecLootString = 'No offspec items looted.';
+                lootString = 'None.';
             }
         }
         else {
-            lootString = 'No items looted.';
-            offspecLootString = 'No offspec items looted.';
+            lootString = 'None.';
         }
         this.setColor('#60b5bc');
-        this.addField('Items Looted', lootString);
-        this.addField('Offspec Items Looted', offspecLootString);
+        let offspecMessage = 'Offspec Items Looted';
+        let message = 'Items Looted';
+        if (continued) {
+            offspecMessage += ' (continued)';
+            message += ' (continued)';
+        }
+        if (offspec) {
+            this.addField(offspecMessage, lootString);
+        }
+        else {
+            this.addField(message, lootString);
+        }
     }
 }
 exports.ItemsLootedEmbed = ItemsLootedEmbed;

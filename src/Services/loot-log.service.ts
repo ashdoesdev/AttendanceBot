@@ -98,7 +98,10 @@ export class LootLogService {
                     let roles = new Array<string>();
 
                     for (let role of member.roles.array()) {
-                        roles.push(role.name.toLowerCase());
+                        if (role.name) {
+                            roles.push(role.name.toLowerCase());
+
+                        }
                     }
 
                     if (item) {

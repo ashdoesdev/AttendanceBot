@@ -86,7 +86,9 @@ class LootLogService {
                     if (!memberLootHistory.find((x) => x === member.id)) {
                         let roles = new Array();
                         for (let role of member.roles.array()) {
-                            roles.push(role.name.toLowerCase());
+                            if (role.name) {
+                                roles.push(role.name.toLowerCase());
+                            }
                         }
                         if (item) {
                             if (item.eligibleClasses) {
