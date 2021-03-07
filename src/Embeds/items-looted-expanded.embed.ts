@@ -11,7 +11,9 @@ export class ItemsLootedExpandedEmbed extends RichEmbed {
         if (itemsLooted) {
             let mainT1 = itemsLooted.filter((item => item.value.item.shorthand === 't1'));
             let mainT2 = itemsLooted.filter((item => item.value.item.shorthand === 't2'));
-            let mainNonTierLooted = itemsLooted.filter((item) => item.value.item.shorthand !== 't1' && item.value.item.shorthand !== 't2');
+            let mainT3 = itemsLooted.filter((item => item.value.item.shorthand === 't3'));
+
+            let mainNonTierLooted = itemsLooted.filter((item) => item.value.item.shorthand !== 't1' && item.value.item.shorthand !== 't2' && item.value.item.shorthand !== 't3');
             let mainItemsArray = new Array<string>();
 
             if (mainT1.length > 0) {
@@ -20,6 +22,10 @@ export class ItemsLootedExpandedEmbed extends RichEmbed {
 
             if (mainT2.length > 0) {
                 mainItemsArray.push(`T2 Set x${mainT2.length} (${mainT2[0].value.item.score * mainT2.length})`);
+            }
+
+            if (mainT3.length > 0) {
+                mainItemsArray.push(`T3 Set x${mainT3.length} (${mainT3[0].value.item.score * mainT3.length})`);
             }
 
             mainNonTierLooted.sort((a, b) => b.value.item.score - a.value.item.score);

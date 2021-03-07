@@ -4,7 +4,6 @@ import * as fs from 'fs';
 import * as stringSimilarity from 'string-similarity';
 import { HeadingEmbed } from './Embeds/heading.embed';
 import { HelpEmbed } from './Embeds/help.embed';
-import { ItemsLootedEmbed } from './Embeds/items-looted.embed';
 import { MinimalVisualizationEmbed } from './Embeds/minimal-visualization.embed';
 import { PublicAttendanceEmbed } from './Embeds/public-attendance.embed';
 import { MapSortHelper } from './Helpers/map-sort.helper';
