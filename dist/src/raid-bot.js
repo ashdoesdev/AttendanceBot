@@ -29,7 +29,7 @@ const last_raid_loot_embed_1 = require("./Embeds/last-raid-loot.embed");
 const last_raid_attendance_embed_1 = require("./Embeds/last-raid-attendance.embed");
 const items_looted_expanded_embed_1 = require("./Embeds/items-looted-expanded.embed");
 const stats_helper_1 = require("./Helpers/stats.helper");
-class RaidBot {
+class AttendanceBot {
     constructor() {
         this._client = new discord_js_1.Client();
         this._lootScoreService = new loot_score_service_1.LootScoreService();
@@ -895,5 +895,5 @@ class RaidBot {
         return unfoundMembers;
     }
 }
-exports.RaidBot = RaidBot;
+exports.AttendanceBot = AttendanceBot;
 exports.classes = ['paladin', 'ret', 'rogue', 'prot', 'fury', 'mage', 'druid', 'feral', 'balance', 'hunter', 'priest', 'shadow', 'warlock'];

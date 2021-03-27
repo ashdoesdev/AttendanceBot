@@ -1,9 +1,9 @@
 ﻿import { Message } from "discord.js";
-import { LootScoreData, Signature, MinimalMember } from "../Models/loot-score.model";
+import { AttendanceEntry, Signature, MinimalMember } from "../Models/AttendanceData";
 
-export class LootScoreDataHelper {
-    public createLootScoreData(value: any, message: Message): LootScoreData<any> {
-        let data = new LootScoreData<any>();
+export class AttendanceEntryHelper {
+    public createAttendanceData(value: any, message: Message): AttendanceEntry<any> {
+        let data = new AttendanceEntry<any>();
         data.value = value;
         data.signature = new Signature();
         data.signature.requester = new MinimalMember();

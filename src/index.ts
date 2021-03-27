@@ -1,5 +1,5 @@
-import { RaidBot } from './raid-bot';
-import * as appSettings from '../app-settings.prod.json';
+import { AttendanceBot } from './attendance-bot';
+import * as appSettings from '../appSettings.dev.json';
 
-const raidBot = new RaidBot();
-raidBot.start(appSettings);
+const attendanceBot = new AttendanceBot();
+attendanceBot.start(appSettings);

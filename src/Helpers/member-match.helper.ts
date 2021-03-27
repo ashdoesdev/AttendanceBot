@@ -1,5 +1,5 @@
 import { GuildMember } from "discord.js";
-import { MinimalMember } from "../Models/loot-score.model";
+import { MinimalMember } from "../Models/AttendanceData";
 
 export class MemberMatchHelper {
     public replaceMemberIdWithMember(members: GuildMember[], map: Map<any, any>): Map<GuildMember, any> {
