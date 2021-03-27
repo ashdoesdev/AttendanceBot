@@ -4,7 +4,7 @@ export class HelpEmbed extends RichEmbed {
     constructor(appSettings) {
         super();
 
-        this.setColor('#60b5bc');
+        this.setColor(appSettings['guildColor']);
 
         this.addField('Input Channel Commands', `<#${appSettings['feedChannel']}>`);
         this.addBlankField();

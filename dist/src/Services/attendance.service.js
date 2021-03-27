@@ -11,15 +11,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
 const rxjs_1 = require("rxjs");
-const attendance_embed_1 = require("../Embeds/attendance.embed");
+const attendance_log_embed_1 = require("../Embeds/attendance-log.embed");
 const loot_score_data_helper_1 = require("../Helpers/loot-score-data.helper");
-const loot_score_service_1 = require("./loot-score.service");
+const attendance_data_service_1 = require("./attendance-data.service");
 const member_match_helper_1 = require("../Helpers/member-match.helper");
 class AttendanceService {
     constructor() {
         this._tick = 0;
-        this._dataHelper = new loot_score_data_helper_1.LootScoreDataHelper();
-        this._lootScoreService = new loot_score_service_1.LootScoreService();
+        this._dataHelper = new loot_score_data_helper_1.AttendanceEntryHelper();
+        this._lootScoreService = new attendance_data_service_1.AttendanceDataService();
         this._memberMatcher = new member_match_helper_1.MemberMatchHelper();
         this.attendanceLog = new Map();
         this.seniorityLog = new Map();
@@ -83,30 +83,25 @@ class AttendanceService {
             return seniorityMap;
         });
     }
-    startLogging(message, raidChannel1, raidChannel2, appSettings) {
+    startLogging(message, attendanceChannels, appSettings) {
         this.loggingInProgress = true;
-        message.channel.send('Starting attendance log. Make sure you are in the raid channel.');
+        message.channel.send('Starting attendance log. Make sure you are in a trackable channel.');
         message.channel.send('*Don\'t fret. There is a 5 minute grace period at beginning and end.*');
         message.channel.send(':snail:');
         this._timerSubscription = rxjs_1.timer(0, 60000).subscribe(() => {
             this._tick++;
-            if (Array.from(raidChannel1.members.values())) {
-                if (raidChannel2 && raidChannel2.members && Array.from(raidChannel2.members.values()).length > 0) {
-                    var memberArray = Array.from(raidChannel1.members.values())
-                        .concat(Array.from(raidChannel2.members.values())).filter((member) => this.memberShouldBeTracked(member, appSettings));
-                    var uniqueArray = memberArray.filter((member, index, self) => index === self.findIndex((m) => (m.id === member.id)));
-                    this.attendanceLog.set(this._tick, uniqueArray);
-                }
-                else {
-                    this.attendanceLog.set(this._tick, Array.from(raidChannel1.members.values()).filter((member) => this.memberShouldBeTracked(member, appSettings)));
+            let memberArray = new Array();
+            for (let channel of attendanceChannels) {
+                if (Array.from(channel.members.values())) {
+                    memberArray = memberArray.concat(Array.from(channel.members.values()));
                 }
             }
-            else {
-                this.attendanceLog.set(this._tick, Array.from(raidChannel1.members.values()).filter((member) => this.memberShouldBeTracked(member, appSettings)));
-            }
+            memberArray = memberArray.filter((member) => this.memberShouldBeTracked(member, appSettings));
+            let uniqueArray = memberArray.filter((member, index, self) => index === self.findIndex((m) => (m.id === member.id)));
+            this.attendanceLog.set(this._tick, uniqueArray);
         });
     }
-    endLogging(message, seniorityLogChannel, attendanceLogChannel, attendanceLogReadableChannel, guildMembers, appSettings, saveValues, updateDump) {
+    endLogging(message, seniorityLogChannel, attendanceLogChannel, attendanceLogReadableChannel, guildMembers, appSettings, saveValues, updatePublicChart) {
         return __awaiter(this, void 0, void 0, function* () {
             if (saveValues) {
                 let attendanceArray = Array.from(this.attendanceLog.entries());
@@ -120,13 +115,13 @@ class AttendanceService {
                 const minifiedAttendanceMap = this.createMinifiedAttendanceMap(modifiedAttendanceLog);
                 const readableMinifiedAttendanceMap = this.createReadableMinifiedAttendanceMap(modifiedAttendanceLog);
                 const minifiedAttendanceArray = Array.from(minifiedAttendanceMap.entries());
-                let attendanceLootScoreData = this._dataHelper.createLootScoreData(minifiedAttendanceArray, message);
+                let attendanceLootScoreData = this._dataHelper.createAttendanceData(minifiedAttendanceArray, message);
                 attendanceLogChannel.send(this.codeBlockify(JSON.stringify(attendanceLootScoreData)));
-                attendanceLogReadableChannel.send(new attendance_embed_1.AttendanceEmbed(readableMinifiedAttendanceMap));
+                attendanceLogReadableChannel.send(new attendance_log_embed_1.AttendanceLogEmbed(readableMinifiedAttendanceMap, appSettings));
                 if (seniorityLogChannel) {
                     const minifiedSeniorityMap = yield this.createMinifiedSeniorityMap(minifiedAttendanceMap, seniorityLogChannel, guildMembers, appSettings);
                     const minifiedSeniorityArray = Array.from(minifiedSeniorityMap.entries());
-                    let seniorityLootScoreData = this._dataHelper.createLootScoreData(minifiedSeniorityArray, message);
+                    let seniorityLootScoreData = this._dataHelper.createAttendanceData(minifiedSeniorityArray, message);
                     seniorityLogChannel.send(this.codeBlockify(JSON.stringify(seniorityLootScoreData)));
                 }
                 if (this._tick === 1) {
@@ -135,8 +130,8 @@ class AttendanceService {
                 else {
                     message.channel.send(`Attendance saved. Total duration: ${this._tick} minutes`);
                 }
-                if (updateDump) {
-                    updateDump();
+                if (updatePublicChart) {
+                    updatePublicChart();
                 }
             }
             this._tick = 0;
@@ -150,8 +145,10 @@ class AttendanceService {
     }
     memberShouldBeTracked(member, appSettings) {
         if (member.roles.array().length > 0) {
-            if (member.roles.array().find((x) => x.id === appSettings['applicant']) || member.roles.array().find((x) => x.id === appSettings['raider']) || member.roles.array().find((x) => x.id === appSettings['leadership'])) {
-                return true;
+            for (let role of Object.entries(appSettings['loggableRoles'])) {
+                if (member.roles.array().find((x) => x.id === role[1])) {
+                    return true;
+                }
             }
         }
     }

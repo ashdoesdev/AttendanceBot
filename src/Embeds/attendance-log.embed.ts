@@ -1,7 +1,7 @@
 import { RichEmbed } from "discord.js";
 
-export class AttendanceEmbed extends RichEmbed {
-    constructor(private attendanceMap: Map<string, number>) {
+export class AttendanceLogEmbed extends RichEmbed {
+    constructor(private attendanceMap: Map<string, number>, appSettings) {
         super();
 
         let attendanceLines: string = '';
@@ -10,7 +10,7 @@ export class AttendanceEmbed extends RichEmbed {
             attendanceLines += `**${member[0]}**: ${member[1]}% \n`;
         }
 
-        this.setColor('#60b5bc');
+        this.setColor(appSettings['guildColor']);
         this.setDescription(attendanceLines);
         this.setFooter(`Attendance Log | ${new Date().toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: '2-digit' })}`);
     }

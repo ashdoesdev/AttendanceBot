@@ -1,18 +1,15 @@
 import { GuildMember } from "discord.js";
 
-export class LootScore {
-    public memberLootScores: Map<GuildMember, MemberScore>;
+export class Attendance {
+    public memberLootScores: Map<GuildMember, MemberAttendance>;
 }
 
-export class MemberScore {
+export class MemberAttendance {
     public attendancePercentage: number = 0;
     public seniorityPercentage: number = 0;
-    public itemScoreTotal: number = 0;
-    public itemScoreOffspecTotal: number = 0;
-    public lastLootDate: string = '---';
 }
 
-export class LootScoreData<T> {
+export class AttendanceEntry<T> {
     public value: T;
     public signature: Signature;
 }

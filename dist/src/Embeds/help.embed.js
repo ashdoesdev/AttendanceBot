@@ -4,7 +4,7 @@ const discord_js_1 = require("discord.js");
 class HelpEmbed extends discord_js_1.RichEmbed {
     constructor(appSettings) {
         super();
-        this.setColor('#60b5bc');
+        this.setColor(appSettings['guildColor']);
         this.addField('Input Channel Commands', `<#${appSettings['feedChannel']}>`);
         this.addBlankField();
         this.addField('Start/end attendance', '```\n/start, /end```');

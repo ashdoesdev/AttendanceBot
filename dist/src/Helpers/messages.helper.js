@@ -30,6 +30,12 @@ class MessagesHelper {
             return message.array()[0];
         });
     }
+    chunk(arr, chunkSize) {
+        var R = [];
+        for (var i = 0, len = arr.length; i < len; i += chunkSize)
+            R.push(arr.slice(i, i + chunkSize));
+        return R;
+    }
     bundleMessages(textChannel, entries, previousLastId) {
         return __awaiter(this, void 0, void 0, function* () {
             let options;

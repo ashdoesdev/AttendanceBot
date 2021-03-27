@@ -1,14 +1,11 @@
-import { GuildMember, TextChannel } from "discord.js";
-import { MinimalMember, MemberScore, LootScoreData } from "../Models/loot-score.model";
-import { LootLogService } from "../Services/loot-log.service";
-import { AwardedItem } from "../Models/item-score.model";
+import { GuildMember } from "discord.js";
+import { MinimalMember, MemberAttendance } from "../Models/AttendanceData";
 import { MapSortHelper } from "./map-sort.helper";
 
 export class StatsHelper {
-    private _lootLogService = new LootLogService();
     private _mapSort = new MapSortHelper();
 
-    public getAverageAttendance(lootScoreMap: Map<GuildMember | MinimalMember, MemberScore>, activeMembers: string[]): number {
+    public getAverageAttendance(lootScoreMap: Map<GuildMember | MinimalMember, MemberAttendance>, activeMembers: string[]): number {
         let memberCount = 0;
         let attendanceCount = 0;
         let filteredMap = this._mapSort.filterMembers(lootScoreMap, activeMembers);
@@ -21,7 +18,7 @@ export class StatsHelper {
         return attendanceCount / memberCount;
     }
 
-    public getAverageSeniority(lootScoreMap: Map<GuildMember | MinimalMember, MemberScore>, activeMembers: string[]): number {
+    public getAverageSeniority(lootScoreMap: Map<GuildMember | MinimalMember, MemberAttendance>, activeMembers: string[]): number {
         let memberCount = 0;
         let seniorityCount = 0;
         let filteredMap = this._mapSort.filterMembers(lootScoreMap, activeMembers);
@@ -32,21 +29,6 @@ export class StatsHelper {
         }
 
         return seniorityCount / memberCount;
-    }
-
-    public async orderLootedItemsByCount(lootScoreMap: Map<GuildMember | MinimalMember, MemberScore>, lootLogChannel: TextChannel, members: GuildMember[]): Promise<Map<string, number>> {
-        let allItemsLooted = await this._lootLogService.getFullLootHistory(lootLogChannel, members);
-
-        let simplifiedItems = new Array<string>();
-
-        for (let item of allItemsLooted) {
-            simplifiedItems.push(item.value.item.displayName);
-        }
-
-        let frequenciesMap = this.getFrequenciesMap(simplifiedItems);
-        let sortedMap = this._mapSort.sortFrequenciesMap(frequenciesMap);
-        
-        return sortedMap;
     }
 
     public getFrequenciesMap(array: Array<string>): Map<string, number> {

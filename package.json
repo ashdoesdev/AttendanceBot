@@ -1,8 +1,8 @@
 {
   "name": "attendance-bot",
   "version": "1.0.0",
-  "description": "Attendance bot",
-  "main": "bot.js",
+  "description": "Attendance bot for Discord",
+  "main": "index.js",
   "author": "ash",
   "dependencies": {
     "cron": "^1.7.1",
