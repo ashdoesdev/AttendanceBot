@@ -45,12 +45,13 @@ export class AttendanceBot {
             this._attendanceChannels = new Array<VoiceChannel>();
 
             for (let channelId of Object.entries(appSettings['attendanceChannels'])) {
-                var channel = this._client.channels.get(appSettings['attendanceChannels'][channelId[1] as number]) as VoiceChannel;
+                var channel = this._client.channels.get(channelId[1] as string) as VoiceChannel;
                 if (channel) {
                     this._attendanceChannels.push(channel);
                 }
             }
 
+            this._attendanceViewChannel = this._client.channels.get(appSettings['attendanceViewChannel']) as TextChannel;
             this._seniorityLogDataChannel = this._client.channels.get(appSettings['seniorityLogDataChannel']) as TextChannel;
             this._attendanceLogDataChannel = this._client.channels.get(appSettings['attendanceLogDataChannel']) as TextChannel;
             this._attendanceLogChannel = this._client.channels.get(appSettings['attendanceLogChannel']) as TextChannel;
@@ -82,7 +83,7 @@ export class AttendanceBot {
                 message.channel.send('Refreshed guild members.');
             }
 
-            if ((message.content === '/s' || message.content === '/start') && this.canUseCommands(message) && this.isPublicChannel(message)) {
+            if ((message.content === '/start' || message.content === '/s') && this.canUseCommands(message) && this.isPublicChannel(message)) {
                 if (this.membersInAttendanceChannels) {
                     message.channel.send('Do you wish to start logging? Please confirm.').then((sentMessage) => {
                         const filter = this.setReactionFilter(sentMessage as Message, message);
@@ -128,7 +129,7 @@ export class AttendanceBot {
 
                     });
                 } else {
-                    message.channel.send(`Did you mean to start attendance first? (Hint: !ls s)`);
+                    message.channel.send(`Did you mean to start attendance first? (Hint: /start)`);
                 }
             }
 
@@ -153,7 +154,7 @@ export class AttendanceBot {
                             });
                     });
                 } else {
-                    message.channel.send(`Did you mean to start attendance first? (Hint: !ls -s)`);
+                    message.channel.send(`Did you mean to start attendance first? (Hint: /start)`);
                 }
             }
 
@@ -291,7 +292,15 @@ export class AttendanceBot {
 
         for (let entry of sortedMap) {
             if (entry[0] instanceof GuildMember) {
-                if (entry[0].roles.array().find((x) => x.id === this._appSettings['leadership'] || x.id === this._appSettings['raider'] || x.id === this._appSettings['applicant'])) {
+                let shouldLog;
+                
+                for (let role of Object.entries(this._appSettings['loggableRoles'])) {
+                    if (entry[0].roles.array().find((x) => x.id === role[1])) {
+                        shouldLog = true;
+                    }
+                }
+
+                if (shouldLog) {
                     this._attendanceViewChannel.send(new PublicAttendanceEmbed(entry, this._appSettings));
                 }
             }

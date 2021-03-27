@@ -87,11 +87,7 @@ export class AttendanceDataService {
                 memberScore = new MemberAttendance();
             }
 
-            var seniority = Math.round((entry[1] / 50) * 100);
-
-            if (seniority > 100) {
-                seniority = 100;
-            }
+            var seniority = Math.round((entry[1] / highestValue) * 100);
 
             memberScore.seniorityPercentage = seniority;
             attendanceDataMap.set(entry[0], memberScore);

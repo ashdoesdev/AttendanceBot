@@ -86,14 +86,14 @@ export class AttendanceService {
     public startLogging(message: Message, attendanceChannels: VoiceChannel[], appSettings: any): void {
         this.loggingInProgress = true;
 
-        message.channel.send('Starting attendance log. Make sure you are in the raid channel.');
+        message.channel.send('Starting attendance log. Make sure you are in a trackable channel.');
         message.channel.send('*Don\'t fret. There is a 5 minute grace period at beginning and end.*');
         message.channel.send(':snail:');
 
         this._timerSubscription = timer(0, 60000).subscribe(() => {
             this._tick++;
 
-            let memberArray;
+            let memberArray = new Array<GuildMember>();
 
             for (let channel of attendanceChannels) {
                 if (Array.from(channel.members.values())) {
@@ -166,7 +166,7 @@ export class AttendanceService {
 
     private memberShouldBeTracked(member: GuildMember, appSettings: any): boolean {
         if (member.roles.array().length > 0) {
-            for (let role of Array.from(appSettings['visibleRoles'])) {
+            for (let role of Object.entries(appSettings['loggableRoles'])) {
                 if (member.roles.array().find((x) => x.id === role[1])) {
                     return true;
                 }
