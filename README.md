@@ -124,7 +124,3 @@ Attendance/seniority backups are saved automatically to /backups. Files may need
 `/test` (to bot in DMs)
 
 Will respond 'Bot running.' if running.
-
-## Warning
-
-This bot used to be a more robust loot and attendance management application. Any references to the old bot should be removed now, but traces may remain. Bugs in the refactor are also possible. Though I have tested myself, it hasn't been as thoroughly tested as the original app. Feel free to put in bug reports with any issues.
