@@ -1,6 +1,6 @@
 # AttendanceBot
 
-AttendanceBot is a Discord bot for guilds and other online communities to manage member attendance.
+AttendanceBot is a Discord bot for guilds and other online communities to manage attendance.
 
 ## Setup
 
