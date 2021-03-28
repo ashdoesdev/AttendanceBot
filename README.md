@@ -55,7 +55,7 @@ Recompile `tsc`.
 
 ## Commands 
 
-### Public Channel
+### Public
 
 `/start`, `/s`
 
